@@ -5,14 +5,14 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-  http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.formed.client.formula.elements;
 
 import org.formed.client.formula.*;
@@ -86,14 +86,19 @@ public final class RootElement extends BaseElement {
 
         formula.draw(drawer, x + metrics.getWidth() + 4, y, size);
 
-        drawer.getCanvas().beginPath();
+        drawer.drawLine(x, y, x + metrics.getWidth(), y);
+        drawer.drawLine(x + metrics.getWidth(), y, x + metrics.getWidth() + 2, y + metrics2.getHeightDown() - 1);
+        drawer.drawLine(x + metrics.getWidth() + 2, y + metrics2.getHeightDown() - 1, x + metrics.getWidth() + 4, y - metrics2.getHeightUp() - 1);
+        drawer.drawLine(x + metrics.getWidth() + 4, y - metrics2.getHeightUp() - 1, x + metrics.getWidth() + 6 + metrics2.getWidth(), y - metrics2.getHeightUp() - 1);
+        drawer.drawLine(x + metrics.getWidth() + 6 + metrics2.getWidth(), y - metrics2.getHeightUp() - 1, x + metrics.getWidth() + 6 + metrics2.getWidth(), y - metrics2.getHeightUp() + 2);
+        /*        drawer.getCanvas().beginPath();
         drawer.getCanvas().moveTo(x, y);
         drawer.getCanvas().lineTo(x + metrics.getWidth(), y);
         drawer.getCanvas().lineTo(x + metrics.getWidth() + 2, y + metrics2.getHeightDown() - 1);
         drawer.getCanvas().lineTo(x + metrics.getWidth() + 4, y - metrics2.getHeightUp() - 1);
         drawer.getCanvas().lineTo(x + metrics.getWidth() + 6 + metrics2.getWidth(), y - metrics2.getHeightUp() - 1);
         drawer.getCanvas().lineTo(x + metrics.getWidth() + 6 + metrics2.getWidth(), y - metrics2.getHeightUp() + 2);
-        drawer.getCanvas().stroke();
+        drawer.getCanvas().stroke();*/
 
         metrics.setWidth(metrics.getWidth() + metrics2.getWidth() + 6);
         metrics.setHeightUp(Math.max(metrics2.getHeightUp() + 4, metrics.getHeight() + metrics2.getHeight() / 2));
@@ -127,37 +132,37 @@ public final class RootElement extends BaseElement {
     }
 
     @Override
-    public CursorPosition getCursor(FormulaDrawer drawer, int x, int y) {
+    public Cursor getCursor(FormulaDrawer drawer, int x, int y) {
         Metrics metrics = measure(drawer, storedSize);
         if (x - storedX < metrics.getWidth() / 2) {
-            return new CursorPosition(this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown());
+            return new Cursor(drawer, this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown());
         } else {
-            return new CursorPosition(this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown());
+            return new Cursor(drawer, this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown());
         }
     }
 
     @Override
-    public CursorPosition getCursor(FormulaDrawer drawer, int position) {
+    public Cursor getCursor(FormulaDrawer drawer, int position) {
         Metrics metrics = measure(drawer, storedSize);
         if (position == 0) {
-            return new CursorPosition(this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown());
+            return new Cursor(drawer, this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown());
         } else {
-            return new CursorPosition(this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown());
+            return new Cursor(drawer, this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown());
         }
     }
 
     @Override
-    public CursorPosition getFirst(FormulaDrawer drawer) {
+    public Cursor getFirst(FormulaDrawer drawer) {
         return getCursor(drawer, 0);
     }
 
     @Override
-    public CursorPosition getLast(FormulaDrawer drawer) {
+    public Cursor getLast(FormulaDrawer drawer) {
         return getCursor(drawer, 1);
     }
 
     @Override
-    public CursorPosition getLeft(FormulaDrawer drawer, int oldPosition) {
+    public Cursor getLeft(FormulaDrawer drawer, int oldPosition) {
         if (oldPosition == 1) {
             return formula.getLast(drawer);
         }
@@ -166,7 +171,7 @@ public final class RootElement extends BaseElement {
     }
 
     @Override
-    public CursorPosition getRight(FormulaDrawer drawer, int oldPosition) {
+    public Cursor getRight(FormulaDrawer drawer, int oldPosition) {
         if (oldPosition == 0) {
             return formulaPower.getFirst(drawer);
         }
@@ -175,7 +180,7 @@ public final class RootElement extends BaseElement {
     }
 
     @Override
-    public CursorPosition childAsksLeft(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksLeft(FormulaDrawer drawer, Formula child) {
         if (child == formula) {
             return formulaPower.getLast(drawer);
         }
@@ -184,7 +189,7 @@ public final class RootElement extends BaseElement {
     }
 
     @Override
-    public CursorPosition childAsksRight(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksRight(FormulaDrawer drawer, Formula child) {
         if (child == formulaPower) {
             return formula.getFirst(drawer);
         }
@@ -193,21 +198,20 @@ public final class RootElement extends BaseElement {
     }
 
     @Override
-    public CursorPosition childAsksUp(FormulaDrawer drawer, Formula child) {
-        if(child == formula){
+    public Cursor childAsksUp(FormulaDrawer drawer, Formula child) {
+        if (child == formula) {
             return formulaPower.getLast(drawer);
         }
         return super.childAsksUp(drawer, child);
     }
 
     @Override
-    public CursorPosition childAsksDown(FormulaDrawer drawer, Formula child) {
-        if(child == formulaPower){
+    public Cursor childAsksDown(FormulaDrawer drawer, Formula child) {
+        if (child == formulaPower) {
             return formula.getFirst(drawer);
         }
         return super.childAsksDown(drawer, child);
     }
-
 
     @Override
     public void invalidateMetrics(Formula child) {

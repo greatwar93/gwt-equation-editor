@@ -102,7 +102,7 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public CursorPosition getLast(FormulaDrawer drawer) {
+    public Cursor getLast(FormulaDrawer drawer) {
         if (formula != null) {
             return formula.getLast(drawer);
         }
@@ -110,7 +110,7 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public CursorPosition childAsksLeft(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksLeft(FormulaDrawer drawer, Formula child) {
         if (child == formula) {
             return super.getLast(drawer);
         }
@@ -119,7 +119,7 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public CursorPosition childAsksRight(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksRight(FormulaDrawer drawer, Formula child) {
         if (child == formulaPower) {
             return formula.getFirst(drawer);
         }
@@ -128,7 +128,7 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public CursorPosition childAsksDown(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksDown(FormulaDrawer drawer, Formula child) {
         if (child == formulaPower) {
             return super.getLast(drawer);
         }
@@ -136,7 +136,7 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public CursorPosition getRight(FormulaDrawer drawer, int oldPosition) {
+    public Cursor getRight(FormulaDrawer drawer, int oldPosition) {
         if (oldPosition >= val.length()) {
             if (formula != null) {
                 return formula.getFirst(drawer);
@@ -155,7 +155,7 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public CursorPosition insertChar(FormulaDrawer drawer, CursorPosition cursor, char c) {
+    public Cursor insertChar(FormulaDrawer drawer, Cursor cursor, char c) {
         int pos = cursor.getPosition();
         setName(name.substring(0, pos) + c + name.substring(pos));
         return getCursor(drawer, pos + 1);

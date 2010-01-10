@@ -32,42 +32,42 @@ public interface FormulaItem {
     Metrics measure(FormulaDrawer drawer, int size);
 
     //Get cursor for a mouse click
-    CursorPosition getCursor(FormulaDrawer drawer, int x, int y);
+    Cursor getCursor(FormulaDrawer drawer, int x, int y);
 
     //Get cursor for a specified position
-    CursorPosition getCursor(FormulaDrawer drawer, int position);
+    Cursor getCursor(FormulaDrawer drawer, int position);
 
     //Move left
-    CursorPosition getLeft(FormulaDrawer drawer, int oldPosition);
+    Cursor getLeft(FormulaDrawer drawer, int oldPosition);
 
     //Move right
-    CursorPosition getRight(FormulaDrawer drawer, int oldPosition);
+    Cursor getRight(FormulaDrawer drawer, int oldPosition);
 
     //Move up
-    CursorPosition getUp(FormulaDrawer drawer, int oldPosition);
+    Cursor getUp(FormulaDrawer drawer, int oldPosition);
 
     //Move down
-    CursorPosition getDown(FormulaDrawer drawer, int oldPosition);
+    Cursor getDown(FormulaDrawer drawer, int oldPosition);
 
     //Get position when come right from parent-formula
-    CursorPosition getFirst(FormulaDrawer drawer);
+    Cursor getFirst(FormulaDrawer drawer);
 
     //Get position when come left from parent-formula
-    CursorPosition getLast(FormulaDrawer drawer);
+    Cursor getLast(FormulaDrawer drawer);
 
     //Get position when come left from child-formula
-    CursorPosition childAsksLeft(FormulaDrawer drawer, Formula child);
+    Cursor childAsksLeft(FormulaDrawer drawer, Formula child);
     
     //Get position when come right from child-formula
-    CursorPosition childAsksRight(FormulaDrawer drawer, Formula child);
+    Cursor childAsksRight(FormulaDrawer drawer, Formula child);
 
     //Get position when come up from child-formula
-    CursorPosition childAsksUp(FormulaDrawer drawer, Formula child);
+    Cursor childAsksUp(FormulaDrawer drawer, Formula child);
 
     //Get position when come down from child-formula
-    CursorPosition childAsksDown(FormulaDrawer drawer, Formula child);
+    Cursor childAsksDown(FormulaDrawer drawer, Formula child);
 
-    CursorPosition insertChar(FormulaDrawer drawer, CursorPosition cursor, char c);
+    Cursor insertChar(FormulaDrawer drawer, Cursor cursor, char c);
 
     void invalidateMetrics(Formula child);
 }

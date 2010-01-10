@@ -15,7 +15,7 @@ limitations under the License.
 */
 package org.formed.client.formula.elements;
 
-import org.formed.client.formula.CursorPosition;
+import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaDrawer;
 import org.formed.client.formula.Metrics;
@@ -332,7 +332,7 @@ public class BaseElementTest {
         BaseElement instance = new BaseElementImpl();
         formula.add(instance);
 
-        CursorPosition cursor = instance.getLast(drawer);
+        Cursor cursor = instance.getLast(drawer);
 
         formula.setInvalidated(0);
 

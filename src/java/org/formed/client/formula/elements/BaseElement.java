@@ -5,14 +5,14 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-  http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.formed.client.formula.elements;
 
 import org.formed.client.formula.*;
@@ -61,7 +61,8 @@ public abstract class BaseElement implements FormulaItem {
     }
 
     protected int getLength() {
-        int p = 0;
+        return val.length();
+/*        int p = 0;
         boolean escaped = false;
         for (int i = 0; i < val.length(); i++) {
             char c = val.charAt(i);
@@ -77,10 +78,12 @@ public abstract class BaseElement implements FormulaItem {
             }
         }
 
-        return p;
+        return p;*/
     }
 
     private String getPart(int position) {
+        return val.substring(0, position);
+        /*
         StringBuilder s = new StringBuilder();
         int p = 0;
         boolean escaped = false;
@@ -102,34 +105,10 @@ public abstract class BaseElement implements FormulaItem {
             }
         }
 
-        return s.toString();
-    }
-    /*
-    private String getPart(int position) {
-    StringBuilder s = new StringBuilder();
-    int i = 0;
-    for (int p = 0; p < position && i < val.length(); p++) {
-    char c = val.charAt(i);
-    i++;
-    if (c == '&') {
-    while (i < val.length()) {
-    c = val.charAt(i);
-    s.append(c);
-    i++;
-    if (c == ';') {
-    break;
-    }
-    }
-    } else {
-    s.append(c);
-    }
+        return s.toString();*/
     }
 
-    return s.toString();
-    }
-     */
-
-    public CursorPosition getCursor(FormulaDrawer drawer, int x, int y) {
+    public Cursor getCursor(FormulaDrawer drawer, int x, int y) {
         int dx = x - storedX;
 
         int width = 0;
@@ -142,9 +121,9 @@ public abstract class BaseElement implements FormulaItem {
 
             if (newWidth > dx) {
                 if ((newWidth - dx) > (newWidth - width) / 2) {
-                    return new CursorPosition(this, i - 1, storedX + width, storedY, metrics.getHeightUp(), metrics.getHeightDown());
+                    return new Cursor(drawer, this, i - 1, storedX + width, storedY, metrics.getHeightUp(), metrics.getHeightDown());
                 } else {
-                    return new CursorPosition(this, i, storedX + newWidth, storedY, newMetrics.getHeightUp(), newMetrics.getHeightDown());
+                    return new Cursor(drawer, this, i, storedX + newWidth, storedY, newMetrics.getHeightUp(), newMetrics.getHeightDown());
                 }
             }
 
@@ -153,12 +132,19 @@ public abstract class BaseElement implements FormulaItem {
         }
 
         Metrics zeroMetrics = drawer.textMetrics("0", storedSize);
-        return new CursorPosition(this, 0, storedX + width, storedY, zeroMetrics.getHeightUp(), zeroMetrics.getHeightDown());
+        return new Cursor(drawer, this, 0, storedX + width, storedY, zeroMetrics.getHeightUp(), zeroMetrics.getHeightDown());
     }
 
-    public CursorPosition getLeft(FormulaDrawer drawer, int oldPosition) {
+    public Cursor getLeft(FormulaDrawer drawer, int oldPosition) {
         int position = oldPosition - 1;
-        if (position < 0) {
+
+        if (position == 0) {
+            if (parent != null) {
+                if (!parent.isFirst(this)) {
+                    return parent.getLeft(drawer, this);
+                }
+            }
+        } else if (position < 0) {
             if (parent == null) {
                 return null;
             }
@@ -169,7 +155,7 @@ public abstract class BaseElement implements FormulaItem {
         return getCursor(drawer, position);
     }
 
-    public CursorPosition getRight(FormulaDrawer drawer, int oldPosition) {
+    public Cursor getRight(FormulaDrawer drawer, int oldPosition) {
         int position = oldPosition + 1;
         if (position > getLength()) {
             if (parent == null) {
@@ -182,21 +168,21 @@ public abstract class BaseElement implements FormulaItem {
         return getCursor(drawer, position);
     }
 
-    public CursorPosition getUp(FormulaDrawer drawer, int oldPosition) {
+    public Cursor getUp(FormulaDrawer drawer, int oldPosition) {
         if (parent == null) {
             return null;
         }
         return parent.getUp(drawer, this);
     }
 
-    public CursorPosition getDown(FormulaDrawer drawer, int oldPosition) {
+    public Cursor getDown(FormulaDrawer drawer, int oldPosition) {
         if (parent == null) {
             return null;
         }
         return parent.getDown(drawer, this);
     }
 
-    public CursorPosition getCursor(FormulaDrawer drawer, int position) {
+    public Cursor getCursor(FormulaDrawer drawer, int position) {
         Metrics newMetrics = drawer.textMetrics(getPart(position), storedSize);
 //        Metrics newMetrics = drawer.textMetrics(val.substring(0, position), storedSize);
         if (newMetrics.getHeight() == 0) {
@@ -204,39 +190,44 @@ public abstract class BaseElement implements FormulaItem {
             newMetrics.setHeightUp(zeroMetrics.getHeightUp());
             newMetrics.setHeightDown(zeroMetrics.getHeightDown());
         }
-        return new CursorPosition(this, position, storedX + newMetrics.getWidth(), storedY, newMetrics.getHeightUp(), newMetrics.getHeightDown());
+        return new Cursor(drawer, this, position, storedX + newMetrics.getWidth(), storedY, newMetrics.getHeightUp(), newMetrics.getHeightDown());
     }
 
-    public CursorPosition getFirst(FormulaDrawer drawer) {
+    public Cursor getFirst(FormulaDrawer drawer) {
+        if (getLength() > 0 && parent != null) {
+            if (!parent.isFirst(this)) {
+                return getCursor(drawer, 1);
+            }
+        }
         return getCursor(drawer, 0);
     }
 
-    public CursorPosition getLast(FormulaDrawer drawer) {
+    public Cursor getLast(FormulaDrawer drawer) {
         return getCursor(drawer, getLength());
     }
 
-    public CursorPosition childAsksLeft(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksLeft(FormulaDrawer drawer, Formula child) {
         if (parent == null) {
             return null;
         }
         return parent.getLeft(drawer, this);
     }
 
-    public CursorPosition childAsksRight(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksRight(FormulaDrawer drawer, Formula child) {
         if (parent == null) {
             return null;
         }
         return parent.getRight(drawer, this);
     }
 
-    public CursorPosition childAsksUp(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksUp(FormulaDrawer drawer, Formula child) {
         if (parent == null) {
             return null;
         }
         return parent.getUp(drawer, this);
     }
 
-    public CursorPosition childAsksDown(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksDown(FormulaDrawer drawer, Formula child) {
         if (parent == null) {
             return null;
         }
@@ -249,7 +240,7 @@ public abstract class BaseElement implements FormulaItem {
         }
     }
 
-    public CursorPosition insertChar(FormulaDrawer drawer, CursorPosition cursor, char c) {
+    public Cursor insertChar(FormulaDrawer drawer, Cursor cursor, char c) {
         if (parent == null) {
             return null;
         }

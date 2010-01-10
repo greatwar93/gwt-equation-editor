@@ -19,8 +19,9 @@ package org.formed.client.formula;
  *
  * @author bulats
  */
-public final class CursorPosition {
+public final class Cursor {
 
+    private FormulaDrawer drawer;
     private FormulaItem item;
     private int position;
     private int x;
@@ -28,13 +29,24 @@ public final class CursorPosition {
     private int heightUp;
     private int heightDown;
 
-    public CursorPosition(FormulaItem item, int position, int x, int y, int heightUp, int heightDown) {
+    public Cursor(FormulaDrawer drawer, FormulaItem item, int position, int x, int y, int heightUp, int heightDown) {
+        this.drawer = drawer;
         this.item = item;
         this.position = position;
         this.x = x;
         this.y = y;
         this.heightUp = heightUp;
         this.heightDown = heightDown;
+    }
+
+    public void setCursor(Cursor cursor){
+        drawer = cursor.drawer;
+        item = cursor.item;
+        position = cursor.position;
+        x = cursor.x;
+        y = cursor.y;
+        heightUp = cursor.heightUp;
+        heightDown = cursor.heightDown;
     }
 
     public int getHeightDown() {
@@ -59,5 +71,25 @@ public final class CursorPosition {
 
     public FormulaItem getItem() {
         return item;
+    }
+
+    public Cursor moveRight(){
+        setCursor(item.getRight(this.drawer, position));
+        return this;
+    }
+
+    public Cursor moveLeft(){
+        setCursor(item.getLeft(this.drawer, position));
+        return this;
+    }
+
+    public Cursor moveUp(){
+        setCursor(item.getUp(this.drawer, position));
+        return this;
+    }
+
+    public Cursor moveDown(){
+        setCursor(item.getDown(this.drawer, position));
+        return this;
     }
 }

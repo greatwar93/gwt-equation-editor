@@ -81,10 +81,7 @@ public final class DivisorElement extends BaseElement {
         formula1.draw(drawer, x + width / 2 - metrics.getWidth() / 2, y - metrics.getHeightDown(), size);
         formula2.draw(drawer, x + width / 2 - metrics2.getWidth() / 2, y + metrics2.getHeightUp(), size);
 
-        drawer.getCanvas().beginPath();
-        drawer.getCanvas().moveTo(x, y);
-        drawer.getCanvas().lineTo(x + width, y);
-        drawer.getCanvas().stroke();
+        drawer.drawLine(x, y, x+width, y);
 
         metrics.setWidth(width);
         metrics.setHeightUp(metrics.getHeight());
@@ -111,37 +108,37 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public CursorPosition getCursor(FormulaDrawer drawer, int x, int y) {
+    public Cursor getCursor(FormulaDrawer drawer, int x, int y) {
         Metrics metrics = measure(drawer, storedSize);
         if (x - storedX < metrics.getWidth() / 2) {
-            return new CursorPosition(this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown());
+            return new Cursor(drawer, this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown());
         } else {
-            return new CursorPosition(this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown());
+            return new Cursor(drawer, this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown());
         }
     }
 
     @Override
-    public CursorPosition getCursor(FormulaDrawer drawer, int position) {
+    public Cursor getCursor(FormulaDrawer drawer, int position) {
         Metrics metrics = measure(drawer, storedSize);
         if (position == 0) {
-            return new CursorPosition(this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown());
+            return new Cursor(drawer, this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown());
         } else {
-            return new CursorPosition(this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown());
+            return new Cursor(drawer, this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown());
         }
     }
 
     @Override
-    public CursorPosition getFirst(FormulaDrawer drawer) {
+    public Cursor getFirst(FormulaDrawer drawer) {
         return getCursor(drawer, 0);
     }
 
     @Override
-    public CursorPosition getLast(FormulaDrawer drawer) {
+    public Cursor getLast(FormulaDrawer drawer) {
         return getCursor(drawer, 1);
     }
 
     @Override
-    public CursorPosition getLeft(FormulaDrawer drawer, int oldPosition) {
+    public Cursor getLeft(FormulaDrawer drawer, int oldPosition) {
         if (oldPosition == 1) {
             return formula1.getLast(drawer);
         }
@@ -149,7 +146,7 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public CursorPosition getRight(FormulaDrawer drawer, int oldPosition) {
+    public Cursor getRight(FormulaDrawer drawer, int oldPosition) {
         if (oldPosition == 0) {
             return formula1.getFirst(drawer);
         }
@@ -157,17 +154,17 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public CursorPosition childAsksLeft(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksLeft(FormulaDrawer drawer, Formula child) {
         return getFirst(drawer);
     }
 
     @Override
-    public CursorPosition childAsksRight(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksRight(FormulaDrawer drawer, Formula child) {
         return getLast(drawer);
     }
 
     @Override
-    public CursorPosition childAsksUp(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksUp(FormulaDrawer drawer, Formula child) {
         if(child == formula2){
             return formula1.getFirst(drawer);
         }
@@ -175,7 +172,7 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public CursorPosition childAsksDown(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksDown(FormulaDrawer drawer, Formula child) {
         if(child == formula1){
             return formula2.getFirst(drawer);
         }

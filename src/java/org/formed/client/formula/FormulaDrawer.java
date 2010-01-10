@@ -15,8 +15,6 @@ limitations under the License.
 */
 package org.formed.client.formula;
 
-import net.kornr.abstractcanvas.client.gwt.CanvasPanelExt;
-
 /**
  *
  * @author bulats
@@ -34,22 +32,9 @@ public interface FormulaDrawer {
     void addDrawnFormula(Formula formula, Rectangle rect);
     void addDrawnFormula(Formula formula, int x, int y, Metrics metrics);
 
+    int getSmallerSize(int size);
     Metrics textMetrics(String text, int size);
 
     void drawText(String text, int size, int x, int y);
-
-    int getSmallerSize(int size);
-
-    boolean moveCursorUp();
-    boolean moveCursorDown();
-    boolean moveCursorLeft();
-    boolean moveCursorRight();
-
-    FormulaItem selectItemAt(int x, int y);
-    FormulaItem highlightItemAt(int x, int y);
-
-    CanvasPanelExt getCanvas();
-
-    void redraw();
-    void insert(char c);
+    void drawLine(int x1, int y1, int x2, int y2);
 }

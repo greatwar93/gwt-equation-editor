@@ -17,16 +17,21 @@
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library>
+                    <file>${file.reference.AbstractCanvas-20081127.jar}</file>
+                    <path-in-war>WEB-INF/lib</path-in-war>
+                </library>
+                <library>
                     <file>${file.reference.gwt-incubator-july-14-2009.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library>
-                    <file>${file.reference.AbstractCanvas-20081127.jar}</file>
+                    <file>${file.reference.gwt-g2d-v005.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
             </web-module-libraries>
             <web-module-additional-libraries/>
             <source-roots>
+                <root id="src.libsfor.dir"/>
                 <root id="src.dir"/>
             </source-roots>
             <test-roots>

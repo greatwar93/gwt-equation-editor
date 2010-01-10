@@ -83,7 +83,7 @@ public abstract class PoweredElement extends BaseElement {
     }
 
     @Override
-    public CursorPosition getUp(FormulaDrawer drawer, int oldPosition) {
+    public Cursor getUp(FormulaDrawer drawer, int oldPosition) {
         if(formulaPower != null){
             return formulaPower.getFirst(drawer);
         }
@@ -91,7 +91,7 @@ public abstract class PoweredElement extends BaseElement {
     }
 
     @Override
-    public CursorPosition childAsksLeft(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksLeft(FormulaDrawer drawer, Formula child) {
         if (child == formulaPower) {
             return getLast(drawer);
         } else {
@@ -100,7 +100,7 @@ public abstract class PoweredElement extends BaseElement {
     }
 
     @Override
-    public CursorPosition childAsksDown(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksDown(FormulaDrawer drawer, Formula child) {
         if(child == formulaPower){
             return getLast(drawer);
         }

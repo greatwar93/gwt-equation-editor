@@ -15,7 +15,7 @@ limitations under the License.
 */
 package org.formed.client.formula.elements;
 
-import org.formed.client.formula.CursorPosition;
+import org.formed.client.formula.Cursor;
 import org.formed.client.formula.FormulaDrawer;
 import org.formed.client.formula.FormulaItem;
 import org.junit.After;
@@ -90,9 +90,9 @@ public class SimpleElementTest {
         SimpleElement instance = new SimpleElement("a");
         formula.add(instance);
 
-        CursorPosition cursor = instance.getLast(drawer);
+        Cursor cursor = instance.getLast(drawer);
         formula.setInvalidated(0);
-        CursorPosition newCursor = instance.insertChar(drawer, cursor, 'c');
+        Cursor newCursor = instance.insertChar(drawer, cursor, 'c');
 
         assertEquals("Name change", "ac", instance.getName());
         assertEquals("Parent propogation", 1, formula.getInvalidated());

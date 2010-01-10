@@ -290,6 +290,8 @@
                 <propertyref prefix="run-sys-prop."/>
                 <mapper type="glob" from="run-sys-prop.*" to="*"/>
             </syspropertyset>
+            <arg value="-out"/>
+            <arg path="${build.web.dir}/"/>
             <arg value="-noserver"/>
             <arg value="${client.url}"/>
         </java>
@@ -329,6 +331,8 @@
                 <propertyref prefix="run-sys-prop."/>
                 <mapper type="glob" from="run-sys-prop.*" to="*"/>
             </syspropertyset>
+            <arg value="-war"/>
+            <arg path="${build.web.dir}/"/>
             <arg value="-noserver"/>
             <arg value="-startupUrl"/>
             <arg value="${client.url}"/>
@@ -370,6 +374,8 @@
                 <propertyref prefix="run-sys-prop."/>
                 <mapper type="glob" from="run-sys-prop.*" to="*"/>
             </syspropertyset>
+            <arg value="-war"/>
+            <arg path="${build.web.dir}/"/>
             <arg value="-noserver"/>
             <arg value="-startupUrl"/>
             <arg value="${client.url}"/>
@@ -428,6 +434,8 @@
                         <propertyref prefix="run-sys-prop."/>
                         <mapper type="glob" from="run-sys-prop.*" to="*"/>
                     </syspropertyset>
+                    <arg value="-war"/>
+                    <arg path="${build.web.dir}/"/>
                     <arg value="-noserver"/>
                     <arg value="-startupUrl"/>
                     <arg value="${client.url}"/>

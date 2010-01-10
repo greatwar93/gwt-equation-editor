@@ -16,7 +16,7 @@ limitations under the License.
 package org.formed.client.formula.elements;
 
 import net.kornr.abstractcanvas.client.gwt.CanvasPanelExt;
-import org.formed.client.formula.CursorPosition;
+import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaDrawer;
 import org.formed.client.formula.FormulaItem;
@@ -337,7 +337,7 @@ public class DivisorElementTest {
         formula1.add(initiator).add(new OperatorElement("+")).add(new SimpleElement("b"));
         formula2.add(new SimpleElement("x")).add(new OperatorElement("*")).add(new SimpleElement("y"));
 
-        CursorPosition cursor = initiator.getLast(drawer);
+        Cursor cursor = initiator.getLast(drawer);
 
         formula.setInvalidated(0);
         formula1.setInvalidated(0);

@@ -150,8 +150,13 @@ public class Formula {
         return this;
     }
 
+    //Is specified item first in formula
+    public boolean isFirst(FormulaItem item){
+        return (items.indexOf(item) == 0);
+    }
+
     //Get position when come from child-item
-    public CursorPosition getLeft(FormulaDrawer drawer, FormulaItem item) {
+    public Cursor getLeft(FormulaDrawer drawer, FormulaItem item) {
         int index = items.indexOf(item) - 1;
         if (index < 0) {
             if (parent != null) {
@@ -163,7 +168,7 @@ public class Formula {
     }
 
     //Get position when come from child-item
-    public CursorPosition getRight(FormulaDrawer drawer, FormulaItem item) {
+    public Cursor getRight(FormulaDrawer drawer, FormulaItem item) {
         int index = items.indexOf(item) + 1;
         if (index >= items.size()) {
             if (parent != null) {
@@ -175,7 +180,7 @@ public class Formula {
     }
 
     //Get position when come from child-item
-    public CursorPosition getUp(FormulaDrawer drawer, FormulaItem item) {
+    public Cursor getUp(FormulaDrawer drawer, FormulaItem item) {
         if (parent == null) {
             return null;
         }
@@ -183,7 +188,7 @@ public class Formula {
     }
 
     //Get position when come from child-item
-    public CursorPosition getDown(FormulaDrawer drawer, FormulaItem item) {
+    public Cursor getDown(FormulaDrawer drawer, FormulaItem item) {
         if (parent == null) {
             return null;
         }
@@ -206,11 +211,11 @@ public class Formula {
         return items.get(items.size() - 1);
     }
 
-    public CursorPosition getFirst(FormulaDrawer drawer) {
+    public Cursor getFirst(FormulaDrawer drawer) {
         return getFirstItem().getFirst(drawer);
     }
 
-    public CursorPosition getLast(FormulaDrawer drawer) {
+    public Cursor getLast(FormulaDrawer drawer) {
         return getLastItem().getLast(drawer);
     }
 }

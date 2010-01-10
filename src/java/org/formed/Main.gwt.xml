@@ -3,6 +3,8 @@
         <inherits name="com.google.gwt.user.User"/>
         <inherits name='com.google.gwt.widgetideas.GWTCanvas'/>
         <inherits name='net.kornr.abstractcanvas.AbstractCanvas'/>
+        <inherits name='gwt.g2d.g2d'/>
 	<entry-point class="org.formed.client.MainEntryPoint"/>
+        <set-property name="user.agent" value="gecko1_8" />
 	<!-- Do not define servlets here, use web.xml -->
 </module>
