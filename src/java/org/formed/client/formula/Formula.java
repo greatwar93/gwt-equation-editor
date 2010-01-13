@@ -57,7 +57,7 @@ public class Formula {
         }
     }
 
-    public Metrics drawAligned(FormulaDrawer drawer, int x, int y, int size, FormulaDrawer.Align align) {
+    public Metrics drawAligned(Drawer drawer, int x, int y, int size, Drawer.Align align) {
         switch (align) {
             case TOP:
                 calculateMetrics(drawer, size);
@@ -88,7 +88,7 @@ public class Formula {
         return false;
     }
 
-    public Metrics draw(FormulaDrawer drawer, int x, int y, int size) {
+    public Metrics draw(Drawer drawer, int x, int y, int size) {
         Metrics drawnMetrics = new Metrics(0, 0, 0);
         if (items.isEmpty()) {
             drawnMetrics.add(place.draw(drawer, x + drawnMetrics.getWidth(), y, size));
@@ -105,7 +105,7 @@ public class Formula {
         return drawnMetrics;
     }
 
-    public Metrics calculateMetrics(FormulaDrawer drawer, int size) {
+    public Metrics calculateMetrics(Drawer drawer, int size) {
         if (metricsValid) {
             return metrics.cloneMetrics();
         }
@@ -150,13 +150,24 @@ public class Formula {
         return this;
     }
 
+    public Formula replace(FormulaItem item, FormulaItem with){
+        if (items.indexOf(item) >= 0) {
+            invalidateMetrics();
+            item.setParent(this);
+            items.add(items.indexOf(item), with);
+            items.remove(item);
+            item.setParent(null);
+        }
+        return this;
+    }
+
     //Is specified item first in formula
     public boolean isFirst(FormulaItem item){
         return (items.indexOf(item) == 0);
     }
 
     //Get position when come from child-item
-    public Cursor getLeft(FormulaDrawer drawer, FormulaItem item) {
+    public Cursor getLeft(Drawer drawer, FormulaItem item) {
         int index = items.indexOf(item) - 1;
         if (index < 0) {
             if (parent != null) {
@@ -168,7 +179,7 @@ public class Formula {
     }
 
     //Get position when come from child-item
-    public Cursor getRight(FormulaDrawer drawer, FormulaItem item) {
+    public Cursor getRight(Drawer drawer, FormulaItem item) {
         int index = items.indexOf(item) + 1;
         if (index >= items.size()) {
             if (parent != null) {
@@ -180,7 +191,7 @@ public class Formula {
     }
 
     //Get position when come from child-item
-    public Cursor getUp(FormulaDrawer drawer, FormulaItem item) {
+    public Cursor getUp(Drawer drawer, FormulaItem item) {
         if (parent == null) {
             return null;
         }
@@ -188,7 +199,7 @@ public class Formula {
     }
 
     //Get position when come from child-item
-    public Cursor getDown(FormulaDrawer drawer, FormulaItem item) {
+    public Cursor getDown(Drawer drawer, FormulaItem item) {
         if (parent == null) {
             return null;
         }
@@ -211,11 +222,11 @@ public class Formula {
         return items.get(items.size() - 1);
     }
 
-    public Cursor getFirst(FormulaDrawer drawer) {
+    public Cursor getFirst(Drawer drawer) {
         return getFirstItem().getFirst(drawer);
     }
 
-    public Cursor getLast(FormulaDrawer drawer) {
+    public Cursor getLast(Drawer drawer) {
         return getLastItem().getLast(drawer);
     }
 }

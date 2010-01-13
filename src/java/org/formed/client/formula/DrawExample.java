@@ -1,7 +1,18 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+Copyright 2009 Bulat Sirazetdinov
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package org.formed.client.formula;
 
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -140,7 +151,7 @@ public class DrawExample {
 //                canvas1.strokeText("code:"+event.getNativeKeyCode(), 300, 30);
             }
         });
-
+/*
         surface.addKeyUpHandler(new KeyUpHandler() {
 
             public void onKeyUp(KeyUpEvent event) {
@@ -156,10 +167,10 @@ public class DrawExample {
                 }
             }
         });
-
+*/
         final HTML keys = new HTML();
         RootPanel.get().add(keys, 10, HEIGHT*2);
-/*
+
         surface.addKeyPressHandler(new KeyPressHandler() {
 
             public void onKeyPress(KeyPressEvent event) {
@@ -172,6 +183,10 @@ public class DrawExample {
                     //drawer.moveCursorUp();
                 } else if (event.getCharCode() == '(') {
                     //drawer.moveCursorDown();
+                } else if (event.getCharCode() == '.') {
+                    //drawer.deleteRight();
+                } else if (event.getCharCode() == 8) {
+                    //drawer.deleteLeft();
                 } else {
                     drawer.insert(event.getCharCode());
                 }
@@ -180,7 +195,7 @@ public class DrawExample {
 //                canvas1.strokeText("code:" + event.getAssociatedType().getName(), 200, 40);
             }
         });
-*/
+
         surface.addMouseMoveHandler(new MouseMoveHandler() {
 
             public void onMouseMove(MouseMoveEvent event) {

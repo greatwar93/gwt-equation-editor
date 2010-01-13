@@ -18,7 +18,7 @@ package org.formed.client.formula.elements;
 import net.kornr.abstractcanvas.client.gwt.CanvasPanelExt;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Formula;
-import org.formed.client.formula.FormulaDrawer;
+import org.formed.client.formula.Drawer;
 import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.Metrics;
 import org.formed.client.formula.Rectangle;
@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  */
 public class DivisorElementTest {
 
-    FormulaDrawer drawer;
+    Drawer drawer;
 
     public DivisorElementTest() {
     }

@@ -21,7 +21,7 @@ package org.formed.client.formula;
  */
 public final class Cursor {
 
-    private FormulaDrawer drawer;
+    private Drawer drawer;
     private FormulaItem item;
     private int position;
     private int x;
@@ -29,7 +29,7 @@ public final class Cursor {
     private int heightUp;
     private int heightDown;
 
-    public Cursor(FormulaDrawer drawer, FormulaItem item, int position, int x, int y, int heightUp, int heightDown) {
+    public Cursor(Drawer drawer, FormulaItem item, int position, int x, int y, int heightUp, int heightDown) {
         this.drawer = drawer;
         this.item = item;
         this.position = position;

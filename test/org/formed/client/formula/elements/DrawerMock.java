@@ -15,9 +15,8 @@ limitations under the License.
 */
 package org.formed.client.formula.elements;
 
-import net.kornr.abstractcanvas.client.gwt.CanvasPanelExt;
 import org.formed.client.formula.Formula;
-import org.formed.client.formula.FormulaDrawer;
+import org.formed.client.formula.Drawer;
 import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.Metrics;
 import org.formed.client.formula.Rectangle;
@@ -26,7 +25,7 @@ import org.formed.client.formula.Rectangle;
  *
  * @author bulats
  */
-public class DrawerMock implements FormulaDrawer {
+public class DrawerMock implements Drawer {
 
     public void addDrawnItem(FormulaItem item, Rectangle rect) {
     }
@@ -45,6 +44,9 @@ public class DrawerMock implements FormulaDrawer {
     }
 
     public void drawText(String text, int size, int x, int y) {
+    }
+
+    public void drawLine(int x1, int y1, int x2, int y2) {
     }
 
     public int getSmallerSize(int size) {
@@ -73,13 +75,6 @@ public class DrawerMock implements FormulaDrawer {
 
     public FormulaItem highlightItemAt(int x, int y) {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public CanvasPanelExt getCanvas() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void redraw() {
     }
 
     public void insert(char c) {

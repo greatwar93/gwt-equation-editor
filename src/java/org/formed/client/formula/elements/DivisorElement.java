@@ -67,7 +67,7 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public Metrics draw(FormulaDrawer drawer, int x, int y, int size) {
+    public Metrics draw(Drawer drawer, int x, int y, int size) {
         storedSize = size;
         storedX = x;
         storedY = y;
@@ -92,7 +92,7 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public Metrics measure(FormulaDrawer drawer, int size) {
+    public Metrics measure(Drawer drawer, int size) {
         storedSize = size;
 
         Metrics metrics = formula1.calculateMetrics(drawer, size);
@@ -108,7 +108,7 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public Cursor getCursor(FormulaDrawer drawer, int x, int y) {
+    public Cursor getCursor(Drawer drawer, int x, int y) {
         Metrics metrics = measure(drawer, storedSize);
         if (x - storedX < metrics.getWidth() / 2) {
             return new Cursor(drawer, this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown());
@@ -118,7 +118,7 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public Cursor getCursor(FormulaDrawer drawer, int position) {
+    public Cursor getCursor(Drawer drawer, int position) {
         Metrics metrics = measure(drawer, storedSize);
         if (position == 0) {
             return new Cursor(drawer, this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown());
@@ -128,17 +128,17 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public Cursor getFirst(FormulaDrawer drawer) {
+    public Cursor getFirst(Drawer drawer) {
         return getCursor(drawer, 0);
     }
 
     @Override
-    public Cursor getLast(FormulaDrawer drawer) {
+    public Cursor getLast(Drawer drawer) {
         return getCursor(drawer, 1);
     }
 
     @Override
-    public Cursor getLeft(FormulaDrawer drawer, int oldPosition) {
+    public Cursor getLeft(Drawer drawer, int oldPosition) {
         if (oldPosition == 1) {
             return formula1.getLast(drawer);
         }
@@ -146,7 +146,7 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public Cursor getRight(FormulaDrawer drawer, int oldPosition) {
+    public Cursor getRight(Drawer drawer, int oldPosition) {
         if (oldPosition == 0) {
             return formula1.getFirst(drawer);
         }
@@ -154,17 +154,17 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public Cursor childAsksLeft(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksLeft(Drawer drawer, Formula child) {
         return getFirst(drawer);
     }
 
     @Override
-    public Cursor childAsksRight(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksRight(Drawer drawer, Formula child) {
         return getLast(drawer);
     }
 
     @Override
-    public Cursor childAsksUp(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksUp(Drawer drawer, Formula child) {
         if(child == formula2){
             return formula1.getFirst(drawer);
         }
@@ -172,7 +172,7 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public Cursor childAsksDown(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksDown(Drawer drawer, Formula child) {
         if(child == formula1){
             return formula2.getFirst(drawer);
         }

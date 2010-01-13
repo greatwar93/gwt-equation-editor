@@ -23,7 +23,7 @@ import org.formed.client.formula.*;
  */
 public abstract class PoweredElement extends BaseElement {
 
-    protected Formula formulaPower;
+    private Formula formulaPower;
 
     public PoweredElement(Formula power) {
         setPower(power);
@@ -47,11 +47,11 @@ public abstract class PoweredElement extends BaseElement {
         } else {
             this.formulaPower = power;
         }
-        power.setParent(this);
+        this.formulaPower.setParent(this);
     }
 
     @Override
-    public Metrics draw(FormulaDrawer drawer, int x, int y, int size) {
+    public Metrics draw(Drawer drawer, int x, int y, int size) {
         Metrics metrics = super.draw(drawer, x, y, size);
 
         if (formulaPower != null) {
@@ -68,7 +68,7 @@ public abstract class PoweredElement extends BaseElement {
     }
 
     @Override
-    public Metrics measure(FormulaDrawer drawer, int size) {
+    public Metrics measure(Drawer drawer, int size) {
         Metrics metrics = super.measure(drawer, size);
 
         if (formulaPower != null) {
@@ -83,7 +83,7 @@ public abstract class PoweredElement extends BaseElement {
     }
 
     @Override
-    public Cursor getUp(FormulaDrawer drawer, int oldPosition) {
+    public Cursor getUp(Drawer drawer, int oldPosition) {
         if(formulaPower != null){
             return formulaPower.getFirst(drawer);
         }
@@ -91,7 +91,7 @@ public abstract class PoweredElement extends BaseElement {
     }
 
     @Override
-    public Cursor childAsksLeft(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksLeft(Drawer drawer, Formula child) {
         if (child == formulaPower) {
             return getLast(drawer);
         } else {
@@ -100,7 +100,7 @@ public abstract class PoweredElement extends BaseElement {
     }
 
     @Override
-    public Cursor childAsksDown(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksDown(Drawer drawer, Formula child) {
         if(child == formulaPower){
             return getLast(drawer);
         }

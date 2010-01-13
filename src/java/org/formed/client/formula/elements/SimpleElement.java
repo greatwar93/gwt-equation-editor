@@ -17,7 +17,8 @@ package org.formed.client.formula.elements;
 
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Formula;
-import org.formed.client.formula.FormulaDrawer;
+import org.formed.client.formula.Drawer;
+import org.formed.client.formula.FormulaItem;
 
 /**
  *
@@ -43,8 +44,31 @@ public final class SimpleElement extends PoweredElement {
         val = name;
     }
 
+    public Cursor breakWith(Drawer drawer, Cursor cursor, FormulaItem item) {
+        if (parent == null) {
+            return cursor;
+        }
+
+        parent.insertAfter(item, this);
+        parent.insertAfter(new SimpleElement(val.substring(cursor.getPosition()), getPower()), item);
+        setName(val.substring(0, cursor.getPosition()));
+        setPower(null);
+
+        invalidateMetrics(null);
+
+        return item.getLast(drawer);
+    }
+
+    public String getTextBefore(Cursor cursor) {
+        return val.substring(0, cursor.getPosition());
+    }
+
+    public String getTextAfter(Cursor cursor) {
+        return val.substring(cursor.getPosition());
+    }
+
     @Override
-    public Cursor insertChar(FormulaDrawer drawer, Cursor cursor, char c) {
+    public Cursor insertChar(Drawer drawer, Cursor cursor, char c) {
         int pos = cursor.getPosition();
         val = val.substring(0, pos) + c + val.substring(pos);
         invalidateMetrics(null);

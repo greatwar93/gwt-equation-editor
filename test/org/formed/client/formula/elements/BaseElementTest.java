@@ -17,7 +17,7 @@ package org.formed.client.formula.elements;
 
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Formula;
-import org.formed.client.formula.FormulaDrawer;
+import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Metrics;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  */
 public class BaseElementTest {
 
-    FormulaDrawer drawer;
+    Drawer drawer;
 
     public BaseElementTest() {
     }

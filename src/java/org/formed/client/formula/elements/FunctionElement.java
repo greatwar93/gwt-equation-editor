@@ -67,7 +67,7 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public Metrics draw(FormulaDrawer drawer, int x, int y, int size) {
+    public Metrics draw(Drawer drawer, int x, int y, int size) {
         Metrics metrics = super.draw(drawer, x, y, size);
 
         if (formula != null) {
@@ -85,7 +85,7 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public Metrics measure(FormulaDrawer drawer, int size) {
+    public Metrics measure(Drawer drawer, int size) {
         Metrics metrics = super.measure(drawer, size);
 
         if (formula != null) {
@@ -102,7 +102,7 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public Cursor getLast(FormulaDrawer drawer) {
+    public Cursor getLast(Drawer drawer) {
         if (formula != null) {
             return formula.getLast(drawer);
         }
@@ -110,7 +110,7 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public Cursor childAsksLeft(FormulaDrawer drawer, Formula child) {
+    public Cursor childAsksLeft(Drawer drawer, Formula child) {
         if (child == formula) {
             return super.getLast(drawer);
         }
@@ -119,8 +119,8 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public Cursor childAsksRight(FormulaDrawer drawer, Formula child) {
-        if (child == formulaPower) {
+    public Cursor childAsksRight(Drawer drawer, Formula child) {
+        if (child == getPower()) {
             return formula.getFirst(drawer);
         }
 
@@ -128,15 +128,15 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public Cursor childAsksDown(FormulaDrawer drawer, Formula child) {
-        if (child == formulaPower) {
+    public Cursor childAsksDown(Drawer drawer, Formula child) {
+        if (child == getPower()) {
             return super.getLast(drawer);
         }
         return super.childAsksDown(drawer, child);
     }
 
     @Override
-    public Cursor getRight(FormulaDrawer drawer, int oldPosition) {
+    public Cursor getRight(Drawer drawer, int oldPosition) {
         if (oldPosition >= val.length()) {
             if (formula != null) {
                 return formula.getFirst(drawer);
@@ -155,7 +155,7 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public Cursor insertChar(FormulaDrawer drawer, Cursor cursor, char c) {
+    public Cursor insertChar(Drawer drawer, Cursor cursor, char c) {
         int pos = cursor.getPosition();
         setName(name.substring(0, pos) + c + name.substring(pos));
         return getCursor(drawer, pos + 1);

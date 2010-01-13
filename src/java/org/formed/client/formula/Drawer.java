@@ -19,7 +19,7 @@ package org.formed.client.formula;
  *
  * @author bulats
  */
-public interface FormulaDrawer {
+public interface Drawer {
 
     public enum Align {
 

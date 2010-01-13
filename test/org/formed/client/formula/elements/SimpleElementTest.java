@@ -16,7 +16,7 @@ limitations under the License.
 package org.formed.client.formula.elements;
 
 import org.formed.client.formula.Cursor;
-import org.formed.client.formula.FormulaDrawer;
+import org.formed.client.formula.Drawer;
 import org.formed.client.formula.FormulaItem;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
  */
 public class SimpleElementTest {
 
-    FormulaDrawer drawer;
+    Drawer drawer;
 
     public SimpleElementTest() {
     }

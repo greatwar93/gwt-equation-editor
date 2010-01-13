@@ -15,14 +15,14 @@ limitations under the License.
 */
 package org.formed.client.formula.elements;
 
-import org.formed.client.formula.FormulaDrawer;
+import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Metrics;
 
 /**
  *
  * @author bulats
  */
-public class PlaceElement extends BaseElement {
+public final class PlaceElement extends BaseElement {
 
     public PlaceElement() {
     }
@@ -32,7 +32,7 @@ public class PlaceElement extends BaseElement {
     }
 
     @Override
-    public Metrics draw(FormulaDrawer drawer, int x, int y, int size) {
+    public Metrics draw(Drawer drawer, int x, int y, int size) {
         storedSize = size;
         storedX = x;
         storedY = y;
@@ -48,7 +48,7 @@ public class PlaceElement extends BaseElement {
     }
 
     @Override
-    public Metrics measure(FormulaDrawer drawer, int size) {
+    public Metrics measure(Drawer drawer, int size) {
         storedSize = size;
 //        return new Metrics(0, 0, 0);
 

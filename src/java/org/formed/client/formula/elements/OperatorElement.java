@@ -16,7 +16,7 @@ limitations under the License.
 package org.formed.client.formula.elements;
 
 import org.formed.client.formula.Cursor;
-import org.formed.client.formula.FormulaDrawer;
+import org.formed.client.formula.Drawer;
 import org.formed.client.formula.FormulaItem;
 
 /**
@@ -46,7 +46,7 @@ public final class OperatorElement extends BaseElement {
     }
 
     @Override
-    public Cursor insertChar(FormulaDrawer drawer, Cursor cursor, char c) {
+    public Cursor insertChar(Drawer drawer, Cursor cursor, char c) {
         if (parent == null) {
             return null;
         }

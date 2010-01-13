@@ -15,26 +15,33 @@ limitations under the License.
  */
 package org.formed.client.formula;
 
-import gwt.g2d.client.graphics.Surface;
-import gwt.g2d.client.graphics.TextAlign;
-import gwt.g2d.client.graphics.TextBaseline;
-import gwt.g2d.client.graphics.shapes.ShapeBuilder;
+import com.google.gwt.widgetideas.graphics.client.Color;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import net.kornr.abstractcanvas.client.CanvasPainter;
+import net.kornr.abstractcanvas.client.ICanvasExt;
+import net.kornr.abstractcanvas.client.TextMetrics;
+import net.kornr.abstractcanvas.client.gwt.CanvasPanelExt;
 
 /**
  *
  * @author bulats
  */
-public final class SurfaceDrawer extends BaseDrawer {
+public final class AbstractCanvasDrawer extends BaseDrawer {
 
-    private final Surface surface;
+    private final CanvasPanelExt canvas;
 
-    public SurfaceDrawer(Surface surface, Formula formula) {
+    public AbstractCanvasDrawer(CanvasPanelExt canvas, Formula formula) {
         super(formula);
+        this.canvas = canvas;
 
-        this.surface = surface;
+        canvas.addCanvasPainter(new CanvasPainter() {
+
+            public void drawCanvas(ICanvasExt canvas) {
+                redraw();
+            }
+        });
     }
 
     private class SizedText {
@@ -73,27 +80,29 @@ public final class SurfaceDrawer extends BaseDrawer {
             return hash;
         }
     }
-    private Map<SizedText, Double> cachedMetrics = new HashMap<SizedText, Double>();
+    private Map<SizedText, TextMetrics> cachedMetrics = new HashMap<SizedText, TextMetrics>();
 
     public Metrics textMetrics(String text, int size) {
-        Double cached = cachedMetrics.get(new SizedText(text, size));
+        canvas.setFontSize(size);
+        TextMetrics cached = cachedMetrics.get(new SizedText(text, size));
         if (cached == null) {
-            //We should measure text-height also
-            cached = surface.setFont(size + "px serif").measureText(text);
+            cached = canvas.measureText(text);
             cachedMetrics.put(new SizedText(text, size), cached);
         }
-
-        return new Metrics(cached, size / 2 + 2, size / 2 - 2);
-//        return new Metrics(cached, size, 0);
-//                return new Metrics(10, 10, 10);
+        return new Metrics(cached.getWidth(), cached.getHeight() / 2, cached.getHeight() / 2);
     }
 
     public void drawText(String text, int size, int x, int y) {
-        surface.setFont(size + "px serif").fillText(text, x, y);
+        canvas.setFontSize(size);
+        TextMetrics metrics = canvas.measureText(text);
+        canvas.strokeText(text, (int) (x + metrics.getWidth()), (int) (y - metrics.getHeight() / 2));
     }
 
     public void drawLine(int x1, int y1, int x2, int y2) {
-        surface.strokeShape(new ShapeBuilder().drawLineSegment(x1, y1, x2, y2).build());
+        canvas.beginPath();
+        canvas.moveTo(x1, y1);
+        canvas.lineTo(x2, y2);
+        canvas.stroke();
     }
 
     public int getSmallerSize(int size) {
@@ -101,15 +110,28 @@ public final class SurfaceDrawer extends BaseDrawer {
     }
 
     public void redraw() {
-        surface.clear();
-        surface.setTextAlign(TextAlign.LEFT).setTextBaseline(TextBaseline.MIDDLE);
+        canvas.clear();
+
+        canvas.setAlign(net.kornr.abstractcanvas.client.gwt.CanvasPanelExt.ALIGN_END);
+        canvas.setFillStyle(Color.WHITE);
+        canvas.setGlobalAlpha(1.0);
+        canvas.fillRect(0, 0, canvas.getCoordWidth(), canvas.getCoordHeight());
 
         Date from = new Date();
         Metrics metrics = formula.drawAligned(this, 10, 10, 20, Drawer.Align.TOP);
         Date till = new Date();
         drawText((till.getTime() - from.getTime()) + "ms", 20, 0, 10);
 
-        surface.strokeRectangle(9, 9, 2 + metrics.getWidth(), 2 + metrics.getHeight());
-        surface.strokeShape(new ShapeBuilder().drawLineSegment(cursor.getX(), cursor.getY() - cursor.getHeightUp(), cursor.getX(), cursor.getY() + cursor.getHeightDown()).build());
+        canvas.setStrokeStyle(Color.BLACK);
+        canvas.setLineWidth(1);
+
+        canvas.beginPath();
+        canvas.rect(9, 9, 2 + metrics.getWidth(), 2 + metrics.getHeight());
+        canvas.stroke();
+
+        canvas.beginPath();
+        canvas.moveTo(cursor.getX(), cursor.getY() - cursor.getHeightUp());
+        canvas.lineTo(cursor.getX(), cursor.getY() + cursor.getHeightDown());
+        canvas.stroke();
     }
 }
