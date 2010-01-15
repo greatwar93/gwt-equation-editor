@@ -25,11 +25,17 @@ import java.util.Map;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public final class SurfaceDrawer extends BaseDrawer {
 
     private final Surface surface;
+    private Map<SizedText, Double> cachedMetrics = new HashMap<SizedText, Double>(); //Text metrics cache
+    private int lastFontSize = 20; //Last used font to minimize font switching
+
+    private int countLine = 0;
+    private int countText = 0;
+    private int countMeasure = 0;
 
     public SurfaceDrawer(Surface surface, Formula formula) {
         super(formula);
@@ -73,9 +79,9 @@ public final class SurfaceDrawer extends BaseDrawer {
             return hash;
         }
     }
-    private Map<SizedText, Double> cachedMetrics = new HashMap<SizedText, Double>();
 
     public Metrics textMetrics(String text, int size) {
+        countMeasure++;
         Double cached = cachedMetrics.get(new SizedText(text, size));
         if (cached == null) {
             //We should measure text-height also
@@ -87,12 +93,18 @@ public final class SurfaceDrawer extends BaseDrawer {
 //        return new Metrics(cached, size, 0);
 //                return new Metrics(10, 10, 10);
     }
-
+    
     public void drawText(String text, int size, int x, int y) {
-        surface.setFont(size + "px serif").fillText(text, x, y);
+        countText++;
+        if (size != lastFontSize) {
+            surface.setFont(size + "px serif");
+            lastFontSize = size;
+        }
+        surface.fillText(text, x, y);
     }
 
     public void drawLine(int x1, int y1, int x2, int y2) {
+        countLine++;
         surface.strokeShape(new ShapeBuilder().drawLineSegment(x1, y1, x2, y2).build());
     }
 
@@ -101,13 +113,20 @@ public final class SurfaceDrawer extends BaseDrawer {
     }
 
     public void redraw() {
+        countLine = 0;
+        countText = 0;
+        countMeasure = 0;
         surface.clear();
         surface.setTextAlign(TextAlign.LEFT).setTextBaseline(TextBaseline.MIDDLE);
 
+        surface.setFont("20px serif");
+        lastFontSize = 20;
+
         Date from = new Date();
+        formula.invalidateMetrics();
         Metrics metrics = formula.drawAligned(this, 10, 10, 20, Drawer.Align.TOP);
         Date till = new Date();
-        drawText((till.getTime() - from.getTime()) + "ms", 20, 0, 10);
+        drawText((till.getTime() - from.getTime()) + "ms " + countLine + " " + countText + " " + countMeasure, 20, 0, 10);
 
         surface.strokeRectangle(9, 9, 2 + metrics.getWidth(), 2 + metrics.getHeight());
         surface.strokeShape(new ShapeBuilder().drawLineSegment(cursor.getX(), cursor.getY() - cursor.getHeightUp(), cursor.getX(), cursor.getY() + cursor.getHeightDown()).build());

@@ -19,7 +19,7 @@ import org.formed.client.formula.*;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public final class RootElement extends BaseElement {
 
@@ -214,13 +214,20 @@ public final class RootElement extends BaseElement {
     }
 
     @Override
-    public void invalidateMetrics(Formula child) {
-        super.invalidateMetrics(child);
-        if (formula != child) {
-            formula.invalidateMetrics(this);
+    public void invalidatePlaces(Formula source) {
+        super.invalidatePlaces(source);
+        if (formula != source) {
+            formula.invalidatePlaces(this);
         }
-        if (formulaPower != child) {
-            formulaPower.invalidateMetrics(this);
+        if (formulaPower != source) {
+            formulaPower.invalidatePlaces(this);
         }
+    }
+
+    @Override
+    public void invalidateMetrics() {
+        super.invalidateMetrics();
+        formula.invalidateMetrics();
+        formulaPower.invalidateMetrics();
     }
 }

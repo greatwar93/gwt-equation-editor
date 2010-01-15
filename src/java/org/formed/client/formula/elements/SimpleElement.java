@@ -22,7 +22,7 @@ import org.formed.client.formula.FormulaItem;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public final class SimpleElement extends PoweredElement {
 
@@ -54,9 +54,9 @@ public final class SimpleElement extends PoweredElement {
         setName(val.substring(0, cursor.getPosition()));
         setPower(null);
 
-        invalidateMetrics(null);
+        invalidatePlaces(null);
 
-        return item.getLast(drawer);
+        return item.getLast(drawer); //Why doesn't it work ?
     }
 
     public String getTextBefore(Cursor cursor) {
@@ -71,7 +71,7 @@ public final class SimpleElement extends PoweredElement {
     public Cursor insertChar(Drawer drawer, Cursor cursor, char c) {
         int pos = cursor.getPosition();
         val = val.substring(0, pos) + c + val.substring(pos);
-        invalidateMetrics(null);
+        invalidatePlaces(null);
         return getCursor(drawer, pos + 1);
     }
 }

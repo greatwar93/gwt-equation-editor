@@ -21,7 +21,7 @@ import org.formed.client.formula.FormulaItem;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public final class OperatorElement extends BaseElement {
 

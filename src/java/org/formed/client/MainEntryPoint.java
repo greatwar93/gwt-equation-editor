@@ -22,7 +22,7 @@ import org.formed.client.formula.DrawExample;
 /**
  * Main entry point.
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public class MainEntryPoint implements EntryPoint {
 

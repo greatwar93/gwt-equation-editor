@@ -5,14 +5,14 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-  http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.formed.client.formula;
 
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -39,7 +39,7 @@ import net.kornr.abstractcanvas.client.gwt.CanvasPanelExt;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public class DrawExample {
 
@@ -71,64 +71,64 @@ public class DrawExample {
 
         //        RootPanel.get().add(canvas1, 10, 10);
         RootPanel.get().add(surface, 10, 10);
-/*
+        /*
         FocusPanel panel = new FocusPanel();
         panel.setSize(Integer.toString(WIDTH), Integer.toString(HEIGHT));
 
         panel.addKeyDownHandler(new KeyDownHandler() {
 
-            public void onKeyDown(KeyDownEvent event) {
-                if (event.isLeftArrow()) {
-                    drawer.moveCursorLeft();
-                } else if (event.isRightArrow()) {
-                    drawer.moveCursorRight();
-                } else if (event.isUpArrow()) {
-                    drawer.moveCursorUp();
-                } else if (event.isDownArrow()) {
-                    drawer.moveCursorDown();
-                }
+        public void onKeyDown(KeyDownEvent event) {
+        if (event.isLeftArrow()) {
+        drawer.moveCursorLeft();
+        } else if (event.isRightArrow()) {
+        drawer.moveCursorRight();
+        } else if (event.isUpArrow()) {
+        drawer.moveCursorUp();
+        } else if (event.isDownArrow()) {
+        drawer.moveCursorDown();
+        }
 
-//                canvas1.strokeText("code:"+event.isLeftArrow(), 300, 10);
-//                canvas1.strokeText("code:"+event.getNativeKeyCode(), 300, 30);
-            }
+        //                canvas1.strokeText("code:"+event.isLeftArrow(), 300, 10);
+        //                canvas1.strokeText("code:"+event.getNativeKeyCode(), 300, 30);
+        }
         });
 
         panel.addKeyPressHandler(new KeyPressHandler() {
 
-            public void onKeyPress(KeyPressEvent event) {
-                if (event.getCharCode() == '%') {
-                    //drawer.moveCursorLeft();
-                } else if (event.getCharCode() == '\'') {
-                    //drawer.moveCursorRight();
-                } else if (event.getCharCode() == '&') {
-                    //drawer.moveCursorUp();
-                } else if (event.getCharCode() == '(') {
-                    //drawer.moveCursorDown();
-                } else {
-                    drawer.insert(event.getCharCode());
-                }
+        public void onKeyPress(KeyPressEvent event) {
+        if (event.getCharCode() == '%') {
+        //drawer.moveCursorLeft();
+        } else if (event.getCharCode() == '\'') {
+        //drawer.moveCursorRight();
+        } else if (event.getCharCode() == '&') {
+        //drawer.moveCursorUp();
+        } else if (event.getCharCode() == '(') {
+        //drawer.moveCursorDown();
+        } else {
+        drawer.insert(event.getCharCode());
+        }
 
-                //                canvas1.strokeText("code:" + event.getCharCode(), 200, 10);
-//                canvas1.strokeText("code:" + event.getAssociatedType().getName(), 200, 40);
-            }
+        //                canvas1.strokeText("code:" + event.getCharCode(), 200, 10);
+        //                canvas1.strokeText("code:" + event.getAssociatedType().getName(), 200, 40);
+        }
         });
 
         panel.addMouseMoveHandler(new MouseMoveHandler() {
 
-            public void onMouseMove(MouseMoveEvent event) {
-//                drawer.highlightItemAt(event.getX(), event.getY());
-            }
+        public void onMouseMove(MouseMoveEvent event) {
+        //                drawer.highlightItemAt(event.getX(), event.getY());
+        }
         });
 
         panel.addMouseUpHandler(new MouseUpHandler() {
 
-            public void onMouseUp(MouseUpEvent event) {
-                drawer.selectItemAt(event.getX(), event.getY());
-            }
+        public void onMouseUp(MouseUpEvent event) {
+        drawer.selectItemAt(event.getX(), event.getY());
+        }
         });
 
         RootPanel.get().add(panel, 10, 10);
- */
+         */
         surface.addKeyDownHandler(new KeyDownHandler() {
 
             public void onKeyDown(KeyDownEvent event) {
@@ -141,9 +141,9 @@ public class DrawExample {
                     drawer.moveCursorUp();
                 } else if (event.isDownArrow()) {
                     drawer.moveCursorDown();
-                } else if(keycode == KeyCodes.KEY_DELETE){
+                } else if (keycode == KeyCodes.KEY_DELETE) {
                     drawer.deleteRight();
-                } else if(keycode == KeyCodes.KEY_BACKSPACE){
+                } else if (keycode == KeyCodes.KEY_BACKSPACE) {
                     drawer.deleteLeft();
                 }
 
@@ -151,30 +151,30 @@ public class DrawExample {
 //                canvas1.strokeText("code:"+event.getNativeKeyCode(), 300, 30);
             }
         });
-/*
+        /*
         surface.addKeyUpHandler(new KeyUpHandler() {
 
-            public void onKeyUp(KeyUpEvent event) {
-                int keycode = event.getNativeKeyCode();
-                if (event.isLeftArrow()) {
-                } else if (event.isRightArrow()) {
-                } else if (event.isUpArrow()) {
-                } else if (event.isDownArrow()) {
-                } else if(keycode == KeyCodes.KEY_DELETE){
-                } else if(keycode == KeyCodes.KEY_BACKSPACE){
-                }else{
-                    drawer.insert((char)keycode);
-                }
-            }
+        public void onKeyUp(KeyUpEvent event) {
+        int keycode = event.getNativeKeyCode();
+        if (event.isLeftArrow()) {
+        } else if (event.isRightArrow()) {
+        } else if (event.isUpArrow()) {
+        } else if (event.isDownArrow()) {
+        } else if(keycode == KeyCodes.KEY_DELETE){
+        } else if(keycode == KeyCodes.KEY_BACKSPACE){
+        }else{
+        drawer.insert((char)keycode);
+        }
+        }
         });
-*/
+         */
         final HTML keys = new HTML();
-        RootPanel.get().add(keys, 10, HEIGHT*2);
+        RootPanel.get().add(keys, 10, HEIGHT * 2);
 
         surface.addKeyPressHandler(new KeyPressHandler() {
 
             public void onKeyPress(KeyPressEvent event) {
-                keys.setHTML(keys.getHTML()+"+"+event.getCharCode());
+                keys.setHTML(keys.getHTML() + "+" + event.getCharCode());
                 if (event.getCharCode() == '%') {
                     //drawer.moveCursorLeft();
                 } else if (event.getCharCode() == '\'') {

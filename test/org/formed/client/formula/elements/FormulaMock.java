@@ -20,22 +20,22 @@ import org.formed.client.formula.FormulaItem;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public class FormulaMock extends Formula {
 
     private int invalidated = 0;
 
     @Override
-    public void invalidateMetrics() {
+    public void invalidatePlaces() {
         invalidated++;
-        super.invalidateMetrics();
+        super.invalidatePlaces();
     }
 
     @Override
-    public void invalidateMetrics(FormulaItem child) {
+    public void invalidatePlaces(FormulaItem child) {
         invalidated++;
-        super.invalidateMetrics(child);
+        super.invalidatePlaces(child);
     }
 
     public int getInvalidated() {

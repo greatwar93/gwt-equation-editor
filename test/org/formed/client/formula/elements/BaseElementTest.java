@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public class BaseElementTest {
 
@@ -336,7 +336,7 @@ public class BaseElementTest {
 
         formula.setInvalidated(0);
 
-        instance.invalidateMetrics(null);
+        instance.invalidatePlaces(null);
 
         assertEquals("Parent propogation", 1, formula.getInvalidated());
     }

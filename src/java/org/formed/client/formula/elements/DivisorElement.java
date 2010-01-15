@@ -19,7 +19,7 @@ import org.formed.client.formula.*;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public final class DivisorElement extends BaseElement {
 
@@ -180,13 +180,20 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public void invalidateMetrics(Formula child) {
-        super.invalidateMetrics(child);
-        if (formula1 != child) {
-            formula1.invalidateMetrics(this);
+    public void invalidatePlaces(Formula source) {
+        super.invalidatePlaces(source);
+        if (formula1 != source) {
+            formula1.invalidatePlaces(this);
         }
-        if (formula2 != child) {
-            formula2.invalidateMetrics(this);
+        if (formula2 != source) {
+            formula2.invalidatePlaces(this);
         }
+    }
+
+    @Override
+    public void invalidateMetrics() {
+        super.invalidateMetrics();
+        formula1.invalidateMetrics();
+        formula2.invalidateMetrics();
     }
 }

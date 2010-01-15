@@ -23,7 +23,7 @@ import org.formed.client.formula.Rectangle;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public class DrawerMock implements Drawer {
 

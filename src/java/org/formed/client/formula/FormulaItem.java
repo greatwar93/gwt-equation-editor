@@ -17,7 +17,7 @@ package org.formed.client.formula;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public interface FormulaItem {
 
@@ -69,5 +69,7 @@ public interface FormulaItem {
 
     Cursor insertChar(Drawer drawer, Cursor cursor, char c);
 
-    void invalidateMetrics(Formula child);
+    void invalidatePlaces(Formula source);
+    
+    void invalidateMetrics();
 }

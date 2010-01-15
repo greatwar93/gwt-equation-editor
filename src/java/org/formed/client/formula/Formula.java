@@ -5,14 +5,14 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-  http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.formed.client.formula;
 
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ import org.formed.client.formula.elements.PlaceElement;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public class Formula {
 
@@ -45,16 +45,34 @@ public class Formula {
 
     public void invalidateMetrics() {
         metricsValid = false;
-        if (parent != null) {
-            parent.invalidateMetrics(this);
+        for (FormulaItem item : items) {
+            item.invalidateMetrics();
         }
     }
 
-    public void invalidateMetrics(FormulaItem child) {
-        metricsValid = false;
-        if (child != parent && parent != null) {
-            parent.invalidateMetrics(this);
+    public void invalidatePlaces() {
+        invalidatePlaces(null);
+        /*        metricsValid = false;
+        if (parent != null) {
+        parent.invalidatePlaces(this);
+        }*/
+    }
+
+    public void invalidatePlaces(FormulaItem child) {
+        /*        metricsValid = false;
+        
+        boolean found = (child != null);
+        for(FormulaItem item : items){
+        if(found){
+        item.invalidatePlaces(this);
+        }else if(item == child){
+        found = true;
         }
+        }
+
+        if (child != parent && parent != null) {
+        parent.invalidatePlaces(this);
+        }*/
     }
 
     public Metrics drawAligned(Drawer drawer, int x, int y, int size, Drawer.Align align) {
@@ -126,43 +144,42 @@ public class Formula {
     }
 
     public Formula add(FormulaItem item) {
-        invalidateMetrics();
         item.setParent(this);
         items.add(item);
+        invalidatePlaces();
         return this;
     }
 
     public Formula insertAfter(FormulaItem item, FormulaItem after) {
         if (items.indexOf(after) >= 0) {
-            invalidateMetrics();
             item.setParent(this);
             items.add(items.indexOf(after) + 1, item);
+            invalidatePlaces();
         }
         return this;
     }
 
     public Formula insertBefore(FormulaItem item, FormulaItem before) {
         if (items.indexOf(before) >= 0) {
-            invalidateMetrics();
             item.setParent(this);
             items.add(items.indexOf(before), item);
+            invalidatePlaces();
         }
         return this;
     }
 
-    public Formula replace(FormulaItem item, FormulaItem with){
-        if (items.indexOf(item) >= 0) {
-            invalidateMetrics();
-            item.setParent(this);
-            items.add(items.indexOf(item), with);
-            items.remove(item);
-            item.setParent(null);
+    public Formula replace(FormulaItem newItem, FormulaItem oldItem) {
+        if (items.indexOf(oldItem) >= 0) {
+            oldItem.setParent(null);
+            newItem.setParent(this);
+            items.set(items.indexOf(oldItem), newItem);
+            invalidatePlaces();
         }
         return this;
     }
 
     //Is specified item first in formula
-    public boolean isFirst(FormulaItem item){
+    public boolean isFirst(FormulaItem item) {
         return (items.indexOf(item) == 0);
     }
 

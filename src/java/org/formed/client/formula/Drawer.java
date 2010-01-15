@@ -17,7 +17,7 @@ package org.formed.client.formula;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public interface Drawer {
 

@@ -26,7 +26,7 @@ import net.kornr.abstractcanvas.client.gwt.CanvasPanelExt;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public final class AbstractCanvasDrawer extends BaseDrawer {
 

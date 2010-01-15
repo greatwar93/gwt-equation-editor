@@ -19,7 +19,7 @@ import org.formed.client.formula.*;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public abstract class BaseElement implements FormulaItem {
 
@@ -28,6 +28,7 @@ public abstract class BaseElement implements FormulaItem {
     protected int storedSize = 0;
     protected int storedX = 0;
     protected int storedY = 0;
+    protected boolean metricsValid = false;
 
     public BaseElement() {
     }
@@ -234,10 +235,14 @@ public abstract class BaseElement implements FormulaItem {
         return parent.getDown(drawer, this);
     }
 
-    public void invalidateMetrics(Formula child) {
-        if (parent != null) {
-            parent.invalidateMetrics(this);
+    public void invalidatePlaces(Formula source) {
+        if (parent != source && parent != null) {
+            parent.invalidatePlaces(this);
         }
+    }
+
+    public void invalidateMetrics() {
+        metricsValid = false;
     }
 
     public Cursor insertChar(Drawer drawer, Cursor cursor, char c) {

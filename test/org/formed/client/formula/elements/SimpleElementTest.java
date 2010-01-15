@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public class SimpleElementTest {
 

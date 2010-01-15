@@ -20,7 +20,7 @@ import org.formed.client.formula.Metrics;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public final class PlaceElement extends BaseElement {
 

@@ -17,7 +17,7 @@ package org.formed.client.formula.elements;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public final class LeftCloser extends BaseElement {
 

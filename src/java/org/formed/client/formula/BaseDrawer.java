@@ -26,7 +26,7 @@ import org.formed.client.formula.elements.SimpleElement;
 
 /**
  *
- * @author bulats
+ * @author Bulat Sirazetdinov
  */
 public abstract class BaseDrawer implements Drawer {
 
@@ -38,6 +38,8 @@ public abstract class BaseDrawer implements Drawer {
 
     public BaseDrawer(Formula formula) {
         this.formula = formula;
+
+        formula.invalidateMetrics();
     }
 
     public void addDrawnItem(FormulaItem item, Rectangle rect) {
@@ -93,6 +95,7 @@ public abstract class BaseDrawer implements Drawer {
                 OperatorElement newItem = new OperatorElement("" + c);
                 if (currentItem instanceof SimpleElement) {
                     setCursor(((SimpleElement) currentItem).breakWith(this, cursor, newItem));
+                    setCursor(newItem.getLast(this));
                 } else {
                     currentItem.getParent().insertAfter(newItem, currentItem);
                     setCursor(newItem.getLast(this));
@@ -104,6 +107,7 @@ public abstract class BaseDrawer implements Drawer {
                 LeftCloser newItem = new LeftCloser();
                 if (currentItem instanceof SimpleElement) {
                     setCursor(((SimpleElement) currentItem).breakWith(this, cursor, newItem));
+                    setCursor(newItem.getLast(this));
                 } else {
                     currentItem.getParent().insertAfter(newItem, currentItem);
                     setCursor(newItem.getLast(this));
@@ -114,6 +118,7 @@ public abstract class BaseDrawer implements Drawer {
                 RightCloser newItem = new RightCloser();
                 if (currentItem instanceof SimpleElement) {
                     setCursor(((SimpleElement) currentItem).breakWith(this, cursor, newItem));
+                    setCursor(newItem.getLast(this));
                 } else {
                     currentItem.getParent().insertAfter(newItem, currentItem);
                     setCursor(newItem.getLast(this));
@@ -127,7 +132,7 @@ public abstract class BaseDrawer implements Drawer {
                     Formula formula2 = new Formula().add(new SimpleElement(((SimpleElement)currentItem).getTextAfter(cursor), ((SimpleElement)currentItem).getPower()));
                     DivisorElement newItem = new DivisorElement(formula1, formula2);
 
-                    currentItem.getParent().replace(currentItem, newItem);
+                    currentItem.getParent().replace(newItem, currentItem);
                     setCursor(newItem.getLast(this));
                 } else if (currentItem instanceof RightCloser) {
                 } else {
@@ -147,7 +152,6 @@ public abstract class BaseDrawer implements Drawer {
             default:
                 setCursor(currentItem.insertChar(this, cursor, c));
         }
-        formula.invalidateMetrics();
         redraw();
     }
 
