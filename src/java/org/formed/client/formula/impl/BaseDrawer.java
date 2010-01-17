@@ -13,10 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.formed.client.formula;
+package org.formed.client.formula.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.formed.client.formula.Cursor;
+import org.formed.client.formula.Drawer;
+import org.formed.client.formula.Formula;
+import org.formed.client.formula.FormulaItem;
+import org.formed.client.formula.Metrics;
+import org.formed.client.formula.Rectangle;
 import org.formed.client.formula.elements.DivisorElement;
 import org.formed.client.formula.elements.LeftCloser;
 import org.formed.client.formula.elements.OperatorElement;
@@ -60,6 +66,8 @@ public abstract class BaseDrawer implements Drawer {
 
     public abstract void redraw();
 
+    public abstract void redrawCursor();
+
     private boolean setCursor(Cursor newCursor) {
         if (newCursor == null) {
             return false;
@@ -88,16 +96,38 @@ public abstract class BaseDrawer implements Drawer {
 
     public void insert(char c) {
         FormulaItem currentItem = cursor.getItem();
+        SimpleElement currentSimpleItem = null;
+        boolean currentSimple = false;
+        if (currentItem instanceof SimpleElement) {
+            currentSimpleItem = (SimpleElement) currentItem;
+            currentSimple = true;
+        }
+
+        Cursor rightCursor = currentItem.getParent().getYourRight(this, currentItem);
+        SimpleElement rightSimpleItem = null;
+        boolean rightSimple = false;
+        if (rightCursor != null) {
+            rightCursor.setPosition(0);
+            if (rightCursor.getItem() instanceof SimpleElement) {
+                rightSimpleItem = (SimpleElement) rightCursor.getItem();
+                rightSimple = true;
+            }
+        }
+
         switch (c) {
             case '+':
             case '-':
             case '*': {
                 OperatorElement newItem = new OperatorElement("" + c);
-                if (currentItem instanceof SimpleElement) {
-                    setCursor(((SimpleElement) currentItem).breakWith(this, cursor, newItem));
+                if (currentSimple) {
+                    currentSimpleItem.breakWith(this, cursor, newItem);
                     setCursor(newItem.getLast(this));
                 } else {
-                    currentItem.getParent().insertAfter(newItem, currentItem);
+                    if(cursor.getPosition() == 0){
+                        currentItem.getParent().insertBefore(newItem, currentItem);
+                    }else{
+                        currentItem.getParent().insertAfter(newItem, currentItem);
+                    }
                     setCursor(newItem.getLast(this));
                 }
             }
@@ -105,39 +135,60 @@ public abstract class BaseDrawer implements Drawer {
 
             case '(': {
                 LeftCloser newItem = new LeftCloser();
-                if (currentItem instanceof SimpleElement) {
-                    setCursor(((SimpleElement) currentItem).breakWith(this, cursor, newItem));
+                if (currentSimple) {
+                    setCursor(currentSimpleItem.breakWith(this, cursor, newItem));
                     setCursor(newItem.getLast(this));
                 } else {
-                    currentItem.getParent().insertAfter(newItem, currentItem);
+                    if(cursor.getPosition() == 0){
+                        currentItem.getParent().insertBefore(newItem, currentItem);
+                    }else{
+                        currentItem.getParent().insertAfter(newItem, currentItem);
+                    }
                     setCursor(newItem.getLast(this));
                 }
             }
             break;
             case ')': {
                 RightCloser newItem = new RightCloser();
-                if (currentItem instanceof SimpleElement) {
-                    setCursor(((SimpleElement) currentItem).breakWith(this, cursor, newItem));
+                if (currentSimple) {
+                    setCursor(currentSimpleItem.breakWith(this, cursor, newItem));
                     setCursor(newItem.getLast(this));
                 } else {
-                    currentItem.getParent().insertAfter(newItem, currentItem);
+                    if(cursor.getPosition() == 0){
+                        currentItem.getParent().insertBefore(newItem, currentItem);
+                    }else{
+                        currentItem.getParent().insertAfter(newItem, currentItem);
+                    }
                     setCursor(newItem.getLast(this));
                 }
             }
             break;
 
             case '/': {
-                if (currentItem instanceof SimpleElement) {
-                    Formula formula1 = new Formula().add(new SimpleElement(((SimpleElement)currentItem).getTextBefore(cursor)));
-                    Formula formula2 = new Formula().add(new SimpleElement(((SimpleElement)currentItem).getTextAfter(cursor), ((SimpleElement)currentItem).getPower()));
-                    DivisorElement newItem = new DivisorElement(formula1, formula2);
+                if (currentSimple) {
+                    if (cursor.getPosition() < currentSimpleItem.getName().length()) {
+                        Formula formula1 = new Formula().add(new SimpleElement(currentSimpleItem.getTextBefore(cursor)));
+                        Formula formula2 = new Formula().add(new SimpleElement(currentSimpleItem.getTextAfter(cursor), currentSimpleItem.getPower()));
+                        DivisorElement newItem = new DivisorElement(formula1, formula2);
 
-                    currentItem.getParent().replace(newItem, currentItem);
-                    setCursor(newItem.getLast(this));
+                        currentItem.getParent().replace(newItem, currentItem);
+                        setCursor(newItem.getLast(this));
+                    } else {
+                        Formula formula1 = new Formula().add(new SimpleElement(currentSimpleItem.getTextBefore(cursor), currentSimpleItem.getPower()));
+                        Formula formula2 = new Formula();
+                        DivisorElement newItem = new DivisorElement(formula1, formula2);
+
+                        currentItem.getParent().replace(newItem, currentItem);
+                        setCursor(newItem.getLast(this));
+                    }
                 } else if (currentItem instanceof RightCloser) {
                 } else {
                     DivisorElement newItem = new DivisorElement();
-                    currentItem.getParent().insertAfter(newItem, currentItem);
+                    if(cursor.getPosition() == 0){
+                        currentItem.getParent().insertBefore(newItem, currentItem);
+                    }else{
+                        currentItem.getParent().insertAfter(newItem, currentItem);
+                    }
                     setCursor(newItem.getLast(this));
                 }
             }
@@ -150,8 +201,16 @@ public abstract class BaseDrawer implements Drawer {
                 break;
 
             default:
-                setCursor(currentItem.insertChar(this, cursor, c));
+                if (currentSimple) {
+                    setCursor(currentItem.insertChar(this, cursor, c));
+                } else if (rightSimple) {
+                    setCursor(rightSimpleItem.insertChar(this, rightCursor, c));
+                } else {
+                    setCursor(currentItem.insertChar(this, cursor, c));
+                }
         }
+        redraw();
+        cursor.reMeasure(this);
         redraw();
     }
 

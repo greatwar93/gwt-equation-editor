@@ -57,6 +57,14 @@ public final class Cursor {
         return heightUp;
     }
 
+    public void setHeightDown(int heightDown) {
+        this.heightDown = heightDown;
+    }
+
+    public void setHeightUp(int heightUp) {
+        this.heightUp = heightUp;
+    }
+
     public int getX() {
         return x;
     }
@@ -65,8 +73,20 @@ public final class Cursor {
         return y;
     }
 
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
     public int getPosition() {
         return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
     }
 
     public FormulaItem getItem() {
@@ -91,5 +111,9 @@ public final class Cursor {
     public Cursor moveDown(){
         setCursor(item.getDown(this.drawer, position));
         return this;
+    }
+
+    public void reMeasure(Drawer drawer){
+        item.reMeasureCursor(drawer, this);
     }
 }

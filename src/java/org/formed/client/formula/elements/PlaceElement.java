@@ -15,6 +15,7 @@ limitations under the License.
 */
 package org.formed.client.formula.elements;
 
+import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Metrics;
 
@@ -57,6 +58,18 @@ public final class PlaceElement extends BaseElement {
         metrics.setHeightUp(0);
         return metrics;
     }
-
+/*
+    @Override
+    public void reMeasureCursor(Drawer drawer, Cursor cursor) {
+        Metrics metrics = drawer.textMetrics(".", storedSize);
+        cursor.setHeightUp(0);
+        cursor.setHeightDown(metrics.getHeightDown());
+    }
+*/
+    @Override
+    public Cursor insertChar(Drawer drawer, Cursor cursor, char c) {
+        parent.add(new SimpleElement(""+c));
+        return parent.getLast(drawer);
+    }
 
 }

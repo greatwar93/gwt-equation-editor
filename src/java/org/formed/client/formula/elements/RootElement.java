@@ -15,7 +15,11 @@ limitations under the License.
  */
 package org.formed.client.formula.elements;
 
-import org.formed.client.formula.*;
+import org.formed.client.formula.Cursor;
+import org.formed.client.formula.Drawer;
+import org.formed.client.formula.Formula;
+import org.formed.client.formula.Metrics;
+
 
 /**
  *
@@ -129,6 +133,16 @@ public final class RootElement extends BaseElement {
         metrics.setHeightDown(metrics2.getHeightDown());
 
         return metrics;
+    }
+
+    @Override
+    public void reMeasureCursor(Drawer drawer, Cursor cursor) {
+        Metrics metrics = measure(drawer, storedSize);
+        if(cursor.getPosition() == 0){
+            cursor.setCursor(new Cursor(drawer, this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown()));
+        } else {
+            cursor.setCursor(new Cursor(drawer, this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown()));
+        }
     }
 
     @Override

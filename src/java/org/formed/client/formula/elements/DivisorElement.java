@@ -5,17 +5,20 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-  http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.formed.client.formula.elements;
 
-import org.formed.client.formula.*;
+import org.formed.client.formula.Cursor;
+import org.formed.client.formula.Drawer;
+import org.formed.client.formula.Formula;
+import org.formed.client.formula.Metrics;
 
 /**
  *
@@ -76,12 +79,16 @@ public final class DivisorElement extends BaseElement {
         Metrics metrics2 = formula2.calculateMetrics(drawer, size);
 
         int width = Math.max(metrics.getWidth(), metrics2.getWidth());
+        if(width == 0){
+            width = drawer.textMetrics("0", size).getWidth();
+        }
+
 //        formula1.drawAligned(drawer, x + width / 2 - metrics.getWidth() / 2, y, size, FormulaDrawer.Align.BOTTOM);
 //        formula2.drawAligned(drawer, x + width / 2 - metrics2.getWidth() / 2, y, size, FormulaDrawer.Align.TOP);
         formula1.draw(drawer, x + width / 2 - metrics.getWidth() / 2, y - metrics.getHeightDown(), size);
         formula2.draw(drawer, x + width / 2 - metrics2.getWidth() / 2, y + metrics2.getHeightUp(), size);
 
-        drawer.drawLine(x, y, x+width, y);
+        drawer.drawLine(x, y, x + width, y);
 
         metrics.setWidth(width);
         metrics.setHeightUp(metrics.getHeight());
@@ -99,12 +106,25 @@ public final class DivisorElement extends BaseElement {
         Metrics metrics2 = formula2.calculateMetrics(drawer, size);
 
         int width = Math.max(metrics.getWidth(), metrics2.getWidth());
+        if(width == 0){
+            width = drawer.textMetrics("0", size).getWidth();
+        }
 
         metrics.setWidth(width);
         metrics.setHeightUp(metrics.getHeight());
         metrics.setHeightDown(metrics2.getHeight());
 
         return metrics;
+    }
+
+    @Override
+    public void reMeasureCursor(Drawer drawer, Cursor cursor) {
+        Metrics metrics = measure(drawer, storedSize);
+        if(cursor.getPosition() == 0){
+            cursor.setCursor(new Cursor(drawer, this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown()));
+        } else {
+            cursor.setCursor(new Cursor(drawer, this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown()));
+        }
     }
 
     @Override
@@ -165,7 +185,7 @@ public final class DivisorElement extends BaseElement {
 
     @Override
     public Cursor childAsksUp(Drawer drawer, Formula child) {
-        if(child == formula2){
+        if (child == formula2) {
             return formula1.getFirst(drawer);
         }
         return super.childAsksUp(drawer, child);
@@ -173,7 +193,7 @@ public final class DivisorElement extends BaseElement {
 
     @Override
     public Cursor childAsksDown(Drawer drawer, Formula child) {
-        if(child == formula1){
+        if (child == formula1) {
             return formula2.getFirst(drawer);
         }
         return super.childAsksDown(drawer, child);

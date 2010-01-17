@@ -15,7 +15,7 @@ limitations under the License.
 */
 package org.formed.client.formula.elements;
 
-import org.formed.client.formula.*;
+import org.formed.client.formula.Formula;
 
 /**
  *

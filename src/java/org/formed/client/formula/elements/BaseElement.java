@@ -15,7 +15,12 @@ limitations under the License.
  */
 package org.formed.client.formula.elements;
 
-import org.formed.client.formula.*;
+import org.formed.client.formula.Cursor;
+import org.formed.client.formula.Drawer;
+import org.formed.client.formula.Formula;
+import org.formed.client.formula.FormulaItem;
+import org.formed.client.formula.Metrics;
+
 
 /**
  *
@@ -183,14 +188,18 @@ public abstract class BaseElement implements FormulaItem {
         return parent.getDown(drawer, this);
     }
 
+    public void reMeasureCursor(Drawer drawer, Cursor cursor) {
+        cursor.setCursor(getCursor(drawer, cursor.getPosition()));
+    }
+
     public Cursor getCursor(Drawer drawer, int position) {
         Metrics newMetrics = drawer.textMetrics(getPart(position), storedSize);
 //        Metrics newMetrics = drawer.textMetrics(val.substring(0, position), storedSize);
-        if (newMetrics.getHeight() == 0) {
+/*        if (newMetrics.getHeight() == 0) {
             Metrics zeroMetrics = drawer.textMetrics("0", storedSize);
             newMetrics.setHeightUp(zeroMetrics.getHeightUp());
             newMetrics.setHeightDown(zeroMetrics.getHeightDown());
-        }
+        }*/
         return new Cursor(drawer, this, position, storedX + newMetrics.getWidth(), storedY, newMetrics.getHeightUp(), newMetrics.getHeightDown());
     }
 
@@ -250,7 +259,11 @@ public abstract class BaseElement implements FormulaItem {
             return null;
         }
         FormulaItem item = new SimpleElement("" + c);
-        parent.insertAfter(item, this);
+        if(cursor.getPosition() == 0){
+            parent.insertBefore(item, this);
+        }else{
+            parent.insertAfter(item, this);
+        }
         return item.getLast(drawer);
     }
 }

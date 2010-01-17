@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.formed.client.formula;
+package org.formed.client.formula.impl;
 
 import com.google.gwt.widgetideas.graphics.client.Color;
 import java.util.Date;
@@ -23,6 +23,8 @@ import net.kornr.abstractcanvas.client.CanvasPainter;
 import net.kornr.abstractcanvas.client.ICanvasExt;
 import net.kornr.abstractcanvas.client.TextMetrics;
 import net.kornr.abstractcanvas.client.gwt.CanvasPanelExt;
+import org.formed.client.formula.Formula;
+import org.formed.client.formula.Metrics;
 
 /**
  *
@@ -118,7 +120,7 @@ public final class AbstractCanvasDrawer extends BaseDrawer {
         canvas.fillRect(0, 0, canvas.getCoordWidth(), canvas.getCoordHeight());
 
         Date from = new Date();
-        Metrics metrics = formula.drawAligned(this, 10, 10, 20, Drawer.Align.TOP);
+        Metrics metrics = formula.drawAligned(this, 10, 10, 20, Align.TOP);
         Date till = new Date();
         drawText((till.getTime() - from.getTime()) + "ms", 20, 0, 10);
 
@@ -129,6 +131,11 @@ public final class AbstractCanvasDrawer extends BaseDrawer {
         canvas.rect(9, 9, 2 + metrics.getWidth(), 2 + metrics.getHeight());
         canvas.stroke();
 
+        redrawCursor();
+    }
+
+    @Override
+    public void redrawCursor() {
         canvas.beginPath();
         canvas.moveTo(cursor.getX(), cursor.getY() - cursor.getHeightUp());
         canvas.lineTo(cursor.getX(), cursor.getY() + cursor.getHeightDown());

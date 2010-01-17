@@ -15,7 +15,11 @@ limitations under the License.
 */
 package org.formed.client.formula.elements;
 
-import org.formed.client.formula.*;
+import org.formed.client.formula.Cursor;
+import org.formed.client.formula.Drawer;
+import org.formed.client.formula.Formula;
+import org.formed.client.formula.Metrics;
+
 
 /**
  *
@@ -56,11 +60,12 @@ public abstract class PoweredElement extends BaseElement {
 
         if (formulaPower != null) {
             int powerSize = drawer.getSmallerSize(size);
+            Metrics powerMetrics = formulaPower.calculateMetrics(drawer, powerSize);
             int powerX = 0;
-            int powerY = -metrics.getHeightUp();
+            int powerY = -metrics.getHeightUp()-powerMetrics.getHeightDown();
 
             formulaPower.draw(drawer, x + metrics.getWidth() + powerX, y + powerY, powerSize);
-            metrics.add(formulaPower.calculateMetrics(drawer, powerSize), powerX, powerY);
+            metrics.add(powerMetrics, powerX, powerY);
         }
 
         drawer.addDrawnItem(this, x, y, metrics);
@@ -73,10 +78,11 @@ public abstract class PoweredElement extends BaseElement {
 
         if (formulaPower != null) {
             int powerSize = drawer.getSmallerSize(size);
+            Metrics powerMetrics = formulaPower.calculateMetrics(drawer, powerSize);
             int powerX = 0;
-            int powerY = -metrics.getHeightUp();
+            int powerY = -metrics.getHeightUp()-powerMetrics.getHeightDown();
 
-            metrics.add(formulaPower.calculateMetrics(drawer, powerSize), powerX, powerY);
+            metrics.add(powerMetrics, powerX, powerY);
         }
 
         return metrics;

@@ -155,6 +155,10 @@ public class Formula {
             item.setParent(this);
             items.add(items.indexOf(after) + 1, item);
             invalidatePlaces();
+        }else if(after == place){
+            item.setParent(this);
+            items.add(item);
+            invalidatePlaces();
         }
         return this;
     }
@@ -163,6 +167,10 @@ public class Formula {
         if (items.indexOf(before) >= 0) {
             item.setParent(this);
             items.add(items.indexOf(before), item);
+            invalidatePlaces();
+        }else if(before == place){
+            item.setParent(this);
+            items.add(item);
             invalidatePlaces();
         }
         return this;
@@ -173,6 +181,10 @@ public class Formula {
             oldItem.setParent(null);
             newItem.setParent(this);
             items.set(items.indexOf(oldItem), newItem);
+            invalidatePlaces();
+        }else if(oldItem == place){
+            newItem.setParent(this);
+            items.add(newItem);
             invalidatePlaces();
         }
         return this;
@@ -202,6 +214,14 @@ public class Formula {
             if (parent != null) {
                 return parent.childAsksRight(drawer, this);
             }
+            return null;
+        }
+        return items.get(index).getFirst(drawer);
+    }
+
+    public Cursor getYourRight(Drawer drawer, FormulaItem item) {
+        int index = items.indexOf(item) + 1;
+        if (index >= items.size()) {
             return null;
         }
         return items.get(index).getFirst(drawer);

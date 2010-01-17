@@ -67,6 +67,8 @@ public interface FormulaItem {
     //Get position when come down from child-formula
     Cursor childAsksDown(Drawer drawer, Formula child);
 
+    void reMeasureCursor(Drawer drawer, Cursor cursor);
+
     Cursor insertChar(Drawer drawer, Cursor cursor, char c);
 
     void invalidatePlaces(Formula source);

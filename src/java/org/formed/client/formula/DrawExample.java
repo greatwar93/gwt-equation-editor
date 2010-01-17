@@ -15,6 +15,9 @@ limitations under the License.
  */
 package org.formed.client.formula;
 
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
+import org.formed.client.formula.impl.SurfaceDrawer;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import org.formed.client.formula.elements.SimpleElement;
@@ -43,6 +46,8 @@ import net.kornr.abstractcanvas.client.gwt.CanvasPanelExt;
  */
 public class DrawExample {
 
+    boolean arrow = false;
+
     public void draw() {
         final Formula formula = new Formula();
 
@@ -54,11 +59,11 @@ public class DrawExample {
         formula.add(new OperatorElement("-"));
         formula.add(new DivisorElement(new Formula().add(new SimpleElement("a")).add(new OperatorElement("+")).add(new SimpleElement("b")), new Formula().add(new SimpleElement("alpha")).add(new OperatorElement("+")).add(new SimpleElement("beta"))));
         formula.add(new OperatorElement("+"));
-        formula.add(new DivisorElement(new Formula().add(new SimpleElement("a", new Formula().add(new RootElement(new Formula().add(new SimpleElement("α")).add(new OperatorElement("+")).add(new SimpleElement("beta")), new Formula().add(new SimpleElement("alpha")).add(new SimpleElement("b", new Formula().add(new SimpleElement("2")))))))).add(new OperatorElement("+")).add(new SimpleElement("b")), new Formula().add(new RootElement(new Formula().add(new SimpleElement("alpha")).add(new OperatorElement("+")).add(new DivisorElement(new Formula().add(new SimpleElement("beta")), new Formula().add(new FunctionElement("sin", new Formula().add(new SimpleElement("alpha")).add(new OperatorElement("+")).add(new SimpleElement("β")), new Formula().add(new SimpleElement("2"))))))))));
+        formula.add(new DivisorElement(new Formula().add(new SimpleElement("a", new Formula().add(new RootElement(new Formula().add(new SimpleElement("α")).add(new OperatorElement("+")).add(new SimpleElement("beta")), new Formula().add(new SimpleElement("alpha")).add(new SimpleElement("b", new Formula().add(new SimpleElement("2")))))))).add(new OperatorElement("+")).add(new SimpleElement("b")), new Formula().add(new RootElement(new Formula().add(new SimpleElement("α")).add(new OperatorElement("+")).add(new DivisorElement(new Formula().add(new SimpleElement("beta")), new Formula().add(new FunctionElement("sin", new Formula().add(new SimpleElement("α")).add(new OperatorElement("+")).add(new SimpleElement("β")), new Formula().add(new SimpleElement("2"))))))))));
         formula.add(new OperatorElement("+"));
 //        formula.add(new FunctionElement("sin", new Formula().add(new SimpleElement("alpha")).add(new OperatorElement("+")).add(new SimpleElement("beta")), new Formula().add(new SimpleElement("2"))));
 //        formula.add(new OperatorElement("+"));
-        formula.add(new FunctionElement("sin", new Formula().add(new SimpleElement("alpha")), new Formula().add(new SimpleElement("e", new Formula().add(new SimpleElement("x"))))));
+        formula.add(new FunctionElement("sin", new Formula().add(new SimpleElement("α")), new Formula().add(new SimpleElement("e", new Formula().add(new SimpleElement("x"))))));
 
         final int WIDTH = 630;
         final int HEIGHT = 150;
@@ -71,130 +76,71 @@ public class DrawExample {
 
         //        RootPanel.get().add(canvas1, 10, 10);
         RootPanel.get().add(surface, 10, 10);
-        /*
-        FocusPanel panel = new FocusPanel();
+        /*FocusPanel panel = new FocusPanel();
         panel.setSize(Integer.toString(WIDTH), Integer.toString(HEIGHT));
+        RootPanel.get().add(panel, 10, 10);*/
 
-        panel.addKeyDownHandler(new KeyDownHandler() {
+        final HTML keys = new HTML();
+        RootPanel.get().add(keys, 10, HEIGHT * 2);
 
-        public void onKeyDown(KeyDownEvent event) {
-        if (event.isLeftArrow()) {
-        drawer.moveCursorLeft();
-        } else if (event.isRightArrow()) {
-        drawer.moveCursorRight();
-        } else if (event.isUpArrow()) {
-        drawer.moveCursorUp();
-        } else if (event.isDownArrow()) {
-        drawer.moveCursorDown();
-        }
-
-        //                canvas1.strokeText("code:"+event.isLeftArrow(), 300, 10);
-        //                canvas1.strokeText("code:"+event.getNativeKeyCode(), 300, 30);
-        }
-        });
-
-        panel.addKeyPressHandler(new KeyPressHandler() {
-
-        public void onKeyPress(KeyPressEvent event) {
-        if (event.getCharCode() == '%') {
-        //drawer.moveCursorLeft();
-        } else if (event.getCharCode() == '\'') {
-        //drawer.moveCursorRight();
-        } else if (event.getCharCode() == '&') {
-        //drawer.moveCursorUp();
-        } else if (event.getCharCode() == '(') {
-        //drawer.moveCursorDown();
-        } else {
-        drawer.insert(event.getCharCode());
-        }
-
-        //                canvas1.strokeText("code:" + event.getCharCode(), 200, 10);
-        //                canvas1.strokeText("code:" + event.getAssociatedType().getName(), 200, 40);
-        }
-        });
-
-        panel.addMouseMoveHandler(new MouseMoveHandler() {
-
-        public void onMouseMove(MouseMoveEvent event) {
-        //                drawer.highlightItemAt(event.getX(), event.getY());
-        }
-        });
-
-        panel.addMouseUpHandler(new MouseUpHandler() {
-
-        public void onMouseUp(MouseUpEvent event) {
-        drawer.selectItemAt(event.getX(), event.getY());
-        }
-        });
-
-        RootPanel.get().add(panel, 10, 10);
-         */
         surface.addKeyDownHandler(new KeyDownHandler() {
 
             public void onKeyDown(KeyDownEvent event) {
                 int keycode = event.getNativeKeyCode();
+                arrow = true;
                 if (event.isLeftArrow()) {
+                    //keys.setHTML(keys.getHTML() + "+dLeft");
                     drawer.moveCursorLeft();
                 } else if (event.isRightArrow()) {
                     drawer.moveCursorRight();
+                    //keys.setHTML(keys.getHTML() + "+dRight");
                 } else if (event.isUpArrow()) {
                     drawer.moveCursorUp();
+                    //keys.setHTML(keys.getHTML() + "+dUp");
                 } else if (event.isDownArrow()) {
                     drawer.moveCursorDown();
+                    //keys.setHTML(keys.getHTML() + "+dDown");
                 } else if (keycode == KeyCodes.KEY_DELETE) {
                     drawer.deleteRight();
+                    //keys.setHTML(keys.getHTML() + "+dDel");
                 } else if (keycode == KeyCodes.KEY_BACKSPACE) {
                     drawer.deleteLeft();
+                    //keys.setHTML(keys.getHTML() + "+d<-");
+                }else if(event.isControlKeyDown() && keycode == 45){
+                    //keys.setHTML(keys.getHTML() + "+dPaste");
+                }else if(event.isControlKeyDown() && keycode == 86){
+                    //keys.setHTML(keys.getHTML() + "+dPaste");
+                }else if(event.isShiftKeyDown() && keycode == 45){
+                    //keys.setHTML(keys.getHTML() + "+dCopy");
+                }else if(event.isControlKeyDown() && keycode == 67){
+                    //keys.setHTML(keys.getHTML() + "+dCopy");
+                } else {
+                    //keys.setHTML(keys.getHTML() + "+p" + event.getNativeKeyCode());
+                    arrow = false;
                 }
-
-//                canvas1.strokeText("code:"+event.isLeftArrow(), 300, 10);
-//                canvas1.strokeText("code:"+event.getNativeKeyCode(), 300, 30);
+                event.preventDefault();
             }
         });
-        /*
-        surface.addKeyUpHandler(new KeyUpHandler() {
-
-        public void onKeyUp(KeyUpEvent event) {
-        int keycode = event.getNativeKeyCode();
-        if (event.isLeftArrow()) {
-        } else if (event.isRightArrow()) {
-        } else if (event.isUpArrow()) {
-        } else if (event.isDownArrow()) {
-        } else if(keycode == KeyCodes.KEY_DELETE){
-        } else if(keycode == KeyCodes.KEY_BACKSPACE){
-        }else{
-        drawer.insert((char)keycode);
-        }
-        }
-        });
-         */
-        final HTML keys = new HTML();
-        RootPanel.get().add(keys, 10, HEIGHT * 2);
 
         surface.addKeyPressHandler(new KeyPressHandler() {
 
             public void onKeyPress(KeyPressEvent event) {
-                keys.setHTML(keys.getHTML() + "+" + event.getCharCode());
-                if (event.getCharCode() == '%') {
-                    //drawer.moveCursorLeft();
-                } else if (event.getCharCode() == '\'') {
-                    //drawer.moveCursorRight();
-                } else if (event.getCharCode() == '&') {
-                    //drawer.moveCursorUp();
-                } else if (event.getCharCode() == '(') {
-                    //drawer.moveCursorDown();
-                } else if (event.getCharCode() == '.') {
-                    //drawer.deleteRight();
-                } else if (event.getCharCode() == 8) {
-                    //drawer.deleteLeft();
-                } else {
+                if (!arrow) {
                     drawer.insert(event.getCharCode());
+                    //keys.setHTML(keys.getHTML() + "+p" + event.getCharCode());
                 }
-
-                //                canvas1.strokeText("code:" + event.getCharCode(), 200, 10);
-//                canvas1.strokeText("code:" + event.getAssociatedType().getName(), 200, 40);
+                event.preventDefault();
             }
         });
+
+        surface.addKeyUpHandler(new KeyUpHandler() {
+
+            public void onKeyUp(KeyUpEvent event) {
+                arrow = false;
+                event.preventDefault();
+            }
+        });
+
 
         surface.addMouseMoveHandler(new MouseMoveHandler() {
 

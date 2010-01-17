@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.formed.client.formula;
+package org.formed.client.formula.impl;
 
 import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.TextAlign;
@@ -22,6 +22,8 @@ import gwt.g2d.client.graphics.shapes.ShapeBuilder;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import org.formed.client.formula.Formula;
+import org.formed.client.formula.Metrics;
 
 /**
  *
@@ -124,11 +126,16 @@ public final class SurfaceDrawer extends BaseDrawer {
 
         Date from = new Date();
         formula.invalidateMetrics();
-        Metrics metrics = formula.drawAligned(this, 10, 10, 20, Drawer.Align.TOP);
+        Metrics metrics = formula.drawAligned(this, 10, 10, 20, Align.TOP);
         Date till = new Date();
         drawText((till.getTime() - from.getTime()) + "ms " + countLine + " " + countText + " " + countMeasure, 20, 0, 10);
 
         surface.strokeRectangle(9, 9, 2 + metrics.getWidth(), 2 + metrics.getHeight());
+        redrawCursor();
+    }
+
+    @Override
+    public void redrawCursor() {
         surface.strokeShape(new ShapeBuilder().drawLineSegment(cursor.getX(), cursor.getY() - cursor.getHeightUp(), cursor.getX(), cursor.getY() + cursor.getHeightDown()).build());
     }
 }

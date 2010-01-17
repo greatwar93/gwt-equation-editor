@@ -49,10 +49,14 @@ public final class SimpleElement extends PoweredElement {
             return cursor;
         }
 
-        parent.insertAfter(item, this);
-        parent.insertAfter(new SimpleElement(val.substring(cursor.getPosition()), getPower()), item);
-        setName(val.substring(0, cursor.getPosition()));
-        setPower(null);
+        if (cursor.getPosition() < val.length()) {
+            parent.insertAfter(item, this);
+            parent.insertAfter(new SimpleElement(val.substring(cursor.getPosition()), getPower()), item);
+            setName(val.substring(0, cursor.getPosition()));
+            setPower(null);
+        } else {
+            parent.insertAfter(item, this);
+        }
 
         invalidatePlaces(null);
 
