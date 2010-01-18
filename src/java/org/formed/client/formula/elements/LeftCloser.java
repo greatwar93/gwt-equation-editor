@@ -15,6 +15,8 @@ limitations under the License.
 */
 package org.formed.client.formula.elements;
 
+import org.formed.client.formula.FormulaItem;
+
 /**
  *
  * @author Bulat Sirazetdinov
@@ -23,6 +25,13 @@ public final class LeftCloser extends BaseElement {
 
     public LeftCloser() {
         val = "(";
+    }
+
+    public FormulaItem makeClone() {
+        LeftCloser clone = new LeftCloser();
+        clone.setParent(parent);
+
+        return clone;
     }
 
     public boolean isComplex() {

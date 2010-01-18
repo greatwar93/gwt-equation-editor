@@ -32,6 +32,13 @@ public final class OperatorElement extends BaseElement {
         val = name;
     }
 
+    public FormulaItem makeClone() {
+        OperatorElement clone = new OperatorElement(name);
+        clone.setParent(parent);
+        
+        return clone;
+    }
+
     public boolean isComplex() {
         return false;
     }

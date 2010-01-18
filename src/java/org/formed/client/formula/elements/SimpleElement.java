@@ -36,6 +36,13 @@ public final class SimpleElement extends PoweredElement {
         setName(name);
     }
 
+    public FormulaItem makeClone() {
+        SimpleElement clone = new SimpleElement(val, getPower().makeClone());
+        clone.setParent(parent);
+
+        return clone;
+    }
+
     public String getName() {
         return val;
     }

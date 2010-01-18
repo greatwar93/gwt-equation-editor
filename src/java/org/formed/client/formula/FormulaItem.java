@@ -23,6 +23,8 @@ public interface FormulaItem {
 
     Formula getParent();
 
+    FormulaItem makeClone();
+
     void setParent(Formula parent);
 
     boolean isComplex();

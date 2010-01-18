@@ -18,6 +18,7 @@ package org.formed.client.formula.elements;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
+import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.Metrics;
 
 
@@ -35,7 +36,7 @@ public final class FunctionElement extends PoweredElement {
     public FunctionElement(String name) {
         super();
         setName(name);
-        setFormula(new Formula());
+        setFormula(new Formula(true));
     }
 
     public FunctionElement(String name, Formula formula) {
@@ -48,6 +49,13 @@ public final class FunctionElement extends PoweredElement {
         super(power);
         setName(name);
         setFormula(formula);
+    }
+
+    public FormulaItem makeClone() {
+        FunctionElement clone = new FunctionElement(name, formula.makeClone(), parent.makeClone());
+        clone.setParent(parent);
+
+        return clone;
     }
 
     public String getName() {
@@ -65,7 +73,7 @@ public final class FunctionElement extends PoweredElement {
 
     public void setFormula(Formula formula) {
         if (formula == null) {
-            this.formula = new Formula();
+            this.formula = new Formula(true);
         } else {
             this.formula = formula;
         }

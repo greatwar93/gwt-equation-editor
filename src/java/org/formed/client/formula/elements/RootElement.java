@@ -18,6 +18,7 @@ package org.formed.client.formula.elements;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
+import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.Metrics;
 
 
@@ -38,6 +39,13 @@ public final class RootElement extends BaseElement {
     public RootElement(Formula formula, Formula formulaPower) {
         setFormula(formula);
         setFormulaPower(formulaPower);
+    }
+
+    public FormulaItem makeClone() {
+        RootElement clone = new RootElement(formula.makeClone(), formulaPower.makeClone());
+        clone.setParent(parent);
+
+        return clone;
     }
 
     public Formula getFormula() {

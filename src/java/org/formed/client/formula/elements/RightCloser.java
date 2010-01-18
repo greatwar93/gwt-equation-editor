@@ -16,6 +16,7 @@ limitations under the License.
 package org.formed.client.formula.elements;
 
 import org.formed.client.formula.Formula;
+import org.formed.client.formula.FormulaItem;
 
 /**
  *
@@ -30,5 +31,12 @@ public final class RightCloser extends PoweredElement {
     public RightCloser(Formula power) {
         super(power);
         val = ")";
+    }
+
+    public FormulaItem makeClone() {
+        RightCloser clone = new RightCloser(getPower().makeClone());
+        clone.setParent(parent);
+
+        return clone;
     }
 }

@@ -35,6 +35,21 @@ public class Formula {
         place.setParent(this);
     }
 
+    public Formula(boolean showPlace) {
+        place.setShow(showPlace);
+        place.setParent(this);
+    }
+
+    public Formula makeClone() {
+        Formula clone = new Formula();
+        clone.setParent(parent);
+        for (FormulaItem item : items) {
+            clone.add(item.makeClone());
+        }
+
+        return clone;
+    }
+
     public FormulaItem getParent() {
         return parent;
     }
@@ -150,12 +165,21 @@ public class Formula {
         return this;
     }
 
+    public Formula insertAt(int position, FormulaItem item) {
+        if (position >= 0 && position <= items.size()) {
+            item.setParent(this);
+            items.add(position, item);
+            invalidatePlaces();
+        }
+        return this;
+    }
+
     public Formula insertAfter(FormulaItem item, FormulaItem after) {
         if (items.indexOf(after) >= 0) {
             item.setParent(this);
             items.add(items.indexOf(after) + 1, item);
             invalidatePlaces();
-        }else if(after == place){
+        } else if (after == place) {
             item.setParent(this);
             items.add(item);
             invalidatePlaces();
@@ -168,7 +192,7 @@ public class Formula {
             item.setParent(this);
             items.add(items.indexOf(before), item);
             invalidatePlaces();
-        }else if(before == place){
+        } else if (before == place) {
             item.setParent(this);
             items.add(item);
             invalidatePlaces();
@@ -182,9 +206,25 @@ public class Formula {
             newItem.setParent(this);
             items.set(items.indexOf(oldItem), newItem);
             invalidatePlaces();
-        }else if(oldItem == place){
+        } else if (oldItem == place) {
             newItem.setParent(this);
             items.add(newItem);
+            invalidatePlaces();
+        }
+        return this;
+    }
+
+    public Formula remove(FormulaItem item) {
+        items.remove(item);
+        item.setParent(null);
+        return this;
+    }
+
+    public Formula removeAt(int position) {
+        if (position >= 0 && position < items.size()) {
+            FormulaItem item = items.get(position);
+            items.remove(position);
+            item.setParent(null);
             invalidatePlaces();
         }
         return this;
@@ -241,6 +281,14 @@ public class Formula {
             return null;
         }
         return parent.childAsksDown(drawer, this);
+    }
+
+    public FormulaItem getItem(int position) {
+        return items.get(position);
+    }
+
+    public int getItemPosition(FormulaItem item) {
+        return items.indexOf(item);
     }
 
     public FormulaItem getFirstItem() {

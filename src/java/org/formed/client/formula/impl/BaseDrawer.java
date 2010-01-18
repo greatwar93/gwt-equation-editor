@@ -123,9 +123,9 @@ public abstract class BaseDrawer implements Drawer {
                     currentSimpleItem.breakWith(this, cursor, newItem);
                     setCursor(newItem.getLast(this));
                 } else {
-                    if(cursor.getPosition() == 0){
+                    if (cursor.getPosition() == 0) {
                         currentItem.getParent().insertBefore(newItem, currentItem);
-                    }else{
+                    } else {
                         currentItem.getParent().insertAfter(newItem, currentItem);
                     }
                     setCursor(newItem.getLast(this));
@@ -139,9 +139,9 @@ public abstract class BaseDrawer implements Drawer {
                     setCursor(currentSimpleItem.breakWith(this, cursor, newItem));
                     setCursor(newItem.getLast(this));
                 } else {
-                    if(cursor.getPosition() == 0){
+                    if (cursor.getPosition() == 0) {
                         currentItem.getParent().insertBefore(newItem, currentItem);
-                    }else{
+                    } else {
                         currentItem.getParent().insertAfter(newItem, currentItem);
                     }
                     setCursor(newItem.getLast(this));
@@ -154,9 +154,9 @@ public abstract class BaseDrawer implements Drawer {
                     setCursor(currentSimpleItem.breakWith(this, cursor, newItem));
                     setCursor(newItem.getLast(this));
                 } else {
-                    if(cursor.getPosition() == 0){
+                    if (cursor.getPosition() == 0) {
                         currentItem.getParent().insertBefore(newItem, currentItem);
-                    }else{
+                    } else {
                         currentItem.getParent().insertAfter(newItem, currentItem);
                     }
                     setCursor(newItem.getLast(this));
@@ -167,29 +167,55 @@ public abstract class BaseDrawer implements Drawer {
             case '/': {
                 if (currentSimple) {
                     if (cursor.getPosition() < currentSimpleItem.getName().length()) {
-                        Formula formula1 = new Formula().add(new SimpleElement(currentSimpleItem.getTextBefore(cursor)));
-                        Formula formula2 = new Formula().add(new SimpleElement(currentSimpleItem.getTextAfter(cursor), currentSimpleItem.getPower()));
+                        Formula formula1 = new Formula(true).add(new SimpleElement(currentSimpleItem.getTextBefore(cursor)));
+                        Formula formula2 = new Formula(true).add(new SimpleElement(currentSimpleItem.getTextAfter(cursor), currentSimpleItem.getPower()));
                         DivisorElement newItem = new DivisorElement(formula1, formula2);
 
                         currentItem.getParent().replace(newItem, currentItem);
-                        setCursor(newItem.getLast(this));
+                        setCursor(newItem.getFormula2().getFirst(this));
                     } else {
-                        Formula formula1 = new Formula().add(new SimpleElement(currentSimpleItem.getTextBefore(cursor), currentSimpleItem.getPower()));
-                        Formula formula2 = new Formula();
+                        Formula formula1 = new Formula(true).add(new SimpleElement(currentSimpleItem.getTextBefore(cursor), currentSimpleItem.getPower()));
+                        Formula formula2 = new Formula(true);
                         DivisorElement newItem = new DivisorElement(formula1, formula2);
 
                         currentItem.getParent().replace(newItem, currentItem);
-                        setCursor(newItem.getLast(this));
+                        setCursor(newItem.getFormula2().getFirst(this));
                     }
                 } else if (currentItem instanceof RightCloser) {
+                    Formula formula1 = new Formula(true);
+                    Formula formula2 = new Formula(true);
+
+                    Formula currentFormula = currentItem.getParent();
+                    int rights = 1;
+                    int position = currentFormula.getItemPosition(currentItem);
+                    formula1.add(currentItem.makeClone());
+                    currentFormula.remove(currentItem);
+                    while (rights > 0) {
+                        position--;
+                        FormulaItem item = currentFormula.getItem(position);
+                        if (item instanceof RightCloser) {
+                            rights++;
+                        } else if (item instanceof LeftCloser) {
+                            rights--;
+                        }
+                        formula1.insertAt(0, item.makeClone());
+                        currentFormula.remove(item);
+                        if (position <= 0) {
+                            break;
+                        }
+                    }
+
+                    DivisorElement newItem = new DivisorElement(formula1, formula2);
+                    currentFormula.insertAt(position, newItem);
+                    setCursor(newItem.getFormula2().getFirst(this));
                 } else {
                     DivisorElement newItem = new DivisorElement();
-                    if(cursor.getPosition() == 0){
+                    if (cursor.getPosition() == 0) {
                         currentItem.getParent().insertBefore(newItem, currentItem);
-                    }else{
+                    } else {
                         currentItem.getParent().insertAfter(newItem, currentItem);
                     }
-                    setCursor(newItem.getLast(this));
+                    setCursor(newItem.getFormula1().getFirst(this));
                 }
             }
             break;

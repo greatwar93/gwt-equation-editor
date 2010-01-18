@@ -18,6 +18,7 @@ package org.formed.client.formula.elements;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
+import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.Metrics;
 
 /**
@@ -30,13 +31,20 @@ public final class DivisorElement extends BaseElement {
     private Formula formula2;
 
     public DivisorElement() {
-        setFormula1(new Formula());
-        setFormula2(new Formula());
+        setFormula1(new Formula(true));
+        setFormula2(new Formula(true));
     }
 
     public DivisorElement(Formula formula1, Formula formula2) {
         setFormula1(formula1);
         setFormula2(formula2);
+    }
+
+    public FormulaItem makeClone() {
+        DivisorElement clone = new DivisorElement(formula1.makeClone(), formula2.makeClone());
+        clone.setParent(parent);
+
+        return clone;
     }
 
     public Formula getFormula1() {
@@ -45,7 +53,7 @@ public final class DivisorElement extends BaseElement {
 
     public void setFormula1(Formula formula1) {
         if (formula1 == null) {
-            this.formula1 = new Formula();
+            this.formula1 = new Formula(true);
         } else {
             this.formula1 = formula1;
         }
@@ -58,7 +66,7 @@ public final class DivisorElement extends BaseElement {
 
     public void setFormula2(Formula formula2) {
         if (formula2 == null) {
-            this.formula2 = new Formula();
+            this.formula2 = new Formula(true);
         } else {
             this.formula2 = formula2;
         }
