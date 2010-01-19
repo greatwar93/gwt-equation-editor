@@ -106,19 +106,18 @@ public class DrawExample {
                 } else if (keycode == KeyCodes.KEY_BACKSPACE) {
                     drawer.deleteLeft();
                     //keys.setHTML(keys.getHTML() + "+d<-");
-                }else if(event.isControlKeyDown() && keycode == 45){
+                } else if (event.isControlKeyDown() && keycode == 45) {
                     //keys.setHTML(keys.getHTML() + "+dPaste");
-                }else if(event.isControlKeyDown() && keycode == 86){
+                } else if (event.isControlKeyDown() && keycode == 86) {
                     //keys.setHTML(keys.getHTML() + "+dPaste");
-                }else if(event.isShiftKeyDown() && keycode == 45){
+                } else if (event.isShiftKeyDown() && keycode == 45) {
                     //keys.setHTML(keys.getHTML() + "+dCopy");
-                }else if(event.isControlKeyDown() && keycode == 67){
+                } else if (event.isControlKeyDown() && keycode == 67) {
                     //keys.setHTML(keys.getHTML() + "+dCopy");
                 } else {
                     //keys.setHTML(keys.getHTML() + "+p" + event.getNativeKeyCode());
                     arrow = false;
                 }
-                event.preventDefault();
             }
         });
 
@@ -128,6 +127,8 @@ public class DrawExample {
                 if (!arrow) {
                     drawer.insert(event.getCharCode());
                     //keys.setHTML(keys.getHTML() + "+p" + event.getCharCode());
+                } else {
+                    arrow = false;
                 }
                 event.preventDefault();
             }
