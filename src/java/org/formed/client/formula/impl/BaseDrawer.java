@@ -1,4 +1,5 @@
 /*
+Copyright 2010 Bulat Sirazetdinov
 Copyright 2009 Bulat Sirazetdinov
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +18,14 @@ package org.formed.client.formula.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.Metrics;
 import org.formed.client.formula.Rectangle;
+import org.formed.client.formula.Undoer;
 import org.formed.client.formula.elements.DivisorElement;
 import org.formed.client.formula.elements.LeftCloser;
 import org.formed.client.formula.elements.OperatorElement;
@@ -36,14 +39,24 @@ import org.formed.client.formula.elements.SimpleElement;
  */
 public abstract class BaseDrawer implements Drawer {
 
-    protected final Formula formula;
+    protected Formula formula;
+    protected final Undoer undoer;
     protected Cursor cursor = new Cursor(this, new SimpleElement(""), 0, 0, 0, 0, 0);
     private FormulaItem highlightedItem = new SimpleElement("");
     private final Map<FormulaItem, Rectangle> items = new HashMap<FormulaItem, Rectangle>();
     private final Map<Formula, Rectangle> formulas = new HashMap<Formula, Rectangle>();
+    protected final Drawer THIS_DRAWER = this;
 
     public BaseDrawer(Formula formula) {
         this.formula = formula;
+        this.undoer = Undoer.ZERO_UNDOER;
+
+        formula.invalidateMetrics();
+    }
+
+    public BaseDrawer(Formula formula, Undoer undoer) {
+        this.formula = formula;
+        this.undoer = undoer;
 
         formula.invalidateMetrics();
     }
@@ -94,8 +107,88 @@ public abstract class BaseDrawer implements Drawer {
         return setCursor(cursor.getItem().getRight(this, cursor.getPosition()));
     }
 
+    protected Command makeCommandBreakWith(final SimpleElement currentItem, final FormulaItem newItem, final int pos) {
+        return new Command() {
+
+            public Cursor execute() {
+                currentItem.breakWith(THIS_DRAWER, pos, newItem);
+                redraw();
+                cursor.reMeasure(THIS_DRAWER);
+                redraw();
+                return newItem.getLast(THIS_DRAWER);
+            }
+
+            public void undo() {
+                currentItem.getParent().remove(newItem);
+                redraw();
+                cursor.reMeasure(THIS_DRAWER);
+                redraw();
+            }
+        };
+    }
+
+    protected Command makeCommandInsertAfter(final FormulaItem currentItem, final FormulaItem newItem) {
+        return new Command() {
+
+            public Cursor execute() {
+                currentItem.getParent().insertAfter(newItem, currentItem);
+                redraw();
+                cursor.reMeasure(THIS_DRAWER);
+                redraw();
+                return newItem.getLast(THIS_DRAWER);
+            }
+
+            public void undo() {
+                currentItem.getParent().remove(newItem);
+                redraw();
+                cursor.reMeasure(THIS_DRAWER);
+                redraw();
+            }
+        };
+    }
+
+    protected Command makeCommandInsertBefore(final FormulaItem currentItem, final FormulaItem newItem) {
+        return new Command() {
+
+            public Cursor execute() {
+                currentItem.getParent().insertBefore(newItem, currentItem);
+                redraw();
+                cursor.reMeasure(THIS_DRAWER);
+                redraw();
+                return newItem.getLast(THIS_DRAWER);
+            }
+
+            public void undo() {
+                currentItem.getParent().remove(newItem);
+                redraw();
+                cursor.reMeasure(THIS_DRAWER);
+                redraw();
+            }
+        };
+    }
+
+    protected Command makeCommandInsertChar(final FormulaItem item, final int pos, final char c) {
+        return new Command() {
+
+            public Cursor execute() {
+                Cursor newCursor = item.insertChar(THIS_DRAWER, pos, c);
+                redraw();
+                cursor.reMeasure(THIS_DRAWER);
+                redraw();
+                return newCursor;
+            }
+
+            public void undo() {
+                item.removeChar(THIS_DRAWER, pos);
+                redraw();
+                cursor.reMeasure(THIS_DRAWER);
+                redraw();
+            }
+        };
+    }
+
     public void insert(char c) {
-        FormulaItem currentItem = cursor.getItem();
+        final FormulaItem currentItem = cursor.getItem();
         SimpleElement currentSimpleItem = null;
         boolean currentSimple = false;
         if (currentItem instanceof SimpleElement) {
@@ -118,49 +211,53 @@ public abstract class BaseDrawer implements Drawer {
             case '+':
             case '-':
             case '*': {
-                OperatorElement newItem = new OperatorElement("" + c);
+                final OperatorElement newItem = new OperatorElement("" + c);
+
+                Command command;
                 if (currentSimple) {
-                    currentSimpleItem.breakWith(this, cursor, newItem);
-                    setCursor(newItem.getLast(this));
+                    command = makeCommandBreakWith(currentSimpleItem, newItem, cursor.getPosition());
                 } else {
                     if (cursor.getPosition() == 0) {
-                        currentItem.getParent().insertBefore(newItem, currentItem);
+                        command = makeCommandInsertBefore(currentItem, newItem);
                     } else {
-                        currentItem.getParent().insertAfter(newItem, currentItem);
+                        command = makeCommandInsertAfter(currentItem, newItem);
                     }
-                    setCursor(newItem.getLast(this));
                 }
+                setCursor(command.execute());
+                undoer.add(command);
             }
             break;
 
             case '(': {
                 LeftCloser newItem = new LeftCloser();
+                Command command;
                 if (currentSimple) {
-                    setCursor(currentSimpleItem.breakWith(this, cursor, newItem));
-                    setCursor(newItem.getLast(this));
+                    command = makeCommandBreakWith(currentSimpleItem, newItem, cursor.getPosition());
                 } else {
                     if (cursor.getPosition() == 0) {
-                        currentItem.getParent().insertBefore(newItem, currentItem);
+                        command = makeCommandInsertBefore(currentItem, newItem);
                     } else {
-                        currentItem.getParent().insertAfter(newItem, currentItem);
+                        command = makeCommandInsertAfter(currentItem, newItem);
                     }
-                    setCursor(newItem.getLast(this));
                 }
+                setCursor(command.execute());
+                undoer.add(command);
             }
             break;
             case ')': {
                 RightCloser newItem = new RightCloser();
+                Command command;
                 if (currentSimple) {
-                    setCursor(currentSimpleItem.breakWith(this, cursor, newItem));
-                    setCursor(newItem.getLast(this));
+                    command = makeCommandBreakWith(currentSimpleItem, newItem, cursor.getPosition());
                 } else {
                     if (cursor.getPosition() == 0) {
-                        currentItem.getParent().insertBefore(newItem, currentItem);
+                        command = makeCommandInsertBefore(currentItem, newItem);
                     } else {
-                        currentItem.getParent().insertAfter(newItem, currentItem);
+                        command = makeCommandInsertAfter(currentItem, newItem);
                     }
-                    setCursor(newItem.getLast(this));
                 }
+                setCursor(command.execute());
+                undoer.add(command);
             }
             break;
 
@@ -212,8 +309,10 @@ public abstract class BaseDrawer implements Drawer {
                     DivisorElement newItem = new DivisorElement();
                     if (cursor.getPosition() == 0) {
                         currentItem.getParent().insertBefore(newItem, currentItem);
+                        undoer.add(makeCommandInsertBefore(currentItem, newItem));
                     } else {
                         currentItem.getParent().insertAfter(newItem, currentItem);
+                        undoer.add(makeCommandInsertAfter(currentItem, newItem));
                     }
                     setCursor(newItem.getFormula1().getFirst(this));
                 }
@@ -227,13 +326,17 @@ public abstract class BaseDrawer implements Drawer {
                 break;
 
             default:
+                Command command;
                 if (currentSimple) {
-                    setCursor(currentItem.insertChar(this, cursor, c));
+                    command = makeCommandInsertChar(currentItem, cursor.getPosition(), c);
                 } else if (rightSimple) {
-                    setCursor(rightSimpleItem.insertChar(this, rightCursor, c));
+                    command = makeCommandInsertChar(rightSimpleItem, rightCursor.getPosition(), c);
                 } else {
-                    setCursor(currentItem.insertChar(this, cursor, c));
+                    command = makeCommandInsertChar(currentItem, cursor.getPosition(), c);
+                    //setCursor(currentItem.insertChar(this, cursor, c));
                 }
+                setCursor(command.execute());
+                undoer.add(command);
         }
         redraw();
         cursor.reMeasure(this);
@@ -241,9 +344,19 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void deleteLeft() {
+        setCursor(cursor.getItem().deleteLeft(this, cursor));
+
+        redraw();
+        cursor.reMeasure(this);
+        redraw();
     }
 
     public void deleteRight() {
+        setCursor(cursor.getItem().deleteRight(this, cursor));
+
+        redraw();
+        cursor.reMeasure(this);
+        redraw();
     }
 
     public FormulaItem selectItemAt(int x, int y) {

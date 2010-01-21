@@ -1,4 +1,5 @@
 /*
+Copyright 2010 Bulat Sirazetdinov
 Copyright 2009 Bulat Sirazetdinov
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +21,6 @@ import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.Metrics;
-
 
 /**
  *
@@ -68,20 +68,20 @@ public abstract class BaseElement implements FormulaItem {
 
     protected int getLength() {
         return val.length();
-/*        int p = 0;
+        /*        int p = 0;
         boolean escaped = false;
         for (int i = 0; i < val.length(); i++) {
-            char c = val.charAt(i);
-            if (escaped) {
-                if (c == ';') {
-                    escaped = false;
-                }
-            } else {
-                p++;
-                if (c == '&') {
-                    escaped = true;
-                }
-            }
+        char c = val.charAt(i);
+        if (escaped) {
+        if (c == ';') {
+        escaped = false;
+        }
+        } else {
+        p++;
+        if (c == '&') {
+        escaped = true;
+        }
+        }
         }
 
         return p;*/
@@ -94,21 +94,21 @@ public abstract class BaseElement implements FormulaItem {
         int p = 0;
         boolean escaped = false;
         for (int i = 0; i < val.length() && p < position; i++) {
-            char c = val.charAt(i);
-            if (escaped) {
-                s.append(c);
-                if (c == ';') {
-                    p++;
-                    escaped = false;
-                }
-            } else {
-                s.append(c);
-                if (c == '&') {
-                    escaped = true;
-                } else {
-                    p++;
-                }
-            }
+        char c = val.charAt(i);
+        if (escaped) {
+        s.append(c);
+        if (c == ';') {
+        p++;
+        escaped = false;
+        }
+        } else {
+        s.append(c);
+        if (c == '&') {
+        escaped = true;
+        } else {
+        p++;
+        }
+        }
         }
 
         return s.toString();*/
@@ -196,9 +196,9 @@ public abstract class BaseElement implements FormulaItem {
         Metrics newMetrics = drawer.textMetrics(getPart(position), storedSize);
 //        Metrics newMetrics = drawer.textMetrics(val.substring(0, position), storedSize);
 /*        if (newMetrics.getHeight() == 0) {
-            Metrics zeroMetrics = drawer.textMetrics("0", storedSize);
-            newMetrics.setHeightUp(zeroMetrics.getHeightUp());
-            newMetrics.setHeightDown(zeroMetrics.getHeightDown());
+        Metrics zeroMetrics = drawer.textMetrics("0", storedSize);
+        newMetrics.setHeightUp(zeroMetrics.getHeightUp());
+        newMetrics.setHeightDown(zeroMetrics.getHeightDown());
         }*/
         return new Cursor(drawer, this, position, storedX + newMetrics.getWidth(), storedY, newMetrics.getHeightUp(), newMetrics.getHeightDown());
     }
@@ -255,15 +255,70 @@ public abstract class BaseElement implements FormulaItem {
     }
 
     public Cursor insertChar(Drawer drawer, Cursor cursor, char c) {
+        return insertChar(drawer, cursor.getPosition(), c);
+    }
+
+    public Cursor insertChar(Drawer drawer, int pos, char c) {
         if (parent == null) {
             return null;
         }
         FormulaItem item = new SimpleElement("" + c);
-        if(cursor.getPosition() == 0){
+        if (pos == 0) {
             parent.insertBefore(item, this);
-        }else{
+        } else {
             parent.insertAfter(item, this);
         }
         return item.getLast(drawer);
+    }
+
+    public Cursor removeChar(Drawer drawer, int pos) {
+        if (parent == null) {
+            return null;
+        }
+        if (pos == 0) {
+            parent.removeLeft(drawer, this);
+            return getFirst(drawer);
+        } else {
+            parent.removeRight(drawer, this);
+            return getLast(drawer);
+        }
+    }
+
+    public Cursor deleteLeft(Drawer drawer, Cursor cursor) {
+        if (parent == null) {
+            return cursor;
+        }
+
+        if (cursor.getPosition() <= 0) {
+            return parent.removeLeft(drawer, this);
+        }
+
+        Cursor newCursor = parent.getLeft(drawer, this);
+        parent.remove(this);
+
+        if (newCursor == null) {
+            newCursor = parent.getFirst(drawer);
+        }
+
+        return newCursor;
+    }
+
+    public Cursor deleteRight(Drawer drawer, Cursor cursor) {
+        if (parent == null) {
+            return cursor;
+        }
+
+        if (cursor.getPosition() > 0) {
+            return parent.removeRight(drawer, this);
+        }
+
+        Cursor newCursor = parent.getRight(drawer, this);
+        parent.remove(this);
+
+        if (newCursor == null) {
+            newCursor = parent.getLast(drawer);
+        }
+
+        return newCursor;
     }
 }

@@ -1,4 +1,5 @@
 /*
+Copyright 2010 Bulat Sirazetdinov
 Copyright 2009 Bulat Sirazetdinov
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -72,6 +73,11 @@ public interface FormulaItem {
     void reMeasureCursor(Drawer drawer, Cursor cursor);
 
     Cursor insertChar(Drawer drawer, Cursor cursor, char c);
+    Cursor insertChar(Drawer drawer, int pos, char c);
+    Cursor removeChar(Drawer drawer, int pos);
+
+    Cursor deleteLeft(Drawer drawer, Cursor cursor);
+    Cursor deleteRight(Drawer drawer, Cursor cursor);
 
     void invalidatePlaces(Formula source);
     

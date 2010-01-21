@@ -1,4 +1,5 @@
 /*
+Copyright 2010 Bulat Sirazetdinov
 Copyright 2009 Bulat Sirazetdinov
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.Metrics;
+import org.formed.client.formula.Undoer;
 
 /**
  *
@@ -41,6 +43,12 @@ public final class SurfaceDrawer extends BaseDrawer {
 
     public SurfaceDrawer(Surface surface, Formula formula) {
         super(formula);
+
+        this.surface = surface;
+    }
+
+    public SurfaceDrawer(Surface surface, Undoer undoer, Formula formula) {
+        super(formula, undoer);
 
         this.surface = surface;
     }

@@ -1,4 +1,5 @@
 /*
+Copyright 2010 Bulat Sirazetdinov
 Copyright 2009 Bulat Sirazetdinov
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -51,15 +52,15 @@ public final class SimpleElement extends PoweredElement {
         val = name;
     }
 
-    public Cursor breakWith(Drawer drawer, Cursor cursor, FormulaItem item) {
+    public Cursor breakWith(Drawer drawer, int pos, FormulaItem item) {
         if (parent == null) {
-            return cursor;
+            return item.getCursor(drawer, pos);
         }
 
-        if (cursor.getPosition() < val.length()) {
+        if (pos < val.length()) {
             parent.insertAfter(item, this);
-            parent.insertAfter(new SimpleElement(val.substring(cursor.getPosition()), getPower()), item);
-            setName(val.substring(0, cursor.getPosition()));
+            parent.insertAfter(new SimpleElement(val.substring(pos), getPower()), item);
+            setName(val.substring(0, pos));
             setPower(null);
         } else {
             parent.insertAfter(item, this);
@@ -80,9 +81,51 @@ public final class SimpleElement extends PoweredElement {
 
     @Override
     public Cursor insertChar(Drawer drawer, Cursor cursor, char c) {
-        int pos = cursor.getPosition();
+        return insertChar(drawer, cursor.getPosition(), c);
+    }
+
+    @Override
+    public Cursor insertChar(Drawer drawer, int pos, char c) {
         val = val.substring(0, pos) + c + val.substring(pos);
         invalidatePlaces(null);
         return getCursor(drawer, pos + 1);
+    }
+
+    @Override
+    public Cursor removeChar(Drawer drawer, int pos){
+        val = val.substring(0, pos) + val.substring(pos+1);
+        invalidatePlaces(null);
+        return getCursor(drawer, pos);
+    }
+
+    @Override
+    public Cursor deleteLeft(Drawer drawer, Cursor cursor) {
+        int pos = cursor.getPosition();
+        if (pos <= 0) {
+            if (parent != null) {
+                return parent.removeLeft(drawer, this);
+            }
+            return cursor;
+        }
+
+        val = val.substring(0, pos - 1) + val.substring(pos);
+        cursor.setPosition(pos - 1);
+
+        return cursor;
+    }
+
+    @Override
+    public Cursor deleteRight(Drawer drawer, Cursor cursor) {
+        int pos = cursor.getPosition();
+        if (pos >= val.length()) {
+            if (parent != null) {
+                return parent.removeRight(drawer, this);
+            }
+            return cursor;
+        }
+
+        val = val.substring(0, pos) + val.substring(pos + 1);
+
+        return cursor;
     }
 }

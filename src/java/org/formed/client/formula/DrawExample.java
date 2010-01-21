@@ -1,4 +1,5 @@
 /*
+Copyright 2010 Bulat Sirazetdinov
 Copyright 2009 Bulat Sirazetdinov
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,6 +40,7 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RootPanel;
 import gwt.g2d.client.graphics.Surface;
 import net.kornr.abstractcanvas.client.gwt.CanvasPanelExt;
+import org.formed.client.formula.impl.SimpleUndoer;
 
 /**
  *
@@ -72,7 +74,8 @@ public class DrawExample {
 //        canvas1.setCoordSize(WIDTH, HEIGHT);
 
         final Surface surface = new Surface(WIDTH, HEIGHT);
-        final SurfaceDrawer drawer = new SurfaceDrawer(surface, formula);
+        final SimpleUndoer undoer = new SimpleUndoer();
+        final SurfaceDrawer drawer = new SurfaceDrawer(surface, undoer, formula);
 
         //        RootPanel.get().add(canvas1, 10, 10);
         RootPanel.get().add(surface, 10, 10);
@@ -106,6 +109,10 @@ public class DrawExample {
                 } else if (keycode == KeyCodes.KEY_BACKSPACE) {
                     drawer.deleteLeft();
                     //keys.setHTML(keys.getHTML() + "+d<-");
+                } else if (keycode == KeyCodes.KEY_ESCAPE){
+                    undoer.undo();
+                } else if (keycode == KeyCodes.KEY_TAB){
+                    undoer.redo();
                 } else if (event.isControlKeyDown() && keycode == 45) {
                     //keys.setHTML(keys.getHTML() + "+dPaste");
                 } else if (event.isControlKeyDown() && keycode == 86) {

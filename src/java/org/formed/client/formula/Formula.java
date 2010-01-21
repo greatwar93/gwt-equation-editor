@@ -1,4 +1,5 @@
 /*
+Copyright 2010 Bulat Sirazetdinov
 Copyright 2009 Bulat Sirazetdinov
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +26,7 @@ import org.formed.client.formula.elements.PlaceElement;
  */
 public class Formula {
 
+    public static final Formula ZERO_FORMULA = new Formula();
     private PlaceElement place = new PlaceElement();
     private final List<FormulaItem> items = new ArrayList<FormulaItem>();
     private FormulaItem parent = null;
@@ -220,6 +222,26 @@ public class Formula {
         return this;
     }
 
+    public Cursor removeLeft(Drawer drawer, FormulaItem item) {
+        int index = items.indexOf(item);
+        if (index > 0) {
+            items.remove(index - 1);
+            return items.get(index-1).getLast(drawer);
+        } else {
+            return getFirst(drawer);
+        }        
+    }
+
+    public Cursor removeRight(Drawer drawer, FormulaItem item) {
+        int index = items.indexOf(item);
+        if (index < items.size()) {
+            items.remove(index + 1);
+            return item.getLast(drawer);
+        } else {
+            return getLast(drawer);
+        }
+    }
+
     public Formula removeAt(int position) {
         if (position >= 0 && position < items.size()) {
             FormulaItem item = items.get(position);
@@ -265,6 +287,14 @@ public class Formula {
             return null;
         }
         return items.get(index).getFirst(drawer);
+    }
+
+    public Cursor getYourLeft(Drawer drawer, FormulaItem item) {
+        int index = items.indexOf(item) - 1;
+        if (index < 0) {
+            return null;
+        }
+        return items.get(index).getLast(drawer);
     }
 
     //Get position when come from child-item
