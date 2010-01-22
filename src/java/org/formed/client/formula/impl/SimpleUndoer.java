@@ -30,6 +30,10 @@ public class SimpleUndoer implements Undoer {
     List<Command> redos = new ArrayList<Command>();
 
     public void add(Command command) {
+        if (command == Command.ZERO_COMMAND) {
+            return;
+        }
+        
         undos.add(command);
         redos.clear();
     }

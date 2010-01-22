@@ -198,7 +198,6 @@ public final class SimpleElement extends PoweredElement {
 
             public Cursor execute() {
                 val = val.substring(0, pos) + val.substring(pos + 1);
-                newCursor.setPosition(pos - 1);
 
                 return newCursor;
             }

@@ -123,6 +123,9 @@ public final class SurfaceDrawer extends BaseDrawer {
     }
 
     public void redraw() {
+        items.clear();
+        formulas.clear();
+
         countLine = 0;
         countText = 0;
         countMeasure = 0;

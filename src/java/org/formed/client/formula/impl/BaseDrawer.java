@@ -43,8 +43,8 @@ public abstract class BaseDrawer implements Drawer {
     protected final Undoer undoer;
     protected Cursor cursor = new Cursor(this, new SimpleElement(""), 0, 0, 0, 0, 0);
     private FormulaItem highlightedItem = new SimpleElement("");
-    private final Map<FormulaItem, Rectangle> items = new HashMap<FormulaItem, Rectangle>();
-    private final Map<Formula, Rectangle> formulas = new HashMap<Formula, Rectangle>();
+    protected final Map<FormulaItem, Rectangle> items = new HashMap<FormulaItem, Rectangle>();
+    protected final Map<Formula, Rectangle> formulas = new HashMap<Formula, Rectangle>();
     protected final Drawer THIS_DRAWER = this;
     protected Metrics drawerMetrics = new Metrics(0, 0, 0);
 
