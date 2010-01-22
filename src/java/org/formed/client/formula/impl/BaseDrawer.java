@@ -306,6 +306,29 @@ public abstract class BaseDrawer implements Drawer {
         redraw();
     }
 
+    public void insertElement(final FormulaItem newItem) {
+        final FormulaItem currentItem = cursor.getItem();
+        if (currentItem == null) {
+            return;
+        }
+
+        Command command;
+
+        if (currentItem instanceof SimpleElement) {
+            command = makeCommandBreakWith((SimpleElement) currentItem,newItem, cursor.getPosition());
+        } else {
+            if (cursor.getPosition() == 0) {
+                command = makeCommandInsertBefore(currentItem, newItem);
+            } else {
+                command = makeCommandInsertAfter(currentItem, newItem);
+            }
+        }
+
+        setCursor(command.execute());
+        undoer.add(command);
+        redraw();
+    }
+
     public void deleteLeft() {
         Command command = cursor.getItem().deleteLeft(this, cursor);
         setCursor(command.execute());

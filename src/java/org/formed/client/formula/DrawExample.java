@@ -87,7 +87,7 @@ public class DrawExample {
         RootPanel.get().add(panel, 10, 10);*/
 
         final HTML keys = new HTML();
-        RootPanel.get().add(keys, 10, HEIGHT * 2+10);
+        RootPanel.get().add(keys, 10, HEIGHT * 3 + 10);
 
         final Button undoButton = new Button("Undo");
         final Button redoButton = new Button("Redo");
@@ -98,8 +98,9 @@ public class DrawExample {
             public void onClick(ClickEvent event) {
                 undoer.undo();
                 drawer.redraw();
+                surface.setFocus(true);
 
-/*                Metrics drawerMetrics = drawer.getDrawerMetrics();
+                /*                Metrics drawerMetrics = drawer.getDrawerMetrics();
                 surface.setWidth(drawerMetrics.getWidth()+20);
                 surface.setHeight(drawerMetrics.getHeight()+20);
                 drawer.redraw();*/
@@ -115,8 +116,9 @@ public class DrawExample {
             public void onClick(ClickEvent event) {
                 undoer.redo();
                 drawer.redraw();
+                surface.setFocus(true);
 
-/*                Metrics drawerMetrics = drawer.getDrawerMetrics();
+                /*                Metrics drawerMetrics = drawer.getDrawerMetrics();
                 surface.setWidth(drawerMetrics.getWidth()+20);
                 surface.setHeight(drawerMetrics.getHeight()+20);
                 drawer.redraw();*/
@@ -126,8 +128,8 @@ public class DrawExample {
             }
         });
 
-        RootPanel.get().add(undoButton, 10, HEIGHT+20);
-        RootPanel.get().add(redoButton, undoButton.getOffsetWidth() + 20, HEIGHT+20);
+        RootPanel.get().add(undoButton, 10, HEIGHT + 20);
+        RootPanel.get().add(redoButton, undoButton.getOffsetWidth() + 20, HEIGHT + 20);
 
         surface.addKeyDownHandler(new KeyDownHandler() {
 
@@ -181,7 +183,7 @@ public class DrawExample {
                     event.preventDefault();
                 }
 
-/*                Metrics drawerMetrics = drawer.getDrawerMetrics();
+                /*                Metrics drawerMetrics = drawer.getDrawerMetrics();
                 surface.setWidth(drawerMetrics.getWidth()+20);
                 surface.setHeight(drawerMetrics.getHeight()+20);
                 drawer.redraw();*/
@@ -202,7 +204,7 @@ public class DrawExample {
                 }
                 event.preventDefault();
 
-/*                Metrics drawerMetrics = drawer.getDrawerMetrics();
+                /*                Metrics drawerMetrics = drawer.getDrawerMetrics();
                 surface.setWidth(drawerMetrics.getWidth()+20);
                 surface.setHeight(drawerMetrics.getHeight()+20);
                 drawer.redraw();*/
@@ -234,6 +236,109 @@ public class DrawExample {
                 drawer.selectItemAt(event.getX(), event.getY());
             }
         });
+
+        final Button sinButton = new Button("sin", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insertElement(new FunctionElement("sin"));
+                drawer.redraw();
+                surface.setFocus(true);
+            }
+        });
+
+        final Button cosButton = new Button("cos", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insertElement(new FunctionElement("cos"));
+                drawer.redraw();
+                surface.setFocus(true);
+            }
+        });
+
+        final Button tgButton = new Button("tg", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insertElement(new FunctionElement("tg"));
+                drawer.redraw();
+                surface.setFocus(true);
+            }
+        });
+
+        final Button ctgButton = new Button("ctg", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insertElement(new FunctionElement("ctg"));
+                drawer.redraw();
+                surface.setFocus(true);
+            }
+        });
+
+        final Button arcsinButton = new Button("arcsin", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insertElement(new FunctionElement("arcsin"));
+                drawer.redraw();
+                surface.setFocus(true);
+            }
+        });
+
+        final Button arccosButton = new Button("arccos", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insertElement(new FunctionElement("arccos"));
+                drawer.redraw();
+                surface.setFocus(true);
+            }
+        });
+
+        final Button arctgButton = new Button("arctg", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insertElement(new FunctionElement("arctg"));
+                drawer.redraw();
+                surface.setFocus(true);
+            }
+        });
+
+        final Button arcctgButton = new Button("arcctg", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insertElement(new FunctionElement("arcctg"));
+                drawer.redraw();
+                surface.setFocus(true);
+            }
+        });
+
+        final Button rootButton = new Button("root", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insertElement(new RootElement(new Formula()));
+                drawer.redraw();
+                surface.setFocus(true);
+            }
+        });
+
+        final int BUTTON_WIDTH = 50;
+        sinButton.setWidth(BUTTON_WIDTH+"px");
+        cosButton.setWidth(BUTTON_WIDTH+"px");
+        tgButton.setWidth(BUTTON_WIDTH+"px");
+        ctgButton.setWidth(BUTTON_WIDTH+"px");
+        rootButton.setWidth(BUTTON_WIDTH+"px");
+        arcsinButton.setWidth(BUTTON_WIDTH+"px");
+        arccosButton.setWidth(BUTTON_WIDTH+"px");
+        arctgButton.setWidth(BUTTON_WIDTH+"px");
+        arcctgButton.setWidth(BUTTON_WIDTH+"px");
+
+        RootPanel.get().add(sinButton, 10 + (10 + BUTTON_WIDTH) * 0, HEIGHT + 50);
+        RootPanel.get().add(cosButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 50);
+        RootPanel.get().add(tgButton, 10 + (10 + BUTTON_WIDTH) * 2, HEIGHT + 50);
+        RootPanel.get().add(ctgButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 50);
+        RootPanel.get().add(rootButton, 10 + (10 + BUTTON_WIDTH) * 4, HEIGHT + 50);
+
+        RootPanel.get().add(arcsinButton, 10 + (10 + BUTTON_WIDTH) * 0, HEIGHT + 80);
+        RootPanel.get().add(arccosButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 80);
+        RootPanel.get().add(arctgButton, 10 + (10 + BUTTON_WIDTH) * 2, HEIGHT + 80);
+        RootPanel.get().add(arcctgButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 80);
 
         drawer.redraw();
 
