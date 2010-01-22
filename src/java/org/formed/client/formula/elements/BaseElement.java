@@ -16,6 +16,7 @@ limitations under the License.
  */
 package org.formed.client.formula.elements;
 
+import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
@@ -271,6 +272,18 @@ public abstract class BaseElement implements FormulaItem {
         return item.getLast(drawer);
     }
 
+    public Cursor insertChar(Drawer drawer, int pos, FormulaItem item) {
+        if (parent == null) {
+            return null;
+        }
+        if (pos == 0) {
+            parent.insertBefore(item, this);
+        } else {
+            parent.insertAfter(item, this);
+        }
+        return item.getLast(drawer);
+    }
+
     public Cursor removeChar(Drawer drawer, int pos) {
         if (parent == null) {
             return null;
@@ -283,42 +296,131 @@ public abstract class BaseElement implements FormulaItem {
             return getLast(drawer);
         }
     }
-
+    /*
     public Cursor deleteLeft(Drawer drawer, Cursor cursor) {
-        if (parent == null) {
-            return cursor;
-        }
+    if (parent == null) {
+    return cursor;
+    }
 
-        if (cursor.getPosition() <= 0) {
-            return parent.removeLeft(drawer, this);
-        }
+    if (cursor.getPosition() <= 0) {
+    return parent.removeLeft(drawer, this);
+    }
 
-        Cursor newCursor = parent.getLeft(drawer, this);
-        parent.remove(this);
+    Cursor newCursor = parent.getLeft(drawer, this);
+    parent.remove(this);
 
-        if (newCursor == null) {
-            newCursor = parent.getFirst(drawer);
-        }
+    if (newCursor == null) {
+    newCursor = parent.getFirst(drawer);
+    }
 
-        return newCursor;
+    return newCursor;
     }
 
     public Cursor deleteRight(Drawer drawer, Cursor cursor) {
-        if (parent == null) {
-            return cursor;
-        }
-
-        if (cursor.getPosition() > 0) {
-            return parent.removeRight(drawer, this);
-        }
-
-        Cursor newCursor = parent.getRight(drawer, this);
-        parent.remove(this);
-
-        if (newCursor == null) {
-            newCursor = parent.getLast(drawer);
-        }
-
-        return newCursor;
+    if (parent == null) {
+    return cursor;
     }
+
+    if (cursor.getPosition() > 0) {
+    return parent.removeRight(drawer, this);
+    }
+
+    Cursor newCursor = parent.getRight(drawer, this);
+    parent.remove(this);
+
+    if (newCursor == null) {
+    newCursor = parent.getLast(drawer);
+    }
+
+    return newCursor;
+    }
+     */
+
+    public Command deleteLeft(final Drawer drawer, final Cursor cursor) {
+        if (parent == null) {
+            return Command.ZERO_COMMAND;
+        }
+
+        final FormulaItem THIS = this;
+
+        if (cursor.getPosition() <= 0) { //Remove item to the left
+            final FormulaItem left = parent.getLeftItem(drawer, THIS);
+            if(left == null) return Command.ZERO_COMMAND;
+
+            return new Command() {
+
+                public Cursor execute() {
+                    return parent.removeLeft(drawer, THIS);
+                }
+
+                public void undo() {
+                    parent.insertBefore(left, THIS);
+                }
+            };
+        } else { //Remove this item
+            return new Command() {
+                final int pos = parent.getItemPosition(THIS);
+
+                public Cursor execute() {
+                    Cursor newCursor = parent.getLeft(drawer, THIS);
+                    parent.remove(THIS);
+
+                    if (newCursor == null) {
+                        newCursor = parent.getFirst(drawer);
+                    }
+
+                    return newCursor;
+                }
+
+                public void undo() {
+                    parent.insertAt(pos, THIS);
+                }
+            };
+        }
+    }
+
+
+    public Command deleteRight(final Drawer drawer, final Cursor cursor) {
+        if (parent == null) {
+            return Command.ZERO_COMMAND;
+        }
+
+        final FormulaItem THIS = this;
+
+        if (cursor.getPosition() > 0) { //Remove item to the right
+            final FormulaItem right = parent.getRightItem(drawer, THIS);
+            if(right == null) return Command.ZERO_COMMAND;
+
+            return new Command() {
+
+                public Cursor execute() {
+                    return parent.removeRight(drawer, THIS);
+                }
+
+                public void undo() {
+                    parent.insertAfter(right, THIS);
+                }
+            };
+        } else { //Remove this item
+            return new Command() {
+                final int pos = parent.getItemPosition(THIS);
+
+                public Cursor execute() {
+                    Cursor newCursor = parent.getRight(drawer, THIS);
+                    parent.remove(THIS);
+
+                    if (newCursor == null) {
+                        newCursor = parent.getLast(drawer);
+                    }
+
+                    return newCursor;
+                }
+
+                public void undo() {
+                    parent.insertAt(pos, THIS);
+                }
+            };
+        }
+    }
+
 }

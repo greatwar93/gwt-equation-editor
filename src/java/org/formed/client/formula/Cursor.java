@@ -40,6 +40,10 @@ public final class Cursor {
         this.heightDown = heightDown;
     }
 
+    public Cursor makeClone(){
+        return new Cursor(drawer, item, position, x, y, heightUp, heightDown);
+    }
+
     public void setCursor(Cursor cursor){
         drawer = cursor.drawer;
         item = cursor.item;

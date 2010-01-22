@@ -20,6 +20,16 @@ package org.formed.client.formula;
  * @author Bulat Sirazetdinov
  */
 public interface Command {
+    public static final Command ZERO_COMMAND = new Command() {
+
+        public Cursor execute() {
+            return null;
+        }
+
+        public void undo() {
+        }
+    };
+
     public Cursor execute();
     public void undo();
 }

@@ -16,6 +16,7 @@ limitations under the License.
  */
 package org.formed.client.formula.elements;
 
+import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.Drawer;
@@ -92,40 +93,119 @@ public final class SimpleElement extends PoweredElement {
     }
 
     @Override
-    public Cursor removeChar(Drawer drawer, int pos){
-        val = val.substring(0, pos) + val.substring(pos+1);
+    public Cursor removeChar(Drawer drawer, int pos) {
+        val = val.substring(0, pos) + val.substring(pos + 1);
         invalidatePlaces(null);
         return getCursor(drawer, pos);
     }
-
+    /*
     @Override
     public Cursor deleteLeft(Drawer drawer, Cursor cursor) {
-        int pos = cursor.getPosition();
-        if (pos <= 0) {
-            if (parent != null) {
-                return parent.removeLeft(drawer, this);
-            }
-            return cursor;
-        }
+    int pos = cursor.getPosition();
+    if (pos <= 0) {
+    if (parent != null) {
+    return parent.removeLeft(drawer, this);
+    }
+    return cursor;
+    }
 
-        val = val.substring(0, pos - 1) + val.substring(pos);
-        cursor.setPosition(pos - 1);
+    val = val.substring(0, pos - 1) + val.substring(pos);
+    cursor.setPosition(pos - 1);
 
-        return cursor;
+    return cursor;
     }
 
     @Override
     public Cursor deleteRight(Drawer drawer, Cursor cursor) {
-        int pos = cursor.getPosition();
-        if (pos >= val.length()) {
+    int pos = cursor.getPosition();
+    if (pos >= val.length()) {
+    if (parent != null) {
+    return parent.removeRight(drawer, this);
+    }
+    return cursor;
+    }
+
+    val = val.substring(0, pos) + val.substring(pos + 1);
+
+    return cursor;
+    }
+     */
+
+    @Override
+    public Command deleteLeft(final Drawer drawer, Cursor cursor) {
+        final FormulaItem THIS = this;
+        final int pos = cursor.getPosition();
+        final Cursor newCursor = cursor.makeClone();
+        if (pos <= 0) { //Delete adjecent item
             if (parent != null) {
-                return parent.removeRight(drawer, this);
+                final FormulaItem left = parent.getLeftItem(drawer, this);
+                return new Command() {
+
+                    public Cursor execute() {
+                        return parent.removeLeft(drawer, THIS);
+                    }
+
+                    public void undo() {
+                        parent.insertBefore(left, THIS);
+                    }
+                };
             }
-            return cursor;
+            return Command.ZERO_COMMAND;
         }
 
-        val = val.substring(0, pos) + val.substring(pos + 1);
+        //Delete char
+        final String oldVal = val;
+        return new Command() {
 
-        return cursor;
+            public Cursor execute() {
+                val = val.substring(0, pos - 1) + val.substring(pos);
+                newCursor.setPosition(pos - 1);
+
+                return newCursor;
+            }
+
+            public void undo() {
+                val = oldVal;
+            }
+        };
+    }
+
+    @Override
+    public Command deleteRight(final Drawer drawer, Cursor cursor) {
+        final FormulaItem THIS = this;
+        final int pos = cursor.getPosition();
+        final Cursor newCursor = cursor.makeClone();
+        if (pos >= val.length()) { //Delete adjacent item
+            if (parent != null) {
+                final FormulaItem right = parent.getRightItem(drawer, this);
+                return new Command() {
+
+                    public Cursor execute() {
+                        return parent.removeRight(drawer, THIS);
+                    }
+
+                    public void undo() {
+                        parent.insertAfter(right, THIS);
+                    }
+                };
+            }
+            return Command.ZERO_COMMAND;
+        }
+
+        //Delete char
+        final String oldVal = val;
+        return new Command() {
+
+            public Cursor execute() {
+                val = val.substring(0, pos) + val.substring(pos + 1);
+                newCursor.setPosition(pos - 1);
+
+                return newCursor;
+            }
+
+            public void undo() {
+                val = oldVal;
+            }
+        };
     }
 }

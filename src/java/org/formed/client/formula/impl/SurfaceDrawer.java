@@ -134,11 +134,12 @@ public final class SurfaceDrawer extends BaseDrawer {
 
         Date from = new Date();
         formula.invalidateMetrics();
-        Metrics metrics = formula.drawAligned(this, 10, 10, 20, Align.TOP);
+        drawerMetrics = formula.drawAligned(this, 10, 10, 20, Align.TOP);
         Date till = new Date();
         drawText((till.getTime() - from.getTime()) + "ms " + countLine + " " + countText + " " + countMeasure, 20, 0, 10);
 
-        surface.strokeRectangle(9, 9, 2 + metrics.getWidth(), 2 + metrics.getHeight());
+        surface.strokeRectangle(9, 9, 2 + drawerMetrics.getWidth(), 2 + drawerMetrics.getHeight());
+        cursor.reMeasure(this);
         redrawCursor();
     }
 

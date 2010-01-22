@@ -74,10 +74,11 @@ public interface FormulaItem {
 
     Cursor insertChar(Drawer drawer, Cursor cursor, char c);
     Cursor insertChar(Drawer drawer, int pos, char c);
+    Cursor insertChar(Drawer drawer, int pos, FormulaItem item);
     Cursor removeChar(Drawer drawer, int pos);
 
-    Cursor deleteLeft(Drawer drawer, Cursor cursor);
-    Cursor deleteRight(Drawer drawer, Cursor cursor);
+    Command deleteLeft(Drawer drawer, Cursor cursor);
+    Command deleteRight(Drawer drawer, Cursor cursor);
 
     void invalidatePlaces(Formula source);
     

@@ -16,6 +16,8 @@ limitations under the License.
  */
 package org.formed.client.formula;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import org.formed.client.formula.impl.SurfaceDrawer;
@@ -35,6 +37,7 @@ import com.google.gwt.event.dom.client.MouseMoveEvent;
 import com.google.gwt.event.dom.client.MouseMoveHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -84,12 +87,52 @@ public class DrawExample {
         RootPanel.get().add(panel, 10, 10);*/
 
         final HTML keys = new HTML();
-        RootPanel.get().add(keys, 10, HEIGHT * 2);
+        RootPanel.get().add(keys, 10, HEIGHT * 2+10);
+
+        final Button undoButton = new Button("Undo");
+        final Button redoButton = new Button("Redo");
+
+        undoButton.setEnabled(false);
+        undoButton.addClickHandler(new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                undoer.undo();
+                drawer.redraw();
+
+/*                Metrics drawerMetrics = drawer.getDrawerMetrics();
+                surface.setWidth(drawerMetrics.getWidth()+20);
+                surface.setHeight(drawerMetrics.getHeight()+20);
+                drawer.redraw();*/
+
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
+            }
+        });
+
+        redoButton.setEnabled(false);
+        redoButton.addClickHandler(new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                undoer.redo();
+                drawer.redraw();
+
+/*                Metrics drawerMetrics = drawer.getDrawerMetrics();
+                surface.setWidth(drawerMetrics.getWidth()+20);
+                surface.setHeight(drawerMetrics.getHeight()+20);
+                drawer.redraw();*/
+
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
+            }
+        });
+
+        RootPanel.get().add(undoButton, 10, HEIGHT+20);
+        RootPanel.get().add(redoButton, undoButton.getOffsetWidth() + 20, HEIGHT+20);
 
         surface.addKeyDownHandler(new KeyDownHandler() {
 
             public void onKeyDown(KeyDownEvent event) {
-                int keycode = event.getNativeKeyCode();
+                final int keycode = event.getNativeKeyCode();
                 arrow = true;
                 if (event.isLeftArrow()) {
                     //keys.setHTML(keys.getHTML() + "+dLeft");
@@ -109,10 +152,10 @@ public class DrawExample {
                 } else if (keycode == KeyCodes.KEY_BACKSPACE) {
                     drawer.deleteLeft();
                     //keys.setHTML(keys.getHTML() + "+d<-");
-                } else if (keycode == KeyCodes.KEY_ESCAPE){
+/*                } else if (keycode == KeyCodes.KEY_ESCAPE) {
                     undoer.undo();
-                } else if (keycode == KeyCodes.KEY_TAB){
-                    undoer.redo();
+                    } else if (keycode == KeyCodes.KEY_TAB) {
+                    undoer.redo();*/
                 } else if (event.isControlKeyDown() && keycode == 45) {
                     //keys.setHTML(keys.getHTML() + "+dPaste");
                 } else if (event.isControlKeyDown() && keycode == 86) {
@@ -121,10 +164,30 @@ public class DrawExample {
                     //keys.setHTML(keys.getHTML() + "+dCopy");
                 } else if (event.isControlKeyDown() && keycode == 67) {
                     //keys.setHTML(keys.getHTML() + "+dCopy");
+                } else if (event.isControlKeyDown() && (keycode == 90 || keycode == KeyCodes.KEY_BACKSPACE)) {
+                    undoer.undo();
+                    drawer.redraw();
+                } else if (event.isControlKeyDown() && keycode == 89) {
+                    undoer.redo();
+                    drawer.redraw();
+                } else if (event.isControlKeyDown()) {
+                    keys.setHTML(keys.getHTML() + "+p" + event.getNativeKeyCode());
                 } else {
                     //keys.setHTML(keys.getHTML() + "+p" + event.getNativeKeyCode());
                     arrow = false;
                 }
+
+                if (arrow) {
+                    event.preventDefault();
+                }
+
+/*                Metrics drawerMetrics = drawer.getDrawerMetrics();
+                surface.setWidth(drawerMetrics.getWidth()+20);
+                surface.setHeight(drawerMetrics.getHeight()+20);
+                drawer.redraw();*/
+
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
         });
 
@@ -138,6 +201,14 @@ public class DrawExample {
                     arrow = false;
                 }
                 event.preventDefault();
+
+/*                Metrics drawerMetrics = drawer.getDrawerMetrics();
+                surface.setWidth(drawerMetrics.getWidth()+20);
+                surface.setHeight(drawerMetrics.getHeight()+20);
+                drawer.redraw();*/
+
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
         });
 

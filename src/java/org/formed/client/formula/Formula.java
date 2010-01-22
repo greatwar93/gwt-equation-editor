@@ -337,6 +337,22 @@ public class Formula {
         return items.get(items.size() - 1);
     }
 
+    public FormulaItem getRightItem(Drawer drawer, FormulaItem item) {
+        int index = items.indexOf(item) + 1;
+        if (index >= items.size()) {
+            return null;
+        }
+        return items.get(index);
+    }
+
+    public FormulaItem getLeftItem(Drawer drawer, FormulaItem item) {
+        int index = items.indexOf(item) - 1;
+        if (index < 0) {
+            return null;
+        }
+        return items.get(index);
+    }
+
     public Cursor getFirst(Drawer drawer) {
         return getFirstItem().getFirst(drawer);
     }
