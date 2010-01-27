@@ -19,7 +19,6 @@ package org.formed.client.formula.elements;
 import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Formula;
-import org.formed.client.formula.Drawer;
 import org.formed.client.formula.FormulaItem;
 
 /**
@@ -53,9 +52,9 @@ public final class SimpleElement extends PoweredElement {
         val = name;
     }
 
-    public Cursor breakWith(Drawer drawer, int pos, FormulaItem item) {
+    public Cursor breakWith(int pos, FormulaItem item) {
         if (parent == null) {
-            return item.getCursor(drawer, pos);
+            return item.getCursor(pos);
         }
 
         if (pos < val.length()) {
@@ -69,7 +68,7 @@ public final class SimpleElement extends PoweredElement {
 
         invalidatePlaces(null);
 
-        return item.getLast(drawer); //Why doesn't it work ?
+        return item.getLast(); //Why doesn't it work ?
     }
 
     public String getTextBefore(Cursor cursor) {
@@ -81,22 +80,22 @@ public final class SimpleElement extends PoweredElement {
     }
 
     @Override
-    public Cursor insertChar(Drawer drawer, Cursor cursor, char c) {
-        return insertChar(drawer, cursor.getPosition(), c);
+    public Cursor insertChar(Cursor cursor, char c) {
+        return insertChar(cursor.getPosition(), c);
     }
 
     @Override
-    public Cursor insertChar(Drawer drawer, int pos, char c) {
+    public Cursor insertChar(int pos, char c) {
         val = val.substring(0, pos) + c + val.substring(pos);
         invalidatePlaces(null);
-        return getCursor(drawer, pos + 1);
+        return getCursor(pos + 1);
     }
 
     @Override
-    public Cursor removeChar(Drawer drawer, int pos) {
+    public Cursor removeChar(int pos) {
         val = val.substring(0, pos) + val.substring(pos + 1);
         invalidatePlaces(null);
-        return getCursor(drawer, pos);
+        return getCursor(pos);
     }
     /*
     @Override
@@ -132,17 +131,17 @@ public final class SimpleElement extends PoweredElement {
      */
 
     @Override
-    public Command deleteLeft(final Drawer drawer, Cursor cursor) {
+    public Command deleteLeft(Cursor cursor) {
         final FormulaItem THIS = this;
         final int pos = cursor.getPosition();
         final Cursor newCursor = cursor.makeClone();
         if (pos <= 0) { //Delete adjecent item
             if (parent != null) {
-                final FormulaItem left = parent.getLeftItem(drawer, this);
+                final FormulaItem left = parent.getLeftItem(this);
                 return new Command() {
 
                     public Cursor execute() {
-                        return parent.removeLeft(drawer, THIS);
+                        return parent.removeLeft(THIS);
                     }
 
                     public void undo() {
@@ -171,17 +170,17 @@ public final class SimpleElement extends PoweredElement {
     }
 
     @Override
-    public Command deleteRight(final Drawer drawer, Cursor cursor) {
+    public Command deleteRight(Cursor cursor) {
         final FormulaItem THIS = this;
         final int pos = cursor.getPosition();
         final Cursor newCursor = cursor.makeClone();
         if (pos >= val.length()) { //Delete adjacent item
             if (parent != null) {
-                final FormulaItem right = parent.getRightItem(drawer, this);
+                final FormulaItem right = parent.getRightItem(this);
                 return new Command() {
 
                     public Cursor execute() {
-                        return parent.removeRight(drawer, THIS);
+                        return parent.removeRight(THIS);
                     }
 
                     public void undo() {

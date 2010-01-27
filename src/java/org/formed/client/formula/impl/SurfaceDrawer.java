@@ -36,7 +36,6 @@ public final class SurfaceDrawer extends BaseDrawer {
     private final Surface surface;
     private Map<SizedText, Double> cachedMetrics = new HashMap<SizedText, Double>(); //Text metrics cache
     private int lastFontSize = 20; //Last used font to minimize font switching
-
     private int countLine = 0;
     private int countText = 0;
     private int countMeasure = 0;
@@ -103,7 +102,7 @@ public final class SurfaceDrawer extends BaseDrawer {
 //        return new Metrics(cached, size, 0);
 //                return new Metrics(10, 10, 10);
     }
-    
+
     public void drawText(String text, int size, int x, int y) {
         countText++;
         if (size != lastFontSize) {
@@ -123,8 +122,7 @@ public final class SurfaceDrawer extends BaseDrawer {
     }
 
     public void redraw() {
-        items.clear();
-        formulas.clear();
+        preRedraw();
 
         countLine = 0;
         countText = 0;
@@ -132,7 +130,7 @@ public final class SurfaceDrawer extends BaseDrawer {
         surface.clear();
         surface.setTextAlign(TextAlign.LEFT).setTextBaseline(TextBaseline.MIDDLE);
 
-        surface.setFont("20px serif");
+        surface.setFont(20 + "px serif");
         lastFontSize = 20;
 
         Date from = new Date();
@@ -142,8 +140,8 @@ public final class SurfaceDrawer extends BaseDrawer {
         drawText((till.getTime() - from.getTime()) + "ms " + countLine + " " + countText + " " + countMeasure, 20, 0, 10);
 
         surface.strokeRectangle(9, 9, 2 + drawerMetrics.getWidth(), 2 + drawerMetrics.getHeight());
-        cursor.reMeasure(this);
-        redrawCursor();
+
+        postRedraw();
     }
 
     @Override

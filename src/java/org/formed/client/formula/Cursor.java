@@ -22,16 +22,19 @@ package org.formed.client.formula;
  */
 public final class Cursor {
 
-    private Drawer drawer;
     private FormulaItem item;
     private int position;
-    private int x;
-    private int y;
-    private int heightUp;
-    private int heightDown;
+    private int x = 0;
+    private int y = 0;
+    private int heightUp = 0;
+    private int heightDown = 0;
 
-    public Cursor(Drawer drawer, FormulaItem item, int position, int x, int y, int heightUp, int heightDown) {
-        this.drawer = drawer;
+    public Cursor(FormulaItem item, int position) {
+        this.item = item;
+        this.position = position;
+    }
+
+    public Cursor(FormulaItem item, int position, int x, int y, int heightUp, int heightDown) {
         this.item = item;
         this.position = position;
         this.x = x;
@@ -41,11 +44,10 @@ public final class Cursor {
     }
 
     public Cursor makeClone(){
-        return new Cursor(drawer, item, position, x, y, heightUp, heightDown);
+        return new Cursor(item, position, x, y, heightUp, heightDown);
     }
 
     public void setCursor(Cursor cursor){
-        drawer = cursor.drawer;
         item = cursor.item;
         position = cursor.position;
         x = cursor.x;
@@ -99,22 +101,22 @@ public final class Cursor {
     }
 
     public Cursor moveRight(){
-        setCursor(item.getRight(this.drawer, position));
+        setCursor(item.getRight(position));
         return this;
     }
 
     public Cursor moveLeft(){
-        setCursor(item.getLeft(this.drawer, position));
+        setCursor(item.getLeft(position));
         return this;
     }
 
     public Cursor moveUp(){
-        setCursor(item.getUp(this.drawer, position));
+        setCursor(item.getUp(position));
         return this;
     }
 
     public Cursor moveDown(){
-        setCursor(item.getDown(this.drawer, position));
+        setCursor(item.getDown(position));
         return this;
     }
 

@@ -41,7 +41,7 @@ public abstract class BaseDrawer implements Drawer {
 
     protected Formula formula;
     protected final Undoer undoer;
-    protected Cursor cursor = new Cursor(this, new SimpleElement(""), 0, 0, 0, 0, 0);
+    protected Cursor cursor = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
     private FormulaItem highlightedItem = new SimpleElement("");
     protected final Map<FormulaItem, Rectangle> items = new HashMap<FormulaItem, Rectangle>();
     protected final Map<Formula, Rectangle> formulas = new HashMap<Formula, Rectangle>();
@@ -78,6 +78,16 @@ public abstract class BaseDrawer implements Drawer {
         addDrawnFormula(formula, new Rectangle(x, y - metrics.getHeightUp(), metrics.getWidth(), metrics.getHeight()));
     }
 
+    protected void preRedraw(){
+        items.clear();
+        formulas.clear();
+    }
+    
+    protected void postRedraw(){
+        cursor.reMeasure(this);
+        redrawCursor();
+    }
+
     public abstract void redraw();
 
     public abstract void redrawCursor();
@@ -97,27 +107,27 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public boolean moveCursorUp() {
-        return setCursor(cursor.getItem().getUp(this, cursor.getPosition()));
+        return setCursor(cursor.getItem().getUp(cursor.getPosition()));
     }
 
     public boolean moveCursorDown() {
-        return setCursor(cursor.getItem().getDown(this, cursor.getPosition()));
+        return setCursor(cursor.getItem().getDown(cursor.getPosition()));
     }
 
     public boolean moveCursorLeft() {
-        return setCursor(cursor.getItem().getLeft(this, cursor.getPosition()));
+        return setCursor(cursor.getItem().getLeft(cursor.getPosition()));
     }
 
     public boolean moveCursorRight() {
-        return setCursor(cursor.getItem().getRight(this, cursor.getPosition()));
+        return setCursor(cursor.getItem().getRight(cursor.getPosition()));
     }
 
     protected Command makeCommandBreakWith(final SimpleElement currentItem, final FormulaItem newItem, final int pos) {
         return new Command() {
 
             public Cursor execute() {
-                currentItem.breakWith(THIS_DRAWER, pos, newItem);
-                return newItem.getLast(THIS_DRAWER);
+                currentItem.breakWith(pos, newItem);
+                return newItem.getLast();
             }
 
             public void undo() {
@@ -131,7 +141,7 @@ public abstract class BaseDrawer implements Drawer {
 
             public Cursor execute() {
                 currentItem.getParent().insertAfter(newItem, currentItem);
-                return newItem.getLast(THIS_DRAWER);
+                return newItem.getLast();
             }
 
             public void undo() {
@@ -145,7 +155,7 @@ public abstract class BaseDrawer implements Drawer {
 
             public Cursor execute() {
                 currentItem.getParent().insertBefore(newItem, currentItem);
-                return newItem.getLast(THIS_DRAWER);
+                return newItem.getLast();
             }
 
             public void undo() {
@@ -158,12 +168,12 @@ public abstract class BaseDrawer implements Drawer {
         return new Command() {
 
             public Cursor execute() {
-                Cursor newCursor = item.insertChar(THIS_DRAWER, pos, c);
+                Cursor newCursor = item.insertChar(pos, c);
                 return newCursor;
             }
 
             public void undo() {
-                item.removeChar(THIS_DRAWER, pos);
+                item.removeChar(pos);
             }
         };
     }
@@ -172,12 +182,12 @@ public abstract class BaseDrawer implements Drawer {
         return new Command() {
 
             public Cursor execute() {
-                Cursor newCursor = item.insertChar(THIS_DRAWER, pos, newItem);
+                Cursor newCursor = item.insertChar(pos, newItem);
                 return newCursor;
             }
 
             public void undo() {
-                item.removeChar(THIS_DRAWER, pos);
+                item.removeChar(pos);
             }
         };
     }
@@ -191,7 +201,7 @@ public abstract class BaseDrawer implements Drawer {
             currentSimple = true;
         }
 
-        Cursor rightCursor = currentItem.getParent().getYourRight(this, currentItem);
+        Cursor rightCursor = currentItem.getParent().getYourRight(currentItem);
         SimpleElement rightSimpleItem = null;
         boolean rightSimple = false;
         if (rightCursor != null) {
@@ -208,7 +218,7 @@ public abstract class BaseDrawer implements Drawer {
         } else if (c == '-') {
             newItem = new OperatorElement("-");
         } else if (c == '*') {
-            newItem = new OperatorElement("*");
+            newItem = new OperatorElement("·"); //*·×
         } else if (c == '(') {
             newItem = new LeftCloser();
         } else if (c == ')') {
@@ -237,14 +247,14 @@ public abstract class BaseDrawer implements Drawer {
                         DivisorElement newDivisor = new DivisorElement(formula1, formula2);
 
                         currentItem.getParent().replace(newDivisor, currentItem);
-                        setCursor(newDivisor.getFormula2().getFirst(this));
+                        setCursor(newDivisor.getFormula2().getFirst());
                     } else {
                         Formula formula1 = new Formula(true).add(new SimpleElement(currentSimpleItem.getTextBefore(cursor), currentSimpleItem.getPower()));
                         Formula formula2 = new Formula(true);
                         DivisorElement newDivisor = new DivisorElement(formula1, formula2);
 
                         currentItem.getParent().replace(newDivisor, currentItem);
-                        setCursor(newDivisor.getFormula2().getFirst(this));
+                        setCursor(newDivisor.getFormula2().getFirst());
                     }
                 } else if (currentItem instanceof RightCloser) {
                     Formula formula1 = new Formula(true);
@@ -272,7 +282,7 @@ public abstract class BaseDrawer implements Drawer {
 
                     DivisorElement newDivisor = new DivisorElement(formula1, formula2);
                     currentFormula.insertAt(position, newDivisor);
-                    setCursor(newDivisor.getFormula2().getFirst(this));
+                    setCursor(newDivisor.getFormula2().getFirst());
                 } else {
                     DivisorElement newDivisor = new DivisorElement();
                     if (cursor.getPosition() == 0) {
@@ -282,7 +292,7 @@ public abstract class BaseDrawer implements Drawer {
                         currentItem.getParent().insertAfter(newDivisor, currentItem);
                         undoer.add(makeCommandInsertAfter(currentItem, newDivisor));
                     }
-                    setCursor(newDivisor.getFormula1().getFirst(this));
+                    setCursor(newDivisor.getFormula1().getFirst());
                 }
             } else if (c == '^') {
                 if (currentItem instanceof PoweredElement) {
@@ -330,7 +340,7 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void deleteLeft() {
-        Command command = cursor.getItem().deleteLeft(this, cursor);
+        Command command = cursor.getItem().deleteLeft(cursor);
         setCursor(command.execute());
         undoer.add(command);
 
@@ -338,7 +348,7 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void deleteRight() {
-        Command command = cursor.getItem().deleteRight(this, cursor);
+        Command command = cursor.getItem().deleteRight(cursor);
         setCursor(command.execute());
         undoer.add(command);
 

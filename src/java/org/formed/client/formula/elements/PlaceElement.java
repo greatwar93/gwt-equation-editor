@@ -101,15 +101,15 @@ public final class PlaceElement extends BaseElement {
      */
 
     @Override
-    public Cursor insertChar(Drawer drawer, Cursor cursor, char c) {
+    public Cursor insertChar(Cursor cursor, char c) {
         parent.add(new SimpleElement("" + c));
-        return parent.getLast(drawer);
+        return parent.getLast();
     }
 
     @Override
-    public Cursor removeChar(Drawer drawer, int pos) {
+    public Cursor removeChar(int pos) {
         parent.removeAt(0);
-        return parent.getFirst(drawer);
+        return parent.getFirst();
     }
 
 

@@ -222,23 +222,23 @@ public class Formula {
         return this;
     }
 
-    public Cursor removeLeft(Drawer drawer, FormulaItem item) {
+    public Cursor removeLeft(FormulaItem item) {
         int index = items.indexOf(item);
         if (index > 0) {
             items.remove(index - 1);
-            return items.get(index-1).getLast(drawer);
+            return items.get(index-1).getLast();
         } else {
-            return getFirst(drawer);
+            return getFirst();
         }        
     }
 
-    public Cursor removeRight(Drawer drawer, FormulaItem item) {
+    public Cursor removeRight(FormulaItem item) {
         int index = items.indexOf(item);
         if (index < items.size()) {
             items.remove(index + 1);
-            return item.getLast(drawer);
+            return item.getLast();
         } else {
-            return getLast(drawer);
+            return getLast();
         }
     }
 
@@ -258,59 +258,59 @@ public class Formula {
     }
 
     //Get position when come from child-item
-    public Cursor getLeft(Drawer drawer, FormulaItem item) {
+    public Cursor getLeft(FormulaItem item) {
         int index = items.indexOf(item) - 1;
         if (index < 0) {
             if (parent != null) {
-                return parent.childAsksLeft(drawer, this);
+                return parent.childAsksLeft(this);
             }
             return null;
         }
-        return items.get(index).getLast(drawer);
+        return items.get(index).getLast();
     }
 
     //Get position when come from child-item
-    public Cursor getRight(Drawer drawer, FormulaItem item) {
+    public Cursor getRight(FormulaItem item) {
         int index = items.indexOf(item) + 1;
         if (index >= items.size()) {
             if (parent != null) {
-                return parent.childAsksRight(drawer, this);
+                return parent.childAsksRight(this);
             }
             return null;
         }
-        return items.get(index).getFirst(drawer);
+        return items.get(index).getFirst();
     }
 
-    public Cursor getYourRight(Drawer drawer, FormulaItem item) {
+    public Cursor getYourRight(FormulaItem item) {
         int index = items.indexOf(item) + 1;
         if (index >= items.size()) {
             return null;
         }
-        return items.get(index).getFirst(drawer);
+        return items.get(index).getFirst();
     }
 
-    public Cursor getYourLeft(Drawer drawer, FormulaItem item) {
+    public Cursor getYourLeft(FormulaItem item) {
         int index = items.indexOf(item) - 1;
         if (index < 0) {
             return null;
         }
-        return items.get(index).getLast(drawer);
+        return items.get(index).getLast();
     }
 
     //Get position when come from child-item
-    public Cursor getUp(Drawer drawer, FormulaItem item) {
+    public Cursor getUp(FormulaItem item) {
         if (parent == null) {
             return null;
         }
-        return parent.childAsksUp(drawer, this);
+        return parent.childAsksUp(this);
     }
 
     //Get position when come from child-item
-    public Cursor getDown(Drawer drawer, FormulaItem item) {
+    public Cursor getDown(FormulaItem item) {
         if (parent == null) {
             return null;
         }
-        return parent.childAsksDown(drawer, this);
+        return parent.childAsksDown(this);
     }
 
     public FormulaItem getItem(int position) {
@@ -337,7 +337,7 @@ public class Formula {
         return items.get(items.size() - 1);
     }
 
-    public FormulaItem getRightItem(Drawer drawer, FormulaItem item) {
+    public FormulaItem getRightItem(FormulaItem item) {
         int index = items.indexOf(item) + 1;
         if (index >= items.size()) {
             return null;
@@ -345,7 +345,7 @@ public class Formula {
         return items.get(index);
     }
 
-    public FormulaItem getLeftItem(Drawer drawer, FormulaItem item) {
+    public FormulaItem getLeftItem(FormulaItem item) {
         int index = items.indexOf(item) - 1;
         if (index < 0) {
             return null;
@@ -353,11 +353,11 @@ public class Formula {
         return items.get(index);
     }
 
-    public Cursor getFirst(Drawer drawer) {
-        return getFirstItem().getFirst(drawer);
+    public Cursor getFirst() {
+        return getFirstItem().getFirst();
     }
 
-    public Cursor getLast(Drawer drawer) {
-        return getLastItem().getLast(drawer);
+    public Cursor getLast() {
+        return getLastItem().getLast();
     }
 }

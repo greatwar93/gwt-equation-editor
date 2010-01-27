@@ -117,48 +117,48 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public Cursor getLast(Drawer drawer) {
+    public Cursor getLast() {
         if (formula != null) {
-            return formula.getLast(drawer);
+            return formula.getLast();
         }
-        return super.getLast(drawer);
+        return super.getLast();
     }
 
     @Override
-    public Cursor childAsksLeft(Drawer drawer, Formula child) {
+    public Cursor childAsksLeft(Formula child) {
         if (child == formula) {
-            return super.getLast(drawer);
+            return super.getLast();
         }
 
-        return super.childAsksLeft(drawer, child);
+        return super.childAsksLeft(child);
     }
 
     @Override
-    public Cursor childAsksRight(Drawer drawer, Formula child) {
+    public Cursor childAsksRight(Formula child) {
         if (child == getPower()) {
-            return formula.getFirst(drawer);
+            return formula.getFirst();
         }
 
-        return super.childAsksRight(drawer, child);
+        return super.childAsksRight(child);
     }
 
     @Override
-    public Cursor childAsksDown(Drawer drawer, Formula child) {
+    public Cursor childAsksDown(Formula child) {
         if (child == getPower()) {
-            return super.getLast(drawer);
+            return super.getLast();
         }
-        return super.childAsksDown(drawer, child);
+        return super.childAsksDown(child);
     }
 
     @Override
-    public Cursor getRight(Drawer drawer, int oldPosition) {
+    public Cursor getRight(int oldPosition) {
         if (oldPosition >= val.length()) {
             if (formula != null) {
-                return formula.getFirst(drawer);
+                return formula.getFirst();
             }
         }
 
-        return super.getRight(drawer, oldPosition);
+        return super.getRight(oldPosition);
     }
 
     @Override
@@ -176,9 +176,9 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public Cursor insertChar(Drawer drawer, Cursor cursor, char c) {
+    public Cursor insertChar(Cursor cursor, char c) {
         int pos = cursor.getPosition();
         setName(name.substring(0, pos) + c + name.substring(pos));
-        return getCursor(drawer, pos + 1);
+        return getCursor(pos + 1);
     }
 }

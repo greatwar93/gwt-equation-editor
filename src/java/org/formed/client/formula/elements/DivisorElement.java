@@ -130,9 +130,9 @@ public final class DivisorElement extends BaseElement {
     public void reMeasureCursor(Drawer drawer, Cursor cursor) {
         Metrics metrics = measure(drawer, storedSize);
         if(cursor.getPosition() == 0){
-            cursor.setCursor(new Cursor(drawer, this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown()));
+            cursor.setCursor(new Cursor(this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown()));
         } else {
-            cursor.setCursor(new Cursor(drawer, this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown()));
+            cursor.setCursor(new Cursor(this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown()));
         }
     }
 
@@ -140,72 +140,71 @@ public final class DivisorElement extends BaseElement {
     public Cursor getCursor(Drawer drawer, int x, int y) {
         Metrics metrics = measure(drawer, storedSize);
         if (x - storedX < metrics.getWidth() / 2) {
-            return new Cursor(drawer, this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown());
+            return new Cursor(this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown());
         } else {
-            return new Cursor(drawer, this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown());
+            return new Cursor(this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown());
         }
     }
 
     @Override
-    public Cursor getCursor(Drawer drawer, int position) {
-        Metrics metrics = measure(drawer, storedSize);
+    public Cursor getCursor(int position) {
         if (position == 0) {
-            return new Cursor(drawer, this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown());
+            return new Cursor(this, 0);
         } else {
-            return new Cursor(drawer, this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown());
+            return new Cursor(this, 1);
         }
     }
 
     @Override
-    public Cursor getFirst(Drawer drawer) {
-        return getCursor(drawer, 0);
+    public Cursor getFirst() {
+        return getCursor(0);
     }
 
     @Override
-    public Cursor getLast(Drawer drawer) {
-        return getCursor(drawer, 1);
+    public Cursor getLast() {
+        return getCursor(1);
     }
 
     @Override
-    public Cursor getLeft(Drawer drawer, int oldPosition) {
+    public Cursor getLeft(int oldPosition) {
         if (oldPosition == 1) {
-            return formula1.getLast(drawer);
+            return formula1.getLast();
         }
-        return parent.getLeft(drawer, this);
+        return parent.getLeft(this);
     }
 
     @Override
-    public Cursor getRight(Drawer drawer, int oldPosition) {
+    public Cursor getRight(int oldPosition) {
         if (oldPosition == 0) {
-            return formula1.getFirst(drawer);
+            return formula1.getFirst();
         }
-        return parent.getRight(drawer, this);
+        return parent.getRight(this);
     }
 
     @Override
-    public Cursor childAsksLeft(Drawer drawer, Formula child) {
-        return getFirst(drawer);
+    public Cursor childAsksLeft(Formula child) {
+        return getFirst();
     }
 
     @Override
-    public Cursor childAsksRight(Drawer drawer, Formula child) {
-        return getLast(drawer);
+    public Cursor childAsksRight(Formula child) {
+        return getLast();
     }
 
     @Override
-    public Cursor childAsksUp(Drawer drawer, Formula child) {
+    public Cursor childAsksUp(Formula child) {
         if (child == formula2) {
-            return formula1.getFirst(drawer);
+            return formula1.getFirst();
         }
-        return super.childAsksUp(drawer, child);
+        return super.childAsksUp(child);
     }
 
     @Override
-    public Cursor childAsksDown(Drawer drawer, Formula child) {
+    public Cursor childAsksDown(Formula child) {
         if (child == formula1) {
-            return formula2.getFirst(drawer);
+            return formula2.getFirst();
         }
-        return super.childAsksDown(drawer, child);
+        return super.childAsksDown(child);
     }
 
     @Override

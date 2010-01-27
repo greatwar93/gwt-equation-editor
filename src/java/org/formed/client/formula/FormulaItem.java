@@ -38,47 +38,47 @@ public interface FormulaItem {
     Cursor getCursor(Drawer drawer, int x, int y);
 
     //Get cursor for a specified position
-    Cursor getCursor(Drawer drawer, int position);
+    Cursor getCursor(int position);
 
     //Move left
-    Cursor getLeft(Drawer drawer, int oldPosition);
+    Cursor getLeft(int oldPosition);
 
     //Move right
-    Cursor getRight(Drawer drawer, int oldPosition);
+    Cursor getRight(int oldPosition);
 
     //Move up
-    Cursor getUp(Drawer drawer, int oldPosition);
+    Cursor getUp(int oldPosition);
 
     //Move down
-    Cursor getDown(Drawer drawer, int oldPosition);
+    Cursor getDown(int oldPosition);
 
     //Get position when come right from parent-formula
-    Cursor getFirst(Drawer drawer);
+    Cursor getFirst();
 
     //Get position when come left from parent-formula
-    Cursor getLast(Drawer drawer);
+    Cursor getLast();
 
     //Get position when come left from child-formula
-    Cursor childAsksLeft(Drawer drawer, Formula child);
+    Cursor childAsksLeft(Formula child);
     
     //Get position when come right from child-formula
-    Cursor childAsksRight(Drawer drawer, Formula child);
+    Cursor childAsksRight(Formula child);
 
     //Get position when come up from child-formula
-    Cursor childAsksUp(Drawer drawer, Formula child);
+    Cursor childAsksUp(Formula child);
 
     //Get position when come down from child-formula
-    Cursor childAsksDown(Drawer drawer, Formula child);
+    Cursor childAsksDown(Formula child);
 
     void reMeasureCursor(Drawer drawer, Cursor cursor);
 
-    Cursor insertChar(Drawer drawer, Cursor cursor, char c);
-    Cursor insertChar(Drawer drawer, int pos, char c);
-    Cursor insertChar(Drawer drawer, int pos, FormulaItem item);
-    Cursor removeChar(Drawer drawer, int pos);
+    Cursor insertChar(Cursor cursor, char c);
+    Cursor insertChar(int pos, char c);
+    Cursor insertChar(int pos, FormulaItem item);
+    Cursor removeChar(int pos);
 
-    Command deleteLeft(Drawer drawer, Cursor cursor);
-    Command deleteRight(Drawer drawer, Cursor cursor);
+    Command deleteLeft(Cursor cursor);
+    Command deleteRight(Cursor cursor);
 
     void invalidatePlaces(Formula source);
     

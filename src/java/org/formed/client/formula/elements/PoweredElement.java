@@ -90,28 +90,28 @@ public abstract class PoweredElement extends BaseElement {
     }
 
     @Override
-    public Cursor getUp(Drawer drawer, int oldPosition) {
+    public Cursor getUp(int oldPosition) {
         if(formulaPower != null){
-            return formulaPower.getFirst(drawer);
+            return formulaPower.getFirst();
         }
-        return super.getUp(drawer, oldPosition);
+        return super.getUp(oldPosition);
     }
 
     @Override
-    public Cursor childAsksLeft(Drawer drawer, Formula child) {
+    public Cursor childAsksLeft(Formula child) {
         if (child == formulaPower) {
-            return getLast(drawer);
+            return getLast();
         } else {
-            return super.childAsksLeft(drawer, child);
+            return super.childAsksLeft(child);
         }
     }
 
     @Override
-    public Cursor childAsksDown(Drawer drawer, Formula child) {
+    public Cursor childAsksDown(Formula child) {
         if(child == formulaPower){
-            return getLast(drawer);
+            return getLast();
         }
-        return super.childAsksDown(drawer, child);
+        return super.childAsksDown(child);
     }
 
     @Override
