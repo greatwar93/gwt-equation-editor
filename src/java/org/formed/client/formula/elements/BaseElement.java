@@ -301,38 +301,39 @@ public abstract class BaseElement implements FormulaItem {
         }
 
         final FormulaItem THIS = this;
+        final Formula PARENT_BACKUP = parent;
 
         if (cursor.getPosition() <= 0) { //Remove item to the left
-            final FormulaItem left = parent.getLeftItem(THIS);
+            final FormulaItem left = PARENT_BACKUP.getLeftItem(THIS);
             if(left == null) return Command.ZERO_COMMAND;
 
             return new Command() {
 
                 public Cursor execute() {
-                    return parent.removeLeft(THIS);
+                    return PARENT_BACKUP.removeLeft(THIS);
                 }
 
                 public void undo() {
-                    parent.insertBefore(left, THIS);
+                    PARENT_BACKUP.insertBefore(left, THIS);
                 }
             };
         } else { //Remove this item
             return new Command() {
-                final int pos = parent.getItemPosition(THIS);
+                final int pos = PARENT_BACKUP.getItemPosition(THIS);
 
                 public Cursor execute() {
-                    Cursor newCursor = parent.getLeft(THIS);
-                    parent.remove(THIS);
+                    Cursor newCursor = PARENT_BACKUP.getLeft(THIS);
+                    PARENT_BACKUP.remove(THIS);
 
                     if (newCursor == null) {
-                        newCursor = parent.getFirst();
+                        newCursor = PARENT_BACKUP.getFirst();
                     }
 
                     return newCursor;
                 }
 
                 public void undo() {
-                    parent.insertAt(pos, THIS);
+                    PARENT_BACKUP.insertAt(pos, THIS);
                 }
             };
         }
@@ -345,38 +346,39 @@ public abstract class BaseElement implements FormulaItem {
         }
 
         final FormulaItem THIS = this;
+        final Formula PARENT_BACKUP = parent;
 
         if (cursor.getPosition() > 0) { //Remove item to the right
-            final FormulaItem right = parent.getRightItem(THIS);
+            final FormulaItem right = PARENT_BACKUP.getRightItem(THIS);
             if(right == null) return Command.ZERO_COMMAND;
 
             return new Command() {
 
                 public Cursor execute() {
-                    return parent.removeRight(THIS);
+                    return PARENT_BACKUP.removeRight(THIS);
                 }
 
                 public void undo() {
-                    parent.insertAfter(right, THIS);
+                    PARENT_BACKUP.insertAfter(right, THIS);
                 }
             };
         } else { //Remove this item
             return new Command() {
-                final int pos = parent.getItemPosition(THIS);
+                final int pos = PARENT_BACKUP.getItemPosition(THIS);
 
                 public Cursor execute() {
-                    Cursor newCursor = parent.getRight(THIS);
-                    parent.remove(THIS);
+                    Cursor newCursor = PARENT_BACKUP.getRight(THIS);
+                    PARENT_BACKUP.remove(THIS);
 
                     if (newCursor == null) {
-                        newCursor = parent.getLast();
+                        newCursor = PARENT_BACKUP.getLast();
                     }
 
                     return newCursor;
                 }
 
                 public void undo() {
-                    parent.insertAt(pos, THIS);
+                    PARENT_BACKUP.insertAt(pos, THIS);
                 }
             };
         }

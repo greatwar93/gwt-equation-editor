@@ -42,11 +42,14 @@ public abstract class BaseDrawer implements Drawer {
     protected Formula formula;
     protected final Undoer undoer;
     protected Cursor cursor = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
+    protected Cursor cursor2 = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
     private FormulaItem highlightedItem = new SimpleElement("");
     protected final Map<FormulaItem, Rectangle> items = new HashMap<FormulaItem, Rectangle>();
     protected final Map<Formula, Rectangle> formulas = new HashMap<Formula, Rectangle>();
     protected final Drawer THIS_DRAWER = this;
     protected Metrics drawerMetrics = new Metrics(0, 0, 0);
+
+    protected int debugTexts = 0;
 
     public BaseDrawer(Formula formula) {
         this.formula = formula;
@@ -78,13 +81,24 @@ public abstract class BaseDrawer implements Drawer {
         addDrawnFormula(formula, new Rectangle(x, y - metrics.getHeightUp(), metrics.getWidth(), metrics.getHeight()));
     }
 
-    protected void preRedraw(){
+    public void drawDebugText(String text) {
+//        drawText(text, 10, 5, 30+debugTexts*15);
+//        debugTexts++;
+    }
+
+    protected void preRedraw() {
         items.clear();
         formulas.clear();
+        debugTexts = 0;
     }
-    
-    protected void postRedraw(){
-        cursor.reMeasure(this);
+
+    protected void postRedraw() {
+        if (cursor != null) {
+            cursor.reMeasure(this);
+        }
+        if (cursor2 != null) {
+            cursor2.reMeasure(this);
+        }
         redrawCursor();
     }
 
@@ -123,6 +137,7 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     protected Command makeCommandBreakWith(final SimpleElement currentItem, final FormulaItem newItem, final int pos) {
+        final Formula PARENT_BACKUP = currentItem.getParent();
         return new Command() {
 
             public Cursor execute() {
@@ -131,35 +146,37 @@ public abstract class BaseDrawer implements Drawer {
             }
 
             public void undo() {
-                currentItem.getParent().remove(newItem);
+                PARENT_BACKUP.remove(newItem);
             }
         };
     }
 
     protected Command makeCommandInsertAfter(final FormulaItem currentItem, final FormulaItem newItem) {
+        final Formula PARENT_BACKUP = currentItem.getParent();
         return new Command() {
 
             public Cursor execute() {
-                currentItem.getParent().insertAfter(newItem, currentItem);
+                PARENT_BACKUP.insertAfter(newItem, currentItem);
                 return newItem.getLast();
             }
 
             public void undo() {
-                currentItem.getParent().remove(newItem);
+                PARENT_BACKUP.remove(newItem);
             }
         };
     }
 
     protected Command makeCommandInsertBefore(final FormulaItem currentItem, final FormulaItem newItem) {
+        final Formula PARENT_BACKUP = currentItem.getParent();
         return new Command() {
 
             public Cursor execute() {
-                currentItem.getParent().insertBefore(newItem, currentItem);
+                PARENT_BACKUP.insertBefore(newItem, currentItem);
                 return newItem.getLast();
             }
 
             public void undo() {
-                currentItem.getParent().remove(newItem);
+                PARENT_BACKUP.remove(newItem);
             }
         };
     }
@@ -212,105 +229,93 @@ public abstract class BaseDrawer implements Drawer {
             }
         }
 
-        FormulaItem newItem = null;
-        if (c == '+') {
-            newItem = new OperatorElement("+");
+        if (c == '^') {
+            if (currentItem instanceof PoweredElement) {
+                moveCursorUp();
+            }
+        } else if (c == '+') {
+            insertElement(new OperatorElement("+"));
         } else if (c == '-') {
-            newItem = new OperatorElement("-");
+            insertElement(new OperatorElement("-"));
         } else if (c == '*') {
-            newItem = new OperatorElement("·"); //*·×
+            insertElement(new OperatorElement("·")); //*·×
+        } else if (c == '<') {
+            insertElement(new OperatorElement("<"));
+        } else if (c == '>') {
+            insertElement(new OperatorElement(">"));
+        } else if (c == '=') {
+            insertElement(new OperatorElement("="));
         } else if (c == '(') {
-            newItem = new LeftCloser();
+            insertElement(new LeftCloser());
         } else if (c == ')') {
-            newItem = new RightCloser();
-        }
+            insertElement(new RightCloser());
+        } else if (c == '/') {
+            if (currentSimple) {
+                if (cursor.getPosition() < currentSimpleItem.getName().length()) {
+                    Formula formula1 = new Formula(true).add(new SimpleElement(currentSimpleItem.getTextBefore(cursor)));
+                    Formula formula2 = new Formula(true).add(new SimpleElement(currentSimpleItem.getTextAfter(cursor), currentSimpleItem.getPower()));
+                    DivisorElement newDivisor = new DivisorElement(formula1, formula2);
 
-        if (newItem != null) {
+                    currentItem.getParent().replace(newDivisor, currentItem);
+                    setCursor(newDivisor.getFormula2().getFirst());
+                } else {
+                    Formula formula1 = new Formula(true).add(new SimpleElement(currentSimpleItem.getTextBefore(cursor), currentSimpleItem.getPower()));
+                    Formula formula2 = new Formula(true);
+                    DivisorElement newDivisor = new DivisorElement(formula1, formula2);
+
+                    currentItem.getParent().replace(newDivisor, currentItem);
+                    setCursor(newDivisor.getFormula2().getFirst());
+                }
+            } else if (currentItem instanceof RightCloser) {
+                Formula formula1 = new Formula(true);
+                Formula formula2 = new Formula(true);
+
+                Formula currentFormula = currentItem.getParent();
+                int rights = 1;
+                int position = currentFormula.getItemPosition(currentItem);
+                formula1.add(currentItem.makeClone());
+                currentFormula.remove(currentItem);
+                while (rights > 0) {
+                    position--;
+                    FormulaItem item = currentFormula.getItem(position);
+                    if (item instanceof RightCloser) {
+                        rights++;
+                    } else if (item instanceof LeftCloser) {
+                        rights--;
+                    }
+                    formula1.insertAt(0, item.makeClone());
+                    currentFormula.remove(item);
+                    if (position <= 0) {
+                        break;
+                    }
+                }
+
+                DivisorElement newDivisor = new DivisorElement(formula1, formula2);
+                currentFormula.insertAt(position, newDivisor);
+                setCursor(newDivisor.getFormula2().getFirst());
+            } else {
+                DivisorElement newDivisor = new DivisorElement();
+                if (cursor.getPosition() == 0) {
+                    currentItem.getParent().insertBefore(newDivisor, currentItem);
+                    undoer.add(makeCommandInsertBefore(currentItem, newDivisor));
+                } else {
+                    currentItem.getParent().insertAfter(newDivisor, currentItem);
+                    undoer.add(makeCommandInsertAfter(currentItem, newDivisor));
+                }
+                setCursor(newDivisor.getFormula1().getFirst());
+            }
+        } else {
             Command command;
             if (currentSimple) {
-                command = makeCommandBreakWith(currentSimpleItem, newItem, cursor.getPosition());
+                command = makeCommandInsertCharInSimple(currentItem, cursor.getPosition(), c);
+            } else if (rightSimple) {
+                command = makeCommandInsertCharInSimple(rightSimpleItem, rightCursor.getPosition(), c);
             } else {
-                if (cursor.getPosition() == 0) {
-                    command = makeCommandInsertBefore(currentItem, newItem);
-                } else {
-                    command = makeCommandInsertAfter(currentItem, newItem);
-                }
+                SimpleElement newSimple = new SimpleElement("" + c);
+                command = makeCommandInsertChar(currentItem, cursor.getPosition(), newSimple);
             }
             setCursor(command.execute());
             undoer.add(command);
-        } else {
-            if (c == '/') {
-                if (currentSimple) {
-                    if (cursor.getPosition() < currentSimpleItem.getName().length()) {
-                        Formula formula1 = new Formula(true).add(new SimpleElement(currentSimpleItem.getTextBefore(cursor)));
-                        Formula formula2 = new Formula(true).add(new SimpleElement(currentSimpleItem.getTextAfter(cursor), currentSimpleItem.getPower()));
-                        DivisorElement newDivisor = new DivisorElement(formula1, formula2);
-
-                        currentItem.getParent().replace(newDivisor, currentItem);
-                        setCursor(newDivisor.getFormula2().getFirst());
-                    } else {
-                        Formula formula1 = new Formula(true).add(new SimpleElement(currentSimpleItem.getTextBefore(cursor), currentSimpleItem.getPower()));
-                        Formula formula2 = new Formula(true);
-                        DivisorElement newDivisor = new DivisorElement(formula1, formula2);
-
-                        currentItem.getParent().replace(newDivisor, currentItem);
-                        setCursor(newDivisor.getFormula2().getFirst());
-                    }
-                } else if (currentItem instanceof RightCloser) {
-                    Formula formula1 = new Formula(true);
-                    Formula formula2 = new Formula(true);
-
-                    Formula currentFormula = currentItem.getParent();
-                    int rights = 1;
-                    int position = currentFormula.getItemPosition(currentItem);
-                    formula1.add(currentItem.makeClone());
-                    currentFormula.remove(currentItem);
-                    while (rights > 0) {
-                        position--;
-                        FormulaItem item = currentFormula.getItem(position);
-                        if (item instanceof RightCloser) {
-                            rights++;
-                        } else if (item instanceof LeftCloser) {
-                            rights--;
-                        }
-                        formula1.insertAt(0, item.makeClone());
-                        currentFormula.remove(item);
-                        if (position <= 0) {
-                            break;
-                        }
-                    }
-
-                    DivisorElement newDivisor = new DivisorElement(formula1, formula2);
-                    currentFormula.insertAt(position, newDivisor);
-                    setCursor(newDivisor.getFormula2().getFirst());
-                } else {
-                    DivisorElement newDivisor = new DivisorElement();
-                    if (cursor.getPosition() == 0) {
-                        currentItem.getParent().insertBefore(newDivisor, currentItem);
-                        undoer.add(makeCommandInsertBefore(currentItem, newDivisor));
-                    } else {
-                        currentItem.getParent().insertAfter(newDivisor, currentItem);
-                        undoer.add(makeCommandInsertAfter(currentItem, newDivisor));
-                    }
-                    setCursor(newDivisor.getFormula1().getFirst());
-                }
-            } else if (c == '^') {
-                if (currentItem instanceof PoweredElement) {
-                    moveCursorUp();
-                }
-            } else {
-                Command command;
-                if (currentSimple) {
-                    command = makeCommandInsertCharInSimple(currentItem, cursor.getPosition(), c);
-                } else if (rightSimple) {
-                    command = makeCommandInsertCharInSimple(rightSimpleItem, rightCursor.getPosition(), c);
-                } else {
-                    SimpleElement newSimple = new SimpleElement("" + c);
-                    command = makeCommandInsertChar(currentItem, cursor.getPosition(), newSimple);
-                }
-                setCursor(command.execute());
-                undoer.add(command);
-            }
         }
 
         redraw();
@@ -325,7 +330,7 @@ public abstract class BaseDrawer implements Drawer {
         Command command;
 
         if (currentItem instanceof SimpleElement) {
-            command = makeCommandBreakWith((SimpleElement) currentItem,newItem, cursor.getPosition());
+            command = makeCommandBreakWith((SimpleElement) currentItem, newItem, cursor.getPosition());
         } else {
             if (cursor.getPosition() == 0) {
                 command = makeCommandInsertBefore(currentItem, newItem);
@@ -367,8 +372,11 @@ public abstract class BaseDrawer implements Drawer {
                 }
             }
         }
-        cursor = minRectItem.getCursor(this, x, y);
-        redraw();
+
+        if (minRectItem != null) {
+            cursor = minRectItem.getCursor(this, x, y);
+            redraw();
+        }
 
         return minRectItem;
     }
@@ -385,11 +393,30 @@ public abstract class BaseDrawer implements Drawer {
                 }
             }
         }
-        if (minRect != null) {
-            highlightedItem = minRectItem;
-            redraw();
+        if (minRectItem != null) {
+            cursor2 = minRectItem.getCursor(this, x, y);
+        } else {
+            cursor2 = null;
         }
+        redraw();
 
         return minRectItem;
+        /*        Rectangle minRect = null;
+        FormulaItem minRectItem = null;
+        for (FormulaItem item : items.keySet()) {
+        Rectangle rect = items.get(item);
+        if (rect.isInside(x, y)) {
+        if (rect.isSmaller(minRect)) {
+        minRectItem = item;
+        minRect = rect;
+        }
+        }
+        }
+        if (minRect != null) {
+        highlightedItem = minRectItem;
+        redraw();
+        }
+
+        return minRectItem;*/
     }
 }

@@ -22,7 +22,6 @@ import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.Metrics;
 
-
 /**
  *
  * @author Bulat Sirazetdinov
@@ -34,11 +33,13 @@ public final class RootElement extends BaseElement {
 
     public RootElement(Formula formula) {
         setFormula(formula);
+        formula.setShowPlace(true);
         setFormulaPower(new Formula());
     }
 
     public RootElement(Formula formula, Formula formulaPower) {
         setFormula(formula);
+        formula.setShowPlace(true);
         setFormulaPower(formulaPower);
     }
 
@@ -58,6 +59,7 @@ public final class RootElement extends BaseElement {
             this.formula = new Formula();
         } else {
             this.formula = formula;
+            formula.setShowPlace(true);
         }
         formula.setParent(this);
     }
@@ -147,7 +149,7 @@ public final class RootElement extends BaseElement {
     @Override
     public void reMeasureCursor(Drawer drawer, Cursor cursor) {
         Metrics metrics = measure(drawer, storedSize);
-        if(cursor.getPosition() == 0){
+        if (cursor.getPosition() == 0) {
             cursor.setCursor(new Cursor(this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown()));
         } else {
             cursor.setCursor(new Cursor(this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown()));

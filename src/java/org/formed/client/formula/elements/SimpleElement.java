@@ -94,6 +94,22 @@ public final class SimpleElement extends PoweredElement {
     @Override
     public Cursor removeChar(int pos) {
         val = val.substring(0, pos) + val.substring(pos + 1);
+
+        if (val.length() <= 0) {
+            if (parent != null) {
+                final Formula PARENT_BACKUP = parent;
+                Cursor cursor = PARENT_BACKUP.getLeft(this);
+
+                PARENT_BACKUP.remove(this);
+
+                if (cursor.getItem() == this) {
+                    return PARENT_BACKUP.getFirst();
+                } else {
+                    return cursor;
+                }
+            }
+        }
+
         invalidatePlaces(null);
         return getCursor(pos);
     }
@@ -135,21 +151,71 @@ public final class SimpleElement extends PoweredElement {
         final FormulaItem THIS = this;
         final int pos = cursor.getPosition();
         final Cursor newCursor = cursor.makeClone();
+        final Formula PARENT_BACKUP = parent;
         if (pos <= 0) { //Delete adjecent item
-            if (parent != null) {
-                final FormulaItem left = parent.getLeftItem(this);
+            if (PARENT_BACKUP == null) {
+                return Command.ZERO_COMMAND;
+            }
+
+            final FormulaItem left = PARENT_BACKUP.getLeftItem(this);
+            return new Command() {
+
+                public Cursor execute() {
+                    return PARENT_BACKUP.removeLeft(THIS);
+                }
+
+                public void undo() {
+                    PARENT_BACKUP.insertBefore(left, THIS);
+                }
+            };
+
+
+        } else if (val.length() <= 1) { //Delete this item, cause it is empty now
+            if (PARENT_BACKUP == null) {
+                return Command.ZERO_COMMAND;
+            }
+
+            final FormulaItem left = PARENT_BACKUP.getLeftItem(this);
+            if (left != null) {
                 return new Command() {
 
                     public Cursor execute() {
-                        return parent.removeLeft(THIS);
+                        PARENT_BACKUP.remove(THIS);
+                        return left.getLast();
                     }
 
                     public void undo() {
-                        parent.insertBefore(left, THIS);
+                        PARENT_BACKUP.insertAfter(THIS, left);
                     }
                 };
             }
-            return Command.ZERO_COMMAND;
+
+            final FormulaItem right = PARENT_BACKUP.getRightItem(this);
+            if (right != null) {
+                return new Command() {
+
+                    public Cursor execute() {
+                        PARENT_BACKUP.remove(THIS);
+                        return right.getFirst();
+                    }
+
+                    public void undo() {
+                        PARENT_BACKUP.insertBefore(THIS, right);
+                    }
+                };
+            }
+
+            return new Command() {
+
+                public Cursor execute() {
+                    PARENT_BACKUP.remove(THIS);
+                    return PARENT_BACKUP.getFirst();
+                }
+
+                public void undo() {
+                    PARENT_BACKUP.add(THIS);
+                }
+            };
         }
 
         //Delete char
@@ -174,21 +240,69 @@ public final class SimpleElement extends PoweredElement {
         final FormulaItem THIS = this;
         final int pos = cursor.getPosition();
         final Cursor newCursor = cursor.makeClone();
+        final Formula PARENT_BACKUP = parent;
         if (pos >= val.length()) { //Delete adjacent item
-            if (parent != null) {
-                final FormulaItem right = parent.getRightItem(this);
+            if (PARENT_BACKUP == null) {
+                return Command.ZERO_COMMAND;
+            }
+
+            final FormulaItem right = PARENT_BACKUP.getRightItem(this);
+            return new Command() {
+
+                public Cursor execute() {
+                    return PARENT_BACKUP.removeRight(THIS);
+                }
+
+                public void undo() {
+                    PARENT_BACKUP.insertAfter(right, THIS);
+                }
+            };
+        } else if (val.length() <= 1) { //Delete this item, cause it is empty now
+            if (PARENT_BACKUP == null) {
+                return Command.ZERO_COMMAND;
+            }
+
+            final FormulaItem right = PARENT_BACKUP.getRightItem(this);
+            if (right != null) {
                 return new Command() {
 
                     public Cursor execute() {
-                        return parent.removeRight(THIS);
+                        PARENT_BACKUP.remove(THIS);
+                        return right.getFirst();
                     }
 
                     public void undo() {
-                        parent.insertAfter(right, THIS);
+                        PARENT_BACKUP.insertBefore(THIS, right);
                     }
                 };
             }
-            return Command.ZERO_COMMAND;
+
+            final FormulaItem left = PARENT_BACKUP.getLeftItem(this);
+            if (left != null) {
+                return new Command() {
+
+                    public Cursor execute() {
+                        PARENT_BACKUP.remove(THIS);
+                        return left.getLast();
+                    }
+
+                    public void undo() {
+                        PARENT_BACKUP.insertAfter(THIS, left);
+                    }
+                };
+            }
+
+            return new Command() {
+
+                public Cursor execute() {
+                    PARENT_BACKUP.remove(THIS);
+                    return PARENT_BACKUP.getFirst();
+                }
+
+                public void undo() {
+                    PARENT_BACKUP.add(THIS);
+                }
+            };
         }
 
         //Delete char

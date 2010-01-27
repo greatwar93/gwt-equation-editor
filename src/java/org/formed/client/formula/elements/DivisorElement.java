@@ -38,7 +38,9 @@ public final class DivisorElement extends BaseElement {
 
     public DivisorElement(Formula formula1, Formula formula2) {
         setFormula1(formula1);
+        formula1.setShowPlace(true);
         setFormula2(formula2);
+        formula2.setShowPlace(true);
     }
 
     public FormulaItem makeClone() {
@@ -57,6 +59,7 @@ public final class DivisorElement extends BaseElement {
             this.formula1 = new Formula(true);
         } else {
             this.formula1 = formula1;
+            formula1.setShowPlace(true);
         }
         formula1.setParent(this);
     }
@@ -70,6 +73,7 @@ public final class DivisorElement extends BaseElement {
             this.formula2 = new Formula(true);
         } else {
             this.formula2 = formula2;
+            formula1.setShowPlace(true);
         }
         formula2.setParent(this);
     }
@@ -88,7 +92,7 @@ public final class DivisorElement extends BaseElement {
         Metrics metrics2 = formula2.calculateMetrics(drawer, size);
 
         int width = Math.max(metrics.getWidth(), metrics2.getWidth());
-        if(width == 0){
+        if (width == 0) {
             width = drawer.textMetrics("0", size).getWidth();
         }
 
@@ -115,7 +119,7 @@ public final class DivisorElement extends BaseElement {
         Metrics metrics2 = formula2.calculateMetrics(drawer, size);
 
         int width = Math.max(metrics.getWidth(), metrics2.getWidth());
-        if(width == 0){
+        if (width == 0) {
             width = drawer.textMetrics("0", size).getWidth();
         }
 
@@ -129,7 +133,7 @@ public final class DivisorElement extends BaseElement {
     @Override
     public void reMeasureCursor(Drawer drawer, Cursor cursor) {
         Metrics metrics = measure(drawer, storedSize);
-        if(cursor.getPosition() == 0){
+        if (cursor.getPosition() == 0) {
             cursor.setCursor(new Cursor(this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown()));
         } else {
             cursor.setCursor(new Cursor(this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown()));

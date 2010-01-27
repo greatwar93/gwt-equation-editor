@@ -6,14 +6,14 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-  http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.formed.client.formula.elements;
 
 import org.formed.client.formula.Cursor;
@@ -21,7 +21,6 @@ import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.Metrics;
-
 
 /**
  *
@@ -44,12 +43,14 @@ public final class FunctionElement extends PoweredElement {
         super();
         setName(name);
         setFormula(formula);
+        formula.setShowPlace(true);
     }
 
     public FunctionElement(String name, Formula formula, Formula power) {
         super(power);
         setName(name);
         setFormula(formula);
+        formula.setShowPlace(true);
     }
 
     public FormulaItem makeClone() {
@@ -77,6 +78,7 @@ public final class FunctionElement extends PoweredElement {
             this.formula = new Formula(true);
         } else {
             this.formula = formula;
+            formula.setShowPlace(true);
         }
         formula.setParent(this);
     }

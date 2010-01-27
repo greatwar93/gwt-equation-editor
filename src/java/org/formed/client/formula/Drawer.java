@@ -1,4 +1,5 @@
 /*
+Copyright 2010 Bulat Sirazetdinov
 Copyright 2009 Bulat Sirazetdinov
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,4 +38,7 @@ public interface Drawer {
 
     void drawText(String text, int size, int x, int y);
     void drawLine(int x1, int y1, int x2, int y2);
+    void drawDottedLine(int x1, int y1, int x2, int y2);
+
+    void drawDebugText(String text);
 }

@@ -70,6 +70,9 @@ public interface FormulaItem {
     //Get position when come down from child-formula
     Cursor childAsksDown(Formula child);
 
+    //Child-formula calls this when it's got empty
+    //void childCollapsed(Formula child);
+
     void reMeasureCursor(Drawer drawer, Cursor cursor);
 
     Cursor insertChar(Cursor cursor, char c);

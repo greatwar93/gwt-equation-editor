@@ -61,10 +61,15 @@ public final class PlaceElement extends BaseElement {
         drawer.addDrawnItem(this, x, y, metrics);
 
         if (show) {
-            drawer.drawLine(x, y - metrics.getHeightUp(), x + metrics.getWidth(), y - metrics.getHeightUp());
-            drawer.drawLine(x + metrics.getWidth(), y - metrics.getHeightUp(), x + metrics.getWidth(), y + metrics.getHeightDown());
-            drawer.drawLine(x + metrics.getWidth(), y + metrics.getHeightDown(), x, y + metrics.getHeightDown());
-            drawer.drawLine(x, y + metrics.getHeightDown(), x, y - metrics.getHeightUp());
+            int x1 = x;
+            int y1 = y - metrics.getHeightUp() + Math.max(1, metrics.getHeight() / 5);
+            int x2 = x + metrics.getWidth();
+            int y2 = y + metrics.getHeightDown() - Math.max(1, metrics.getHeight() / 5);
+
+            drawer.drawDottedLine(x1, y1, x2, y1);
+            drawer.drawDottedLine(x2, y1, x2, y2);
+            drawer.drawDottedLine(x2, y2, x1, y2);
+            drawer.drawDottedLine(x1, y2, x1, y1);
 
             return metrics;
         } else {
@@ -85,8 +90,8 @@ public final class PlaceElement extends BaseElement {
 //        return new Metrics(0, 0, 0);
 
         Metrics metrics = drawer.textMetrics(".", size);
-        metrics.setWidth(0);
         if (!show) {
+            metrics.setWidth(0);
             metrics.setHeightUp(0);
         }
         return metrics;
@@ -111,6 +116,4 @@ public final class PlaceElement extends BaseElement {
         parent.removeAt(0);
         return parent.getFirst();
     }
-
-
 }

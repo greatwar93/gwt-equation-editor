@@ -108,6 +108,13 @@ public final class AbstractCanvasDrawer extends BaseDrawer {
         canvas.stroke();
     }
 
+    public void drawDottedLine(int x1, int y1, int x2, int y2) {
+        canvas.beginPath();
+        canvas.moveTo(x1, y1);
+        canvas.lineTo(x2, y2);
+        canvas.stroke();
+    }
+
     public int getSmallerSize(int size) {
         return size * 3 / 4;
     }

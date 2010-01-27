@@ -226,7 +226,7 @@ public class DrawExample {
         surface.addMouseMoveHandler(new MouseMoveHandler() {
 
             public void onMouseMove(MouseMoveEvent event) {
-//                drawer.highlightItemAt(event.getX(), event.getY());
+                drawer.highlightItemAt(event.getX(), event.getY());
             }
         });
 

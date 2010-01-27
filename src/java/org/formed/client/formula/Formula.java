@@ -52,6 +52,10 @@ public class Formula {
         return clone;
     }
 
+    public void setShowPlace(boolean showPlace){
+        place.setShow(showPlace);
+    }
+
     public FormulaItem getParent() {
         return parent;
     }
@@ -126,8 +130,10 @@ public class Formula {
     public Metrics draw(Drawer drawer, int x, int y, int size) {
         Metrics drawnMetrics = new Metrics(0, 0, 0);
         if (items.isEmpty()) {
+            drawer.drawDebugText("E" + items.size());
             drawnMetrics.add(place.draw(drawer, x + drawnMetrics.getWidth(), y, size));
         } else {
+            drawer.drawDebugText("" + items.size());
             for (FormulaItem item : items) {
                 drawnMetrics.add(item.draw(drawer, x + drawnMetrics.getWidth(), y, size));
                 drawnMetrics.setWidth(drawnMetrics.getWidth() + 1);
@@ -226,10 +232,13 @@ public class Formula {
         int index = items.indexOf(item);
         if (index > 0) {
             items.remove(index - 1);
-            return items.get(index-1).getLast();
+        }
+
+        if (items.size() > 0) {
+            return items.get(index - 1).getLast();
         } else {
             return getFirst();
-        }        
+        }
     }
 
     public Cursor removeRight(FormulaItem item) {

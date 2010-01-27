@@ -16,6 +16,7 @@ limitations under the License.
  */
 package org.formed.client.formula.impl;
 
+import gwt.g2d.client.graphics.Color;
 import gwt.g2d.client.graphics.Surface;
 import gwt.g2d.client.graphics.TextAlign;
 import gwt.g2d.client.graphics.TextBaseline;
@@ -117,6 +118,13 @@ public final class SurfaceDrawer extends BaseDrawer {
         surface.strokeShape(new ShapeBuilder().drawLineSegment(x1, y1, x2, y2).build());
     }
 
+    public void drawDottedLine(int x1, int y1, int x2, int y2) {
+        countLine++;
+        surface.setStrokeStyle(new Color(220, 220, 220));
+        surface.strokeShape(new ShapeBuilder().drawLineSegment(x1, y1, x2, y2).build());
+        surface.setStrokeStyle(new Color(0, 0, 0));
+    }
+
     public int getSmallerSize(int size) {
         return size * 3 / 4;
     }
@@ -130,8 +138,8 @@ public final class SurfaceDrawer extends BaseDrawer {
         surface.clear();
         surface.setTextAlign(TextAlign.LEFT).setTextBaseline(TextBaseline.MIDDLE);
 
-        surface.setFont(20 + "px serif");
-        lastFontSize = 20;
+        //surface.setFont(20 + "px serif");
+        lastFontSize = 0;
 
         Date from = new Date();
         formula.invalidateMetrics();
@@ -146,6 +154,14 @@ public final class SurfaceDrawer extends BaseDrawer {
 
     @Override
     public void redrawCursor() {
-        surface.strokeShape(new ShapeBuilder().drawLineSegment(cursor.getX(), cursor.getY() - cursor.getHeightUp(), cursor.getX(), cursor.getY() + cursor.getHeightDown()).build());
+        if (cursor2 != null) {
+            surface.setStrokeStyle(new Color(220, 220, 220));
+            surface.strokeShape(new ShapeBuilder().drawLineSegment(cursor2.getX(), cursor2.getY() - cursor2.getHeightUp(), cursor2.getX(), cursor2.getY() + cursor2.getHeightDown()).build());
+            surface.setStrokeStyle(new Color(0, 0, 0));
+        }
+
+        if (cursor != null) {
+            surface.strokeShape(new ShapeBuilder().drawLineSegment(cursor.getX(), cursor.getY() - cursor.getHeightUp(), cursor.getX(), cursor.getY() + cursor.getHeightDown()).build());
+        }
     }
 }
