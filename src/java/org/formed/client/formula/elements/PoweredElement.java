@@ -6,21 +6,20 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-  http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.formed.client.formula.elements;
 
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.Metrics;
-
 
 /**
  *
@@ -35,6 +34,16 @@ public abstract class PoweredElement extends BaseElement {
     }
 
     public PoweredElement() {
+        setPower(new Formula());
+    }
+
+    public PoweredElement(Formula power, boolean strokeThrough) {
+        this.strokeThrough = strokeThrough;
+        setPower(power);
+    }
+
+    public PoweredElement(boolean strokeThrough) {
+        this.strokeThrough = strokeThrough;
         setPower(new Formula());
     }
 
@@ -57,19 +66,42 @@ public abstract class PoweredElement extends BaseElement {
 
     @Override
     public Metrics draw(Drawer drawer, int x, int y, int size) {
-        Metrics metrics = super.draw(drawer, x, y, size);
+        storedSize = size;
+        storedX = x;
+        storedY = y;
 
+        Metrics metrics = measure(drawer, size);
+
+        if (highlighted) {
+            drawer.fillRect(x, y - metrics.getHeightUp(), x + metrics.getWidth(), y + metrics.getHeightDown(), highlightR, highlightG, highlightB);
+        }
+
+        drawer.drawText(val, size, x, y);
+        metrics = super.measure(drawer, size);
+        drawer.addDrawnItem(this, x, y, metrics);
+
+        boolean stroked = false;
         if (formulaPower != null) {
+            if (formulaPower.isEmpty()) {
+                if (strokeThrough) {
+                    stroked = true;
+                    drawer.drawLine(x, y + metrics.getHeightDown(), x + metrics.getWidth(), y - metrics.getHeightUp());
+                }
+            }
+
             int powerSize = drawer.getSmallerSize(size);
             Metrics powerMetrics = formulaPower.calculateMetrics(drawer, powerSize);
             int powerX = 0;
-            int powerY = -metrics.getHeightUp()-powerMetrics.getHeightDown();
+            int powerY = -metrics.getHeightUp() - powerMetrics.getHeightDown();
 
             formulaPower.draw(drawer, x + metrics.getWidth() + powerX, y + powerY, powerSize);
             metrics.add(powerMetrics, powerX, powerY);
         }
 
-        drawer.addDrawnItem(this, x, y, metrics);
+        if (strokeThrough && !stroked) {
+            drawer.drawLine(x, y + metrics.getHeightDown(), x + metrics.getWidth(), y - metrics.getHeightUp());
+        }
+
         return metrics;
     }
 
@@ -81,7 +113,7 @@ public abstract class PoweredElement extends BaseElement {
             int powerSize = drawer.getSmallerSize(size);
             Metrics powerMetrics = formulaPower.calculateMetrics(drawer, powerSize);
             int powerX = 0;
-            int powerY = -metrics.getHeightUp()-powerMetrics.getHeightDown();
+            int powerY = -metrics.getHeightUp() - powerMetrics.getHeightDown();
 
             metrics.add(powerMetrics, powerX, powerY);
         }
@@ -91,7 +123,7 @@ public abstract class PoweredElement extends BaseElement {
 
     @Override
     public Cursor getUp(int oldPosition) {
-        if(formulaPower != null){
+        if (formulaPower != null) {
             return formulaPower.getFirst();
         }
         return super.getUp(oldPosition);
@@ -108,7 +140,7 @@ public abstract class PoweredElement extends BaseElement {
 
     @Override
     public Cursor childAsksDown(Formula child) {
-        if(child == formulaPower){
+        if (child == formulaPower) {
             return getLast();
         }
         return super.childAsksDown(child);
@@ -127,5 +159,4 @@ public abstract class PoweredElement extends BaseElement {
         super.invalidateMetrics();
         formulaPower.invalidateMetrics();
     }
-
 }

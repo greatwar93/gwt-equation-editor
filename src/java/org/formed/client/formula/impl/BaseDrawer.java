@@ -43,6 +43,8 @@ public abstract class BaseDrawer implements Drawer {
     protected final Undoer undoer;
     protected Cursor cursor = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
     protected Cursor cursor2 = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
+    protected FormulaItem highlighted1 = null;
+    protected FormulaItem highlighted2 = null;
     private FormulaItem highlightedItem = new SimpleElement("");
     protected final Map<FormulaItem, Rectangle> items = new HashMap<FormulaItem, Rectangle>();
     protected final Map<Formula, Rectangle> formulas = new HashMap<Formula, Rectangle>();
@@ -105,8 +107,35 @@ public abstract class BaseDrawer implements Drawer {
 
     public abstract void redrawCursor();
 
+    public abstract Metrics textMetrics(String text, int size);
+
     public Metrics getDrawerMetrics() {
         return drawerMetrics.cloneMetrics();
+    }
+
+    public int sizeForHeight(String text, int height) {
+        int sizeFrom = 1;
+        int sizeTo = 4000;
+
+        while (sizeFrom != sizeTo) {
+            int size = (sizeTo + sizeFrom) / 2;
+            Metrics metrics = textMetrics(text, size);
+            if (height > metrics.getHeight()) {
+                if (size == sizeFrom) {
+                    return size;
+                }
+                sizeFrom = size;
+            } else if (height < metrics.getHeight()) {
+                if (size == sizeTo) {
+                    return size;
+                }
+                sizeTo = size;
+            } else {
+                return size;
+            }
+        }
+
+        return sizeFrom;
     }
 
     private boolean setCursor(Cursor newCursor) {
@@ -262,7 +291,7 @@ public abstract class BaseDrawer implements Drawer {
             };
         } else if (item instanceof RightCloser) {
             int posTo = parent.getItemPosition(item);
-            final int posFrom = parent.findLeftCloser(posTo);
+            final int posFrom = parent.findLeftCloserPos(posTo);
             final int size = posTo - posFrom + 1;
             return new Command() {
 
@@ -307,7 +336,7 @@ public abstract class BaseDrawer implements Drawer {
             };
         } else if (item instanceof LeftCloser) {
             final int posFrom = parent.getItemPosition(item);
-            int posTo = parent.findRightCloser(posFrom);
+            int posTo = parent.findRightCloserPos(posFrom);
             final int size = posTo - posFrom + 1;
             return new Command() {
 
@@ -448,6 +477,15 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public FormulaItem highlightItemAt(int x, int y) {
+        if (highlighted1 != null) {
+            highlighted1.highlightOff();
+            highlighted1 = null;
+        }
+        if (highlighted2 != null) {
+            highlighted2.highlightOff();
+            highlighted2 = null;
+        }
+
         Rectangle minRect = null;
         FormulaItem minRectItem = null;
         for (FormulaItem item : items.keySet()) {
@@ -461,6 +499,26 @@ public abstract class BaseDrawer implements Drawer {
         }
         if (minRectItem != null) {
             cursor2 = minRectItem.getCursor(this, x, y);
+
+            if (minRectItem instanceof LeftCloser) {
+                highlighted1 = minRectItem;
+                highlighted2 = ((LeftCloser) minRectItem).getRightCloser();
+                if (highlighted2 != null) {
+                    highlighted1.setHighlight(255, 255, 0);
+                    highlighted2.setHighlight(255, 255, 0);
+                } else {
+                    highlighted1.setHighlight(255, 0, 0);
+                }
+            } else if (minRectItem instanceof RightCloser) {
+                highlighted1 = minRectItem;
+                highlighted2 = ((RightCloser) minRectItem).getLeftCloser();
+                if (highlighted2 != null) {
+                    highlighted1.setHighlight(255, 255, 0);
+                    highlighted2.setHighlight(255, 255, 0);
+                } else {
+                    highlighted1.setHighlight(255, 0, 0);
+                }
+            }
         } else {
             cursor2 = null;
         }

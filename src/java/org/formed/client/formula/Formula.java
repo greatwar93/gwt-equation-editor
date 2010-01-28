@@ -33,6 +33,7 @@ public class Formula {
     private final List<FormulaItem> items = new ArrayList<FormulaItem>();
     private FormulaItem parent = null;
     private boolean metricsValid = false;
+    private int storedSize = 0;
     private Metrics metrics = new Metrics(0, 0, 0);
 
     public Formula() {
@@ -99,6 +100,7 @@ public class Formula {
     }
 
     public Metrics drawAligned(Drawer drawer, int x, int y, int size, Drawer.Align align) {
+        storedSize = size;
         switch (align) {
             case TOP:
                 calculateMetrics(drawer, size);
@@ -134,6 +136,7 @@ public class Formula {
     }
 
     public Metrics draw(Drawer drawer, int x, int y, int size) {
+        storedSize = size;
         Metrics drawnMetrics = new Metrics(0, 0, 0);
         if (items.isEmpty()) {
             drawer.drawDebugText("E" + items.size());
@@ -376,10 +379,51 @@ public class Formula {
         return getLastItem().getLast();
     }
 
+    public FormulaItem findLeftCloser(FormulaItem item){
+        int posTo = items.indexOf(item);
+        if(posTo<0) return null;
+        
+        int closers = 0;
+        for (int pos = posTo; pos >= 0; pos--) {
+            FormulaItem posItem = items.get(pos);
+            if (posItem instanceof LeftCloser) {
+                closers--;
+                if (closers <= 0) {
+                    return posItem;
+                }
+            } else if (posItem instanceof RightCloser) {
+                closers++;
+            }
+        }
+
+        return null;
+    }
+
+    public FormulaItem findRightCloser(FormulaItem item){
+        int posFrom = items.indexOf(item);
+        if(posFrom<0) return null;
+
+        int size = items.size();
+        int closers = 0;
+        for (int pos = posFrom; pos < size; pos++) {
+            FormulaItem posItem = items.get(pos);
+            if (posItem instanceof LeftCloser) {
+                closers++;
+            } else if (posItem instanceof RightCloser) {
+                closers--;
+                if (closers <= 0) {
+                    return posItem;
+                }
+            }
+        }
+
+        return null;
+    }
+
     /*
      * Find the position of a LeftCloser that corresponds to the RightCloser in a specified position.
      */
-    public int findLeftCloser(int posTo) {
+    public int findLeftCloserPos(int posTo) {
         int closers = 0;
         for (int pos = posTo; pos > 0; pos--) {
             FormulaItem posItem = items.get(pos);
@@ -399,7 +443,7 @@ public class Formula {
     /*
      * Find the position of a RightCloser that corresponds to the LeftCloser in a specified position.
      */
-    public int findRightCloser(int posFrom) {
+    public int findRightCloserPos(int posFrom) {
         int size = items.size();
         int closers = 0;
         for (int pos = posFrom; pos < size; pos++) {
@@ -415,5 +459,22 @@ public class Formula {
         }
 
         return size - 1;
+    }
+
+    /*
+     * Find maximum heightUp and heightDown of items in a specified part of a Formula
+     */
+    public Metrics findMaxHeights(Drawer drawer, int size, int posFrom, int count){
+        int posTo = Math.min(items.size(), posFrom+count);
+        posFrom = Math.max(0, posFrom);
+        int maxHeightUp = 0;
+        int maxHeightDown = 0;
+        for(int i = posFrom; i < posTo; i++){
+            Metrics itemMetrics = items.get(i).measure(drawer, size);
+            maxHeightUp = Math.max(maxHeightUp, itemMetrics.getHeightUp());
+            maxHeightDown = Math.max(maxHeightDown, itemMetrics.getHeightDown());
+        }
+
+        return new Metrics(0, maxHeightUp, maxHeightDown);
     }
 }

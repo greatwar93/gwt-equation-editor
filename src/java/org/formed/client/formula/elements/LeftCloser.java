@@ -39,4 +39,8 @@ public final class LeftCloser extends BaseElement {
         return false;
     }
 
+    public FormulaItem getRightCloser(){
+        if(parent == null) return null;
+        return parent.findRightCloser(this);
+    }
 }

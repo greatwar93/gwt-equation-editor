@@ -35,8 +35,18 @@ public abstract class BaseElement implements FormulaItem {
     protected int storedX = 0;
     protected int storedY = 0;
     protected boolean metricsValid = false;
+    protected Metrics storedMetrics;
+    protected boolean strokeThrough = false;
+    protected boolean highlighted = false;
+    protected int highlightR = 255;
+    protected int highlightG = 255;
+    protected int highlightB = 255;
 
     public BaseElement() {
+    }
+
+    public BaseElement(boolean strokeThrough) {
+        this.strokeThrough = strokeThrough;
     }
 
     public Formula getParent() {
@@ -47,14 +57,37 @@ public abstract class BaseElement implements FormulaItem {
         this.parent = parent;
     }
 
+    public void setStrokeThrough(boolean strokeThrough) {
+        this.strokeThrough = strokeThrough;
+    }
+
+    public void highlightOff() {
+        highlighted = false;
+    }
+
+    public void setHighlight(int r, int g, int b) {
+        highlighted = true;
+        highlightR = r;
+        highlightG = g;
+        highlightB = b;
+    }
+
     public Metrics draw(Drawer drawer, int x, int y, int size) {
         storedSize = size;
         storedX = x;
         storedY = y;
 
+        Metrics metrics = drawer.textMetrics(val, size);
+
+        if(highlighted){
+            drawer.fillRect(x, y-metrics.getHeightUp(), x+metrics.getWidth(), y+metrics.getHeightDown(), highlightR, highlightG, highlightB);
+        }
+
         drawer.drawText(val, size, x, y);
 
-        Metrics metrics = drawer.textMetrics(val, size);
+        if(strokeThrough){
+            drawer.drawLine(x, y+metrics.getHeightDown(), x+metrics.getWidth(), y-metrics.getHeightUp());
+        }
 
         drawer.addDrawnItem(this, x, y, metrics);
 

@@ -88,7 +88,13 @@ public final class DivisorElement extends BaseElement {
         storedX = x;
         storedY = y;
 
-        Metrics metrics = formula1.calculateMetrics(drawer, size);
+        Metrics metrics = measure(drawer, size);
+
+        if(highlighted){
+            drawer.fillRect(x, y-metrics.getHeightUp(), x+metrics.getWidth(), y+metrics.getHeightDown(), highlightR, highlightG, highlightB);
+        }
+
+        metrics = formula1.calculateMetrics(drawer, size);
         Metrics metrics2 = formula2.calculateMetrics(drawer, size);
 
         int width = Math.max(metrics.getWidth(), metrics2.getWidth());
@@ -106,6 +112,10 @@ public final class DivisorElement extends BaseElement {
         metrics.setWidth(width);
         metrics.setHeightUp(metrics.getHeight());
         metrics.setHeightDown(metrics2.getHeight());
+
+        if(strokeThrough){
+            drawer.drawLine(x, y+metrics.getHeightDown(), x+metrics.getWidth(), y-metrics.getHeightUp());
+        }
 
         drawer.addDrawnItem(this, x, y, metrics);
         return metrics;

@@ -125,6 +125,12 @@ public final class SurfaceDrawer extends BaseDrawer {
         surface.setStrokeStyle(new Color(0, 0, 0));
     }
 
+    public void fillRect(int x1, int y1, int x2, int y2, int r, int g, int b) {
+        surface.setFillStyle(new Color(r, g, b));
+        surface.fillShape(new ShapeBuilder().moveTo(x1, y1).drawLineTo(x2, y1).drawLineTo(x2, y2).drawLineTo(x1, y2).drawLineTo(x1, y1).build());
+        surface.setFillStyle(new Color(0, 0, 0));
+    }
+
     public int getSmallerSize(int size) {
         return size * 3 / 4;
     }

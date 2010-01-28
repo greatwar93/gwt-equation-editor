@@ -85,7 +85,13 @@ public final class FunctionElement extends PoweredElement {
 
     @Override
     public Metrics draw(Drawer drawer, int x, int y, int size) {
-        Metrics metrics = super.draw(drawer, x, y, size);
+        Metrics metrics = measure(drawer, size);
+
+        if(highlighted){
+            drawer.fillRect(x, y-metrics.getHeightUp(), x+metrics.getWidth(), y+metrics.getHeightDown(), highlightR, highlightG, highlightB);
+        }
+
+        metrics = super.draw(drawer, x, y, size);
 
         if (formula != null) {
             if (formula.isComplex()) {
@@ -95,6 +101,10 @@ public final class FunctionElement extends PoweredElement {
             } else {
                 metrics.add(formula.draw(drawer, x + metrics.getWidth(), y, size));
             }
+        }
+
+        if(strokeThrough){
+            drawer.drawLine(x, y+metrics.getHeightDown(), x+metrics.getWidth(), y-metrics.getHeightUp());
         }
 
         drawer.addDrawnItem(this, x, y, metrics);

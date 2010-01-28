@@ -87,7 +87,12 @@ public final class RootElement extends BaseElement {
         storedX = x;
         storedY = y;
 
-        Metrics metrics = new Metrics(4, 0, 0);
+        Metrics metrics = measure(drawer, size);
+        if(highlighted){
+            drawer.fillRect(x, y-metrics.getHeightUp(), x+metrics.getWidth(), y+metrics.getHeightDown(), highlightR, highlightG, highlightB);
+        }
+
+        metrics = new Metrics(4, 0, 0);
         Metrics metrics2 = formula.calculateMetrics(drawer, size);
 
         if (formulaPower != null) {
@@ -118,6 +123,10 @@ public final class RootElement extends BaseElement {
         metrics.setWidth(metrics.getWidth() + metrics2.getWidth() + 6);
         metrics.setHeightUp(Math.max(metrics2.getHeightUp() + 4, metrics.getHeight() + metrics2.getHeight() / 2));
         metrics.setHeightDown(metrics2.getHeightDown());
+
+        if(strokeThrough){
+            drawer.drawLine(x, y+metrics.getHeightDown(), x+metrics.getWidth(), y-metrics.getHeightUp());
+        }
 
         drawer.addDrawnItem(this, x, y, metrics);
         return metrics;

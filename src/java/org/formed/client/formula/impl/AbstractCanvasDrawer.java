@@ -47,6 +47,10 @@ public final class AbstractCanvasDrawer extends BaseDrawer {
         });
     }
 
+    public void fillRect(int x1, int y1, int x2, int y2, int r, int g, int b) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     private class SizedText {
 
         private String text;

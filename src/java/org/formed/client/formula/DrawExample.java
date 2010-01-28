@@ -62,6 +62,8 @@ public class DrawExample {
         formula.add(new OperatorElement("+"));
         formula.add(new FunctionElement("sin", new Formula().add(new SimpleElement("α"))));
         formula.add(new OperatorElement("-"));
+        formula.add(new DivisorElement(new Formula().add(new SimpleElement("a", true)), new Formula().add(new SimpleElement("a", true)).add(new OperatorElement("·")).add(new SimpleElement("b")).add(new OperatorElement("+")).add(new SimpleElement("a", true))));
+        formula.add(new OperatorElement("·"));
         formula.add(new DivisorElement(new Formula().add(new SimpleElement("a")).add(new OperatorElement("+")).add(new SimpleElement("b")), new Formula().add(new SimpleElement("alpha")).add(new OperatorElement("+")).add(new SimpleElement("beta"))));
         formula.add(new OperatorElement("+"));
         formula.add(new DivisorElement(new Formula().add(new SimpleElement("a", new Formula().add(new RootElement(new Formula().add(new SimpleElement("α")).add(new OperatorElement("+")).add(new SimpleElement("beta")), new Formula().add(new SimpleElement("alpha")).add(new SimpleElement("b", new Formula().add(new SimpleElement("2")))))))).add(new OperatorElement("+")).add(new SimpleElement("b")), new Formula().add(new RootElement(new Formula().add(new SimpleElement("α")).add(new OperatorElement("+")).add(new DivisorElement(new Formula().add(new SimpleElement("beta")), new Formula().add(new FunctionElement("sin", new Formula().add(new SimpleElement("α")).add(new OperatorElement("+")).add(new SimpleElement("β")), new Formula().add(new SimpleElement("2"))))))))));

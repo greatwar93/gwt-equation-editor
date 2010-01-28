@@ -35,10 +35,12 @@ public interface Drawer {
 
     int getSmallerSize(int size);
     Metrics textMetrics(String text, int size);
+    int sizeForHeight(String text, int height);
 
     void drawText(String text, int size, int x, int y);
     void drawLine(int x1, int y1, int x2, int y2);
     void drawDottedLine(int x1, int y1, int x2, int y2);
+    void fillRect(int x1, int y1, int x2, int y2, int r, int g, int b);
 
     void drawDebugText(String text);
 }

@@ -39,6 +39,16 @@ public final class SimpleElement extends PoweredElement {
         setName(name);
     }
 
+    public SimpleElement(String name, boolean strokeThrough) {
+        super(strokeThrough);
+        setName(name);
+    }
+
+    public SimpleElement(String name, Formula power, boolean strokeThrough) {
+        super(power, strokeThrough);
+        setName(name);
+    }
+
     public FormulaItem makeClone() {
         SimpleElement clone = new SimpleElement(val, getPower().makeClone());
         clone.setParent(parent);

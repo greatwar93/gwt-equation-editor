@@ -30,8 +30,10 @@ public interface FormulaItem {
 
     boolean isComplex();
 
+    //Draw this item on a specified drawer in a specified position of a specified size
     Metrics draw(Drawer drawer, int x, int y, int size);
 
+    //Measure sizes of this item on a specified drawer of a specified size
     Metrics measure(Drawer drawer, int size);
 
     //Get cursor for a mouse click
@@ -86,4 +88,13 @@ public interface FormulaItem {
     void invalidatePlaces(Formula source);
     
     void invalidateMetrics();
+
+    //Set item to be stroked through
+    void setStrokeThrough(boolean strokeThrough);
+
+    //Highlight an item with a background of a specified color
+    void setHighlight(int r, int g, int b);
+
+    //Switch highlighting of an item off
+    void highlightOff();
 }
