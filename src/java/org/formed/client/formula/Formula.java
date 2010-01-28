@@ -18,7 +18,9 @@ package org.formed.client.formula;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.formed.client.formula.elements.LeftCloser;
 import org.formed.client.formula.elements.PlaceElement;
+import org.formed.client.formula.elements.RightCloser;
 
 /**
  *
@@ -125,6 +127,10 @@ public class Formula {
         }
 
         return false;
+    }
+
+    public int getItemsCount(){
+        return items.size();
     }
 
     public Metrics draw(Drawer drawer, int x, int y, int size) {
@@ -368,5 +374,46 @@ public class Formula {
 
     public Cursor getLast() {
         return getLastItem().getLast();
+    }
+
+    /*
+     * Find the position of a LeftCloser that corresponds to the RightCloser in a specified position.
+     */
+    public int findLeftCloser(int posTo) {
+        int closers = 0;
+        for (int pos = posTo; pos > 0; pos--) {
+            FormulaItem posItem = items.get(pos);
+            if (posItem instanceof LeftCloser) {
+                closers--;
+                if (closers <= 0) {
+                    return pos;
+                }
+            } else if (posItem instanceof RightCloser) {
+                closers++;
+            }
+        }
+
+        return 0;
+    }
+
+    /*
+     * Find the position of a RightCloser that corresponds to the LeftCloser in a specified position.
+     */
+    public int findRightCloser(int posFrom) {
+        int size = items.size();
+        int closers = 0;
+        for (int pos = posFrom; pos < size; pos++) {
+            FormulaItem posItem = items.get(pos);
+            if (posItem instanceof LeftCloser) {
+                closers++;
+            } else if (posItem instanceof RightCloser) {
+                closers--;
+                if (closers <= 0) {
+                    return pos;
+                }
+            }
+        }
+
+        return size - 1;
     }
 }

@@ -166,7 +166,7 @@ public class DrawExample {
                     //keys.setHTML(keys.getHTML() + "+dCopy");
                 } else if (event.isControlKeyDown() && keycode == 67) {
                     //keys.setHTML(keys.getHTML() + "+dCopy");
-                } else if (event.isControlKeyDown() && (keycode == 90 || keycode == KeyCodes.KEY_BACKSPACE)) {
+                } else if ((event.isControlKeyDown() && (keycode == 90 || keycode == KeyCodes.KEY_BACKSPACE)) || keycode == KeyCodes.KEY_ESCAPE) {
                     undoer.undo();
                     drawer.redraw();
                 } else if (event.isControlKeyDown() && keycode == 89) {

@@ -27,6 +27,8 @@ import org.formed.client.formula.FormulaItem;
  */
 public final class SimpleElement extends PoweredElement {
 
+    protected boolean addNext = false; //Should next item be concatenated with this in the case of undo.
+
     public SimpleElement(String name) {
         super();
         setName(name);
@@ -52,12 +54,22 @@ public final class SimpleElement extends PoweredElement {
         val = name;
     }
 
+    public boolean isAddNext() {
+        return addNext;
+    }
+
+    public void setAddNext(boolean addNext) {
+        this.addNext = addNext;
+    }
+
     public Cursor breakWith(int pos, FormulaItem item) {
+        addNext = false;
         if (parent == null) {
             return item.getCursor(pos);
         }
 
         if (pos < val.length()) {
+            addNext = true;
             parent.insertAfter(item, this);
             parent.insertAfter(new SimpleElement(val.substring(pos), getPower()), item);
             setName(val.substring(0, pos));
@@ -69,6 +81,12 @@ public final class SimpleElement extends PoweredElement {
         invalidatePlaces(null);
 
         return item.getLast(); //Why doesn't it work ?
+    }
+
+    public void addItem(SimpleElement item){
+        val = val + item.getName();
+        setPower(item.getPower());
+        addNext = false;
     }
 
     public String getTextBefore(Cursor cursor) {
@@ -97,13 +115,13 @@ public final class SimpleElement extends PoweredElement {
 
         if (val.length() <= 0) {
             if (parent != null) {
-                final Formula PARENT_BACKUP = parent;
-                Cursor cursor = PARENT_BACKUP.getLeft(this);
+                final Formula parent_backup = parent;
+                Cursor cursor = parent_backup.getLeft(this);
 
-                PARENT_BACKUP.remove(this);
+                parent_backup.remove(this);
 
                 if (cursor.getItem() == this) {
-                    return PARENT_BACKUP.getFirst();
+                    return parent_backup.getFirst();
                 } else {
                     return cursor;
                 }
@@ -151,56 +169,56 @@ public final class SimpleElement extends PoweredElement {
         final FormulaItem THIS = this;
         final int pos = cursor.getPosition();
         final Cursor newCursor = cursor.makeClone();
-        final Formula PARENT_BACKUP = parent;
+        final Formula parent_backup = parent;
         if (pos <= 0) { //Delete adjecent item
-            if (PARENT_BACKUP == null) {
+            if (parent_backup == null) {
                 return Command.ZERO_COMMAND;
             }
 
-            final FormulaItem left = PARENT_BACKUP.getLeftItem(this);
+            final FormulaItem left = parent_backup.getLeftItem(this);
             return new Command() {
 
                 public Cursor execute() {
-                    return PARENT_BACKUP.removeLeft(THIS);
+                    return parent_backup.removeLeft(THIS);
                 }
 
                 public void undo() {
-                    PARENT_BACKUP.insertBefore(left, THIS);
+                    parent_backup.insertBefore(left, THIS);
                 }
             };
 
 
         } else if (val.length() <= 1) { //Delete this item, cause it is empty now
-            if (PARENT_BACKUP == null) {
+            if (parent_backup == null) {
                 return Command.ZERO_COMMAND;
             }
 
-            final FormulaItem left = PARENT_BACKUP.getLeftItem(this);
+            final FormulaItem left = parent_backup.getLeftItem(this);
             if (left != null) {
                 return new Command() {
 
                     public Cursor execute() {
-                        PARENT_BACKUP.remove(THIS);
+                        parent_backup.remove(THIS);
                         return left.getLast();
                     }
 
                     public void undo() {
-                        PARENT_BACKUP.insertAfter(THIS, left);
+                        parent_backup.insertAfter(THIS, left);
                     }
                 };
             }
 
-            final FormulaItem right = PARENT_BACKUP.getRightItem(this);
+            final FormulaItem right = parent_backup.getRightItem(this);
             if (right != null) {
                 return new Command() {
 
                     public Cursor execute() {
-                        PARENT_BACKUP.remove(THIS);
+                        parent_backup.remove(THIS);
                         return right.getFirst();
                     }
 
                     public void undo() {
-                        PARENT_BACKUP.insertBefore(THIS, right);
+                        parent_backup.insertBefore(THIS, right);
                     }
                 };
             }
@@ -208,12 +226,12 @@ public final class SimpleElement extends PoweredElement {
             return new Command() {
 
                 public Cursor execute() {
-                    PARENT_BACKUP.remove(THIS);
-                    return PARENT_BACKUP.getFirst();
+                    parent_backup.remove(THIS);
+                    return parent_backup.getFirst();
                 }
 
                 public void undo() {
-                    PARENT_BACKUP.add(THIS);
+                    parent_backup.add(THIS);
                 }
             };
         }
@@ -240,54 +258,54 @@ public final class SimpleElement extends PoweredElement {
         final FormulaItem THIS = this;
         final int pos = cursor.getPosition();
         final Cursor newCursor = cursor.makeClone();
-        final Formula PARENT_BACKUP = parent;
+        final Formula parent_backup = parent;
         if (pos >= val.length()) { //Delete adjacent item
-            if (PARENT_BACKUP == null) {
+            if (parent_backup == null) {
                 return Command.ZERO_COMMAND;
             }
 
-            final FormulaItem right = PARENT_BACKUP.getRightItem(this);
+            final FormulaItem right = parent_backup.getRightItem(this);
             return new Command() {
 
                 public Cursor execute() {
-                    return PARENT_BACKUP.removeRight(THIS);
+                    return parent_backup.removeRight(THIS);
                 }
 
                 public void undo() {
-                    PARENT_BACKUP.insertAfter(right, THIS);
+                    parent_backup.insertAfter(right, THIS);
                 }
             };
         } else if (val.length() <= 1) { //Delete this item, cause it is empty now
-            if (PARENT_BACKUP == null) {
+            if (parent_backup == null) {
                 return Command.ZERO_COMMAND;
             }
 
-            final FormulaItem right = PARENT_BACKUP.getRightItem(this);
+            final FormulaItem right = parent_backup.getRightItem(this);
             if (right != null) {
                 return new Command() {
 
                     public Cursor execute() {
-                        PARENT_BACKUP.remove(THIS);
+                        parent_backup.remove(THIS);
                         return right.getFirst();
                     }
 
                     public void undo() {
-                        PARENT_BACKUP.insertBefore(THIS, right);
+                        parent_backup.insertBefore(THIS, right);
                     }
                 };
             }
 
-            final FormulaItem left = PARENT_BACKUP.getLeftItem(this);
+            final FormulaItem left = parent_backup.getLeftItem(this);
             if (left != null) {
                 return new Command() {
 
                     public Cursor execute() {
-                        PARENT_BACKUP.remove(THIS);
+                        parent_backup.remove(THIS);
                         return left.getLast();
                     }
 
                     public void undo() {
-                        PARENT_BACKUP.insertAfter(THIS, left);
+                        parent_backup.insertAfter(THIS, left);
                     }
                 };
             }
@@ -295,12 +313,12 @@ public final class SimpleElement extends PoweredElement {
             return new Command() {
 
                 public Cursor execute() {
-                    PARENT_BACKUP.remove(THIS);
-                    return PARENT_BACKUP.getFirst();
+                    parent_backup.remove(THIS);
+                    return parent_backup.getFirst();
                 }
 
                 public void undo() {
-                    PARENT_BACKUP.add(THIS);
+                    parent_backup.add(THIS);
                 }
             };
         }

@@ -301,39 +301,39 @@ public abstract class BaseElement implements FormulaItem {
         }
 
         final FormulaItem THIS = this;
-        final Formula PARENT_BACKUP = parent;
+        final Formula parent_backup = parent;
 
         if (cursor.getPosition() <= 0) { //Remove item to the left
-            final FormulaItem left = PARENT_BACKUP.getLeftItem(THIS);
+            final FormulaItem left = parent_backup.getLeftItem(THIS);
             if(left == null) return Command.ZERO_COMMAND;
 
             return new Command() {
 
                 public Cursor execute() {
-                    return PARENT_BACKUP.removeLeft(THIS);
+                    return parent_backup.removeLeft(THIS);
                 }
 
                 public void undo() {
-                    PARENT_BACKUP.insertBefore(left, THIS);
+                    parent_backup.insertBefore(left, THIS);
                 }
             };
         } else { //Remove this item
             return new Command() {
-                final int pos = PARENT_BACKUP.getItemPosition(THIS);
+                final int pos = parent_backup.getItemPosition(THIS);
 
                 public Cursor execute() {
-                    Cursor newCursor = PARENT_BACKUP.getLeft(THIS);
-                    PARENT_BACKUP.remove(THIS);
+                    Cursor newCursor = parent_backup.getLeft(THIS);
+                    parent_backup.remove(THIS);
 
                     if (newCursor == null) {
-                        newCursor = PARENT_BACKUP.getFirst();
+                        newCursor = parent_backup.getFirst();
                     }
 
                     return newCursor;
                 }
 
                 public void undo() {
-                    PARENT_BACKUP.insertAt(pos, THIS);
+                    parent_backup.insertAt(pos, THIS);
                 }
             };
         }
@@ -346,39 +346,39 @@ public abstract class BaseElement implements FormulaItem {
         }
 
         final FormulaItem THIS = this;
-        final Formula PARENT_BACKUP = parent;
+        final Formula parent_backup = parent;
 
         if (cursor.getPosition() > 0) { //Remove item to the right
-            final FormulaItem right = PARENT_BACKUP.getRightItem(THIS);
+            final FormulaItem right = parent_backup.getRightItem(THIS);
             if(right == null) return Command.ZERO_COMMAND;
 
             return new Command() {
 
                 public Cursor execute() {
-                    return PARENT_BACKUP.removeRight(THIS);
+                    return parent_backup.removeRight(THIS);
                 }
 
                 public void undo() {
-                    PARENT_BACKUP.insertAfter(right, THIS);
+                    parent_backup.insertAfter(right, THIS);
                 }
             };
         } else { //Remove this item
             return new Command() {
-                final int pos = PARENT_BACKUP.getItemPosition(THIS);
+                final int pos = parent_backup.getItemPosition(THIS);
 
                 public Cursor execute() {
-                    Cursor newCursor = PARENT_BACKUP.getRight(THIS);
-                    PARENT_BACKUP.remove(THIS);
+                    Cursor newCursor = parent_backup.getRight(THIS);
+                    parent_backup.remove(THIS);
 
                     if (newCursor == null) {
-                        newCursor = PARENT_BACKUP.getLast();
+                        newCursor = parent_backup.getLast();
                     }
 
                     return newCursor;
                 }
 
                 public void undo() {
-                    PARENT_BACKUP.insertAt(pos, THIS);
+                    parent_backup.insertAt(pos, THIS);
                 }
             };
         }

@@ -48,7 +48,6 @@ public abstract class BaseDrawer implements Drawer {
     protected final Map<Formula, Rectangle> formulas = new HashMap<Formula, Rectangle>();
     protected final Drawer THIS_DRAWER = this;
     protected Metrics drawerMetrics = new Metrics(0, 0, 0);
-
     protected int debugTexts = 0;
 
     public BaseDrawer(Formula formula) {
@@ -137,7 +136,7 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     protected Command makeCommandBreakWith(final SimpleElement currentItem, final FormulaItem newItem, final int pos) {
-        final Formula PARENT_BACKUP = currentItem.getParent();
+        final Formula parent_backup = currentItem.getParent();
         return new Command() {
 
             public Cursor execute() {
@@ -146,37 +145,49 @@ public abstract class BaseDrawer implements Drawer {
             }
 
             public void undo() {
-                PARENT_BACKUP.remove(newItem);
+                parent_backup.remove(newItem);
+                if (!currentItem.isAddNext()) {
+                    return;
+                }
+
+                currentItem.setAddNext(false);
+                FormulaItem item = parent_backup.getRightItem(currentItem);
+                if (!(item instanceof SimpleElement)) {
+                    return;
+                }
+
+                currentItem.addItem((SimpleElement) item);
+                parent_backup.remove(item);
             }
         };
     }
 
     protected Command makeCommandInsertAfter(final FormulaItem currentItem, final FormulaItem newItem) {
-        final Formula PARENT_BACKUP = currentItem.getParent();
+        final Formula parent_backup = currentItem.getParent();
         return new Command() {
 
             public Cursor execute() {
-                PARENT_BACKUP.insertAfter(newItem, currentItem);
+                parent_backup.insertAfter(newItem, currentItem);
                 return newItem.getLast();
             }
 
             public void undo() {
-                PARENT_BACKUP.remove(newItem);
+                parent_backup.remove(newItem);
             }
         };
     }
 
     protected Command makeCommandInsertBefore(final FormulaItem currentItem, final FormulaItem newItem) {
-        final Formula PARENT_BACKUP = currentItem.getParent();
+        final Formula parent_backup = currentItem.getParent();
         return new Command() {
 
             public Cursor execute() {
-                PARENT_BACKUP.insertBefore(newItem, currentItem);
+                parent_backup.insertBefore(newItem, currentItem);
                 return newItem.getLast();
             }
 
             public void undo() {
-                PARENT_BACKUP.remove(newItem);
+                parent_backup.remove(newItem);
             }
         };
     }
@@ -209,25 +220,113 @@ public abstract class BaseDrawer implements Drawer {
         };
     }
 
-    public void insert(char c) {
-        final FormulaItem currentItem = cursor.getItem();
-        SimpleElement currentSimpleItem = null;
-        boolean currentSimple = false;
-        if (currentItem instanceof SimpleElement) {
-            currentSimpleItem = (SimpleElement) currentItem;
-            currentSimple = true;
+    /*
+     * Move specified formula part to another formula
+     */
+    protected void moveFormula(Formula source, int posFrom, int size, Formula dest, int posTo) {
+        for (int i = 0; i < size; i++) {
+            FormulaItem item = source.getItem(posFrom);
+            if (item == null) {
+                return;
+            }
+            source.remove(item);
+            dest.insertAt(posTo, item);
+            posTo++;
+        }
+    }
+
+    protected Command makeCommandLeftToDivisor(final DivisorElement newItem) {
+        final Formula parent = newItem.getParent();
+        if (parent == null) {
+            return Command.ZERO_COMMAND;
         }
 
-        Cursor rightCursor = currentItem.getParent().getYourRight(currentItem);
-        SimpleElement rightSimpleItem = null;
-        boolean rightSimple = false;
-        if (rightCursor != null) {
-            rightCursor.setPosition(0);
-            if (rightCursor.getItem() instanceof SimpleElement) {
-                rightSimpleItem = (SimpleElement) rightCursor.getItem();
-                rightSimple = true;
-            }
+        final FormulaItem item = parent.getLeftItem(newItem);
+        if (item == null) {
+            return Command.ZERO_COMMAND;
         }
+
+        if (item instanceof SimpleElement) {
+            return new Command() {
+
+                public Cursor execute() {
+                    parent.remove(item);
+                    newItem.getFormula1().add(item);
+                    return newItem.getFormula2().getFirst();
+                }
+
+                public void undo() {
+                    newItem.getFormula1().remove(item);
+                    parent.insertBefore(item, newItem);
+                }
+            };
+        } else if (item instanceof RightCloser) {
+            int posTo = parent.getItemPosition(item);
+            final int posFrom = parent.findLeftCloser(posTo);
+            final int size = posTo - posFrom + 1;
+            return new Command() {
+
+                public Cursor execute() {
+                    moveFormula(parent, posFrom, size, newItem.getFormula1(), 0);
+                    return newItem.getFormula1().getLast();
+                }
+
+                public void undo() {
+                    moveFormula(newItem.getFormula1(), 0, size, parent, posFrom);
+                }
+            };
+        }
+
+        return Command.ZERO_COMMAND;
+    }
+
+    protected Command makeCommandRightToDivisor(final DivisorElement newItem) {
+        final Formula parent = newItem.getParent();
+        if (parent == null) {
+            return Command.ZERO_COMMAND;
+        }
+
+        final FormulaItem item = parent.getRightItem(newItem);
+        if (item == null) {
+            return Command.ZERO_COMMAND;
+        }
+
+        if (item instanceof SimpleElement) {
+            return new Command() {
+
+                public Cursor execute() {
+                    parent.remove(item);
+                    newItem.getFormula2().add(item);
+                    return newItem.getLast();
+                }
+
+                public void undo() {
+                    newItem.getFormula2().remove(item);
+                    parent.insertAfter(item, newItem);
+                }
+            };
+        } else if (item instanceof LeftCloser) {
+            final int posFrom = parent.getItemPosition(item);
+            int posTo = parent.findRightCloser(posFrom);
+            final int size = posTo - posFrom + 1;
+            return new Command() {
+
+                public Cursor execute() {
+                    moveFormula(parent, posFrom, size, newItem.getFormula2(), 0);
+                    return newItem.getLast();
+                }
+
+                public void undo() {
+                    moveFormula(newItem.getFormula2(), 0, size, parent, posFrom);
+                }
+            };
+        }
+
+        return Command.ZERO_COMMAND;
+    }
+
+    public void insert(char c) {
+        final FormulaItem currentItem = cursor.getItem();
 
         if (c == '^') {
             if (currentItem instanceof PoweredElement) {
@@ -250,63 +349,30 @@ public abstract class BaseDrawer implements Drawer {
         } else if (c == ')') {
             insertElement(new RightCloser());
         } else if (c == '/') {
-            if (currentSimple) {
-                if (cursor.getPosition() < currentSimpleItem.getName().length()) {
-                    Formula formula1 = new Formula(true).add(new SimpleElement(currentSimpleItem.getTextBefore(cursor)));
-                    Formula formula2 = new Formula(true).add(new SimpleElement(currentSimpleItem.getTextAfter(cursor), currentSimpleItem.getPower()));
-                    DivisorElement newDivisor = new DivisorElement(formula1, formula2);
+            DivisorElement newItem = new DivisorElement();
+            insertElement(newItem);
 
-                    currentItem.getParent().replace(newDivisor, currentItem);
-                    setCursor(newDivisor.getFormula2().getFirst());
-                } else {
-                    Formula formula1 = new Formula(true).add(new SimpleElement(currentSimpleItem.getTextBefore(cursor), currentSimpleItem.getPower()));
-                    Formula formula2 = new Formula(true);
-                    DivisorElement newDivisor = new DivisorElement(formula1, formula2);
+            Command leftCommand = makeCommandLeftToDivisor(newItem);
+            setCursor(leftCommand.execute());
+            undoer.add(leftCommand);
 
-                    currentItem.getParent().replace(newDivisor, currentItem);
-                    setCursor(newDivisor.getFormula2().getFirst());
-                }
-            } else if (currentItem instanceof RightCloser) {
-                Formula formula1 = new Formula(true);
-                Formula formula2 = new Formula(true);
-
-                Formula currentFormula = currentItem.getParent();
-                int rights = 1;
-                int position = currentFormula.getItemPosition(currentItem);
-                formula1.add(currentItem.makeClone());
-                currentFormula.remove(currentItem);
-                while (rights > 0) {
-                    position--;
-                    FormulaItem item = currentFormula.getItem(position);
-                    if (item instanceof RightCloser) {
-                        rights++;
-                    } else if (item instanceof LeftCloser) {
-                        rights--;
-                    }
-                    formula1.insertAt(0, item.makeClone());
-                    currentFormula.remove(item);
-                    if (position <= 0) {
-                        break;
-                    }
-                }
-
-                DivisorElement newDivisor = new DivisorElement(formula1, formula2);
-                currentFormula.insertAt(position, newDivisor);
-                setCursor(newDivisor.getFormula2().getFirst());
-            } else {
-                DivisorElement newDivisor = new DivisorElement();
-                if (cursor.getPosition() == 0) {
-                    currentItem.getParent().insertBefore(newDivisor, currentItem);
-                    undoer.add(makeCommandInsertBefore(currentItem, newDivisor));
-                } else {
-                    currentItem.getParent().insertAfter(newDivisor, currentItem);
-                    undoer.add(makeCommandInsertAfter(currentItem, newDivisor));
-                }
-                setCursor(newDivisor.getFormula1().getFirst());
-            }
+            Command rightCommand = makeCommandRightToDivisor(newItem);
+            setCursor(rightCommand.execute());
+            undoer.add(rightCommand);
         } else {
+            Cursor rightCursor = currentItem.getParent().getYourRight(currentItem);
+            SimpleElement rightSimpleItem = null;
+            boolean rightSimple = false;
+            if (rightCursor != null) {
+                rightCursor.setPosition(0);
+                if (rightCursor.getItem() instanceof SimpleElement) {
+                    rightSimpleItem = (SimpleElement) rightCursor.getItem();
+                    rightSimple = true;
+                }
+            }
+
             Command command;
-            if (currentSimple) {
+            if (currentItem instanceof SimpleElement) {
                 command = makeCommandInsertCharInSimple(currentItem, cursor.getPosition(), c);
             } else if (rightSimple) {
                 command = makeCommandInsertCharInSimple(rightSimpleItem, rightCursor.getPosition(), c);
