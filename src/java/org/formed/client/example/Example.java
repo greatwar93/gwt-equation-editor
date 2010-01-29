@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.formed.client.formula;
+package org.formed.client.example;
 
+import org.formed.client.formula.*;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
@@ -49,13 +50,14 @@ import org.formed.client.formula.impl.SimpleUndoer;
  *
  * @author Bulat Sirazetdinov
  */
-public class DrawExample {
+public class Example {
 
     boolean arrow = false;
 
     public void draw() {
-        final Formula formula = new Formula();
 
+        //Create and fill a formula
+        final Formula formula = new Formula();
         formula.add(new SimpleElement("S"));
         formula.add(new OperatorElement("="));
         formula.add(new SimpleElement("a", new Formula().add(new SimpleElement("2"))));
@@ -72,14 +74,17 @@ public class DrawExample {
 //        formula.add(new OperatorElement("+"));
         formula.add(new FunctionElement("sin", new Formula().add(new SimpleElement("α")), new Formula().add(new SimpleElement("e", new Formula().add(new SimpleElement("x"))))));
 
+
+        //Use SimpleUndoer as an Undoer
+        final SimpleUndoer undoer = new SimpleUndoer();
+
+
+        //Create Surface and Drawer
         final int WIDTH = 630;
         final int HEIGHT = 150;
-
 //        final CanvasPanelExt canvas1 = new CanvasPanelExt(WIDTH, HEIGHT);
 //        canvas1.setCoordSize(WIDTH, HEIGHT);
-
         final Surface surface = new Surface(WIDTH, HEIGHT);
-        final SimpleUndoer undoer = new SimpleUndoer();
         final SurfaceDrawer drawer = new SurfaceDrawer(surface, undoer, formula);
 
         //        RootPanel.get().add(canvas1, 10, 10);
@@ -88,9 +93,13 @@ public class DrawExample {
         panel.setSize(Integer.toString(WIDTH), Integer.toString(HEIGHT));
         RootPanel.get().add(panel, 10, 10);*/
 
+
+        //Debugging keylogger screen
         final HTML keys = new HTML();
         RootPanel.get().add(keys, 10, HEIGHT * 3 + 10);
 
+
+        //Editor undo and redo buttons
         final Button undoButton = new Button("Undo");
         final Button redoButton = new Button("Redo");
 
@@ -101,11 +110,6 @@ public class DrawExample {
                 undoer.undo();
                 drawer.redraw();
                 surface.setFocus(true);
-
-                /*                Metrics drawerMetrics = drawer.getDrawerMetrics();
-                surface.setWidth(drawerMetrics.getWidth()+20);
-                surface.setHeight(drawerMetrics.getHeight()+20);
-                drawer.redraw();*/
 
                 undoButton.setEnabled(undoer.getUndoCount() > 0);
                 redoButton.setEnabled(undoer.getRedoCount() > 0);
@@ -120,11 +124,6 @@ public class DrawExample {
                 drawer.redraw();
                 surface.setFocus(true);
 
-                /*                Metrics drawerMetrics = drawer.getDrawerMetrics();
-                surface.setWidth(drawerMetrics.getWidth()+20);
-                surface.setHeight(drawerMetrics.getHeight()+20);
-                drawer.redraw();*/
-
                 undoButton.setEnabled(undoer.getUndoCount() > 0);
                 redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
@@ -133,33 +132,25 @@ public class DrawExample {
         RootPanel.get().add(undoButton, 10, HEIGHT + 20);
         RootPanel.get().add(redoButton, undoButton.getOffsetWidth() + 20, HEIGHT + 20);
 
+
+        //Editor keyboard handlers
         surface.addKeyDownHandler(new KeyDownHandler() {
 
             public void onKeyDown(KeyDownEvent event) {
                 final int keycode = event.getNativeKeyCode();
                 arrow = true;
                 if (event.isLeftArrow()) {
-                    //keys.setHTML(keys.getHTML() + "+dLeft");
                     drawer.moveCursorLeft();
                 } else if (event.isRightArrow()) {
                     drawer.moveCursorRight();
-                    //keys.setHTML(keys.getHTML() + "+dRight");
                 } else if (event.isUpArrow()) {
                     drawer.moveCursorUp();
-                    //keys.setHTML(keys.getHTML() + "+dUp");
                 } else if (event.isDownArrow()) {
                     drawer.moveCursorDown();
-                    //keys.setHTML(keys.getHTML() + "+dDown");
                 } else if (keycode == KeyCodes.KEY_DELETE) {
                     drawer.deleteRight();
-                    //keys.setHTML(keys.getHTML() + "+dDel");
                 } else if (keycode == KeyCodes.KEY_BACKSPACE) {
                     drawer.deleteLeft();
-                    //keys.setHTML(keys.getHTML() + "+d<-");
-/*                } else if (keycode == KeyCodes.KEY_ESCAPE) {
-                    undoer.undo();
-                    } else if (keycode == KeyCodes.KEY_TAB) {
-                    undoer.redo();*/
                 } else if (event.isControlKeyDown() && keycode == 45) {
                     //keys.setHTML(keys.getHTML() + "+dPaste");
                 } else if (event.isControlKeyDown() && keycode == 86) {
@@ -185,11 +176,6 @@ public class DrawExample {
                     event.preventDefault();
                 }
 
-                /*                Metrics drawerMetrics = drawer.getDrawerMetrics();
-                surface.setWidth(drawerMetrics.getWidth()+20);
-                surface.setHeight(drawerMetrics.getHeight()+20);
-                drawer.redraw();*/
-
                 undoButton.setEnabled(undoer.getUndoCount() > 0);
                 redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
@@ -200,16 +186,10 @@ public class DrawExample {
             public void onKeyPress(KeyPressEvent event) {
                 if (!arrow) {
                     drawer.insert(event.getCharCode());
-                    //keys.setHTML(keys.getHTML() + "+p" + event.getCharCode());
                 } else {
                     arrow = false;
                 }
                 event.preventDefault();
-
-                /*                Metrics drawerMetrics = drawer.getDrawerMetrics();
-                surface.setWidth(drawerMetrics.getWidth()+20);
-                surface.setHeight(drawerMetrics.getHeight()+20);
-                drawer.redraw();*/
 
                 undoButton.setEnabled(undoer.getUndoCount() > 0);
                 redoButton.setEnabled(undoer.getRedoCount() > 0);
@@ -225,6 +205,7 @@ public class DrawExample {
         });
 
 
+        //Editor mouse handlers
         surface.addMouseMoveHandler(new MouseMoveHandler() {
 
             public void onMouseMove(MouseMoveEvent event) {
@@ -239,12 +220,16 @@ public class DrawExample {
             }
         });
 
+
+        //Insert special buttons
         final Button sinButton = new Button("sin", new ClickHandler() {
 
             public void onClick(ClickEvent event) {
                 drawer.insertElement(new FunctionElement("sin"));
                 drawer.redraw();
                 surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
         });
 
@@ -254,6 +239,8 @@ public class DrawExample {
                 drawer.insertElement(new FunctionElement("cos"));
                 drawer.redraw();
                 surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
         });
 
@@ -263,6 +250,8 @@ public class DrawExample {
                 drawer.insertElement(new FunctionElement("tg"));
                 drawer.redraw();
                 surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
         });
 
@@ -272,6 +261,8 @@ public class DrawExample {
                 drawer.insertElement(new FunctionElement("ctg"));
                 drawer.redraw();
                 surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
         });
 
@@ -281,6 +272,8 @@ public class DrawExample {
                 drawer.insertElement(new FunctionElement("arcsin"));
                 drawer.redraw();
                 surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
         });
 
@@ -290,6 +283,8 @@ public class DrawExample {
                 drawer.insertElement(new FunctionElement("arccos"));
                 drawer.redraw();
                 surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
         });
 
@@ -299,6 +294,8 @@ public class DrawExample {
                 drawer.insertElement(new FunctionElement("arctg"));
                 drawer.redraw();
                 surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
         });
 
@@ -308,6 +305,8 @@ public class DrawExample {
                 drawer.insertElement(new FunctionElement("arcctg"));
                 drawer.redraw();
                 surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
         });
 
@@ -317,6 +316,89 @@ public class DrawExample {
                 drawer.insertElement(new RootElement(new Formula()));
                 drawer.redraw();
                 surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
+            }
+        });
+
+        final Button divideButton = new Button("÷", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insertElement(new OperatorElement("÷"));
+                drawer.redraw();
+                surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
+            }
+        });
+        final Button plusMinusButton = new Button("±", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insertElement(new OperatorElement("±"));
+                drawer.redraw();
+                surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
+            }
+        });
+        final Button lessOrEqualButton = new Button("≤", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insertElement(new OperatorElement("≤"));
+                drawer.redraw();
+                surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
+            }
+        });
+        final Button greaterOrEqualButton = new Button("≥", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insertElement(new OperatorElement("≥"));
+                drawer.redraw();
+                surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
+            }
+        });
+        final Button alphaButton = new Button("α", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insert('α');
+                drawer.redraw();
+                surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
+            }
+        });
+        final Button angleButton = new Button("∠", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insert('∠');
+                drawer.redraw();
+                surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
+            }
+        });
+        final Button degreeButton = new Button("°", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insert('°');
+                drawer.redraw();
+                surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
+            }
+        });
+        final Button infinityButton = new Button("∞", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insert('∞');
+                drawer.redraw();
+                surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
         });
 
@@ -326,10 +408,21 @@ public class DrawExample {
         tgButton.setWidth(BUTTON_WIDTH+"px");
         ctgButton.setWidth(BUTTON_WIDTH+"px");
         rootButton.setWidth(BUTTON_WIDTH+"px");
+
         arcsinButton.setWidth(BUTTON_WIDTH+"px");
         arccosButton.setWidth(BUTTON_WIDTH+"px");
         arctgButton.setWidth(BUTTON_WIDTH+"px");
         arcctgButton.setWidth(BUTTON_WIDTH+"px");
+
+        divideButton.setWidth(BUTTON_WIDTH+"px");
+        plusMinusButton.setWidth(BUTTON_WIDTH+"px");
+        lessOrEqualButton.setWidth(BUTTON_WIDTH+"px");
+        greaterOrEqualButton.setWidth(BUTTON_WIDTH+"px");
+
+        alphaButton.setWidth(BUTTON_WIDTH+"px");
+        angleButton.setWidth(BUTTON_WIDTH+"px");
+        degreeButton.setWidth(BUTTON_WIDTH+"px");
+        infinityButton.setWidth(BUTTON_WIDTH+"px");
 
         RootPanel.get().add(sinButton, 10 + (10 + BUTTON_WIDTH) * 0, HEIGHT + 50);
         RootPanel.get().add(cosButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 50);
@@ -342,6 +435,19 @@ public class DrawExample {
         RootPanel.get().add(arctgButton, 10 + (10 + BUTTON_WIDTH) * 2, HEIGHT + 80);
         RootPanel.get().add(arcctgButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 80);
 
+        RootPanel.get().add(divideButton, 10 + (10 + BUTTON_WIDTH) * 0, HEIGHT + 110);
+        RootPanel.get().add(plusMinusButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 110);
+        RootPanel.get().add(lessOrEqualButton, 10 + (10 + BUTTON_WIDTH) * 2, HEIGHT + 110);
+        RootPanel.get().add(greaterOrEqualButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 110);
+
+        RootPanel.get().add(alphaButton, 10 + (10 + BUTTON_WIDTH) * 0, HEIGHT + 140);
+        RootPanel.get().add(angleButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 140);
+        RootPanel.get().add(degreeButton, 10 + (10 + BUTTON_WIDTH) * 2, HEIGHT + 140);
+        RootPanel.get().add(infinityButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 140);
+        //Special buttons inserted
+
+
+        //Initial update of the screen
         drawer.redraw();
 
     }

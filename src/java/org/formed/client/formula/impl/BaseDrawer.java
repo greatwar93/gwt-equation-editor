@@ -436,7 +436,7 @@ public abstract class BaseDrawer implements Drawer {
 
         setCursor(command.execute());
         undoer.add(command);
-        redraw();
+        //redraw();
     }
 
     public void deleteLeft() {

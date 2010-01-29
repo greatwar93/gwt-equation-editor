@@ -17,7 +17,7 @@ import java.util.List;
 import net.kornr.abstractcanvas.client.CanvasPainter;
 import net.kornr.abstractcanvas.client.ICanvasExt;
 import net.kornr.abstractcanvas.client.gwt.CanvasPanelExt;
-import org.formed.client.formula.DrawExample;
+import org.formed.client.example.Example;
 
 /**
  * Main entry point.
@@ -37,7 +37,7 @@ public class MainEntryPoint implements EntryPoint {
      * that declares an implementing class as an entry-point
      */
     public void onModuleLoad() {
-        DrawExample example = new DrawExample();
+        Example example = new Example();
         example.draw();
 //        final GWTCanvas canvas = new GWTCanvas(10, 10, 200, 200);
 //

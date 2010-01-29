@@ -402,45 +402,33 @@
         <property name="gwt.shell.jvmargs" value=""/>
         <property name="gwtshell.jvmargs.base" value="-Xdebug -Xnoagent -Djava.compiler=none -Xrunjdwp:transport=dt_socket,address=${jpda.address.gwt}"/>
 
-        <condition property="gwt.shell.jvmargs.debugger" value="${gwtshell.jvmargs.base} -XstartOnFirstThread"
-                   else="${gwtshell.jvmargs.base}">
-            <os family="mac"/>
-        </condition>
-
         <property name="shell.output" location="${build.dir}/shell.output"/>
         <delete file="${shell.output}"/>
         <parallel>
+            <java fork="true" classname="com.google.gwt.dev.DevMode" failonerror="true">
+                <jvmarg line="${gwt.shell.jvmargs}"/>
+                <jvmarg line="${gwtshell.jvmargs.base}"/>
+                <classpath>
+                    <path path="${src.dir}:${javac.classpath}:${build.classes.dir}"/>
+                </classpath>
+                <syspropertyset>
+                    <propertyref prefix="run-sys-prop."/>
+                    <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                </syspropertyset>
+                <arg value="-war"/>
+                <arg path="${build.web.dir}/"/>
+                <arg value="-noserver"/>
+                <arg value="-startupUrl"/>
+                <arg value="${client.url}"/>
+                <arg value="-port"/>
+                <arg value="${gwt.shell.port}"/>
+                <arg value="-codeServerPort"/>
+                <arg value="${gwt.shell.code.server.port}"/>
+                <arg value="${gwt.module}"/>
+            </java>
             <sequential>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="launch-browser"/>
-            </sequential>
-            <sequential>
-                <java fork="true" classname="com.google.gwt.dev.HostedMode" failonerror="true" error="${shell.output}">
-                    <jvmarg line="${gwt.shell.jvmargs}"/>
-                    <jvmarg line="${gwt.shell.jvmargs.debugger}"/>
-                    <classpath>
-                        <path path="${src.dir}:${javac.classpath}:${build.classes.dir}"/>
-                    </classpath>
-                    <syspropertyset>
-                        <propertyref prefix="run-sys-prop."/>
-                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
-                    </syspropertyset>
-                    <arg value="-war"/>
-                    <arg path="${build.web.dir}/"/>
-                    <arg value="-noserver"/>
-                    <arg value="-startupUrl"/>
-                    <arg value="${client.url}"/>
-                    <arg value="${gwt.module}"/>
-                </java>
+                <sleep seconds="4"/>
+                <nbbrowse url="${client.url}?gwt.codesvr=127.0.0.1:${gwt.shell.code.server.port}"/>
             </sequential>
         </parallel>
     </target>
@@ -449,7 +437,8 @@
     This target can be started. Starts GWT shell without the -noserver option
     and attaches the debugger to it.
     -->
-    <target name="debug-connect-gwt-shell-hosted" if="netbeans.home" depends="init">
+    <target name="debug-connect-gwt-shell-hosted" if="netbeans.home"
+            depends="init,compile,compile-jsps,-do-compile-single-jsp">
         <antcall target="-gwt-print-dir"/>
         <antcall target="debug-connect-gwt-shell-hosted-15" />
         <antcall target="debug-connect-gwt-shell-hosted-16" />
@@ -613,81 +602,39 @@
         <property name="client.url" value="${gwt.module}"/>
 
         <!-- You can override this property in the 'gwt.properties' file -->
-        <property name="gwt.shell.output.style" value="OBFUSCATED"/>
         <property name="gwt.shell.logLevel" value="WARN"/>
         <property name="gwtshell.jvmargs.base" value="-Xdebug -Xnoagent -Djava.compiler=none -Xrunjdwp:transport=dt_socket,address=${jpda.address.gwt}"/>
-        <condition property="gwt.shell.jvmargs.debugger" value="${gwtshell.jvmargs.base} -XstartOnFirstThread"
-                   else="${gwtshell.jvmargs.base}">
-            <os family="mac"/>
-        </condition>
 
-        <property name="shell.output" location="${build.dir}/shell.output"/>
-        <delete file="${shell.output}"/>
         <parallel>
+            <java fork="true" classname="com.google.gwt.dev.DevMode">
+                <jvmarg line="${gwt.shell.jvmargs}"/>
+                <jvmarg line="${gwtshell.jvmargs.base}" />
+                <classpath>
+                    <path path="${src.dir}:${javac.classpath}:${build.classes.dir}"/>
+                </classpath>
+                <syspropertyset>
+                    <propertyref prefix="run-sys-prop."/>
+                    <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                </syspropertyset>
+                <arg value="-war"/>
+                <arg path="${build.web.dir}/"/>
+                <arg value="-logLevel"/>
+                <arg value="TRACE"/>
+                <!-- arg value="${gwt.shell.logLevel}"/-->
+                <arg value="-logdir"/>
+                <arg value="logs"/>
+                <arg value="-startupUrl"/>
+                <arg value="/${client.urlPart}"/>
+                <arg value="-port"/>
+                <arg value="${gwt.shell.port}"/>
+                <arg value="-codeServerPort"/>
+                <arg value="${gwt.shell.code.server.port}"/>
+                <arg value="${gwt.module}"/>
+            </java>
             <sequential>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="wait-for-shell-url"/>
-                <antcall target="launch-browser"/>
-            </sequential>
-            <sequential>
-                <java fork="true" classname="com.google.gwt.dev.HostedMode" error="${shell.output}">
-                    <jvmarg line="${gwt.shell.jvmargs}"/>
-                    <jvmarg line="${gwt.shell.jvmargs.debugger}" />
-                    <classpath>
-                        <path path="${src.dir}:${javac.classpath}:${build.classes.dir}"/>
-                    </classpath>
-                    <syspropertyset>
-                        <propertyref prefix="run-sys-prop."/>
-                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
-                    </syspropertyset>
-                    <arg value="-war"/>
-                    <arg path="${build.web.dir}/"/>
-                    <arg value="-style"/>
-                    <arg value="${gwt.shell.output.style}"/>
-                    <!--arg value="-logLevel"/>
-                    <arg value="${gwt.shell.logLevel}"/-->
-                    <arg value="-startupUrl"/>
-                    <arg value="/${client.urlPart}"/>
-                    <arg value="${gwt.module}"/>
-                </java>
+                <sleep seconds="4"/>
+                <nbbrowse url="http://127.0.0.1:${gwt.shell.port}/${client.urlPart}?gwt.codesvr=127.0.0.1:${gwt.shell.code.server.port}"/>
             </sequential>
         </parallel>
-
     </target>
-
-    <target name="check-shell-url">
-        <loadfile srcfile="${shell.output}" property="shell.url" failonerror="false">
-            <filterchain>
-                <tokenfilter delimoutput=" "/>
-                <replaceregex pattern="^(.*)browse to the following URL:\s+http(.*)$" replace="http\2"/>
-            </filterchain>
-        </loadfile>
-        <condition property="got.shell.url">
-            <contains string="${shell.url}" substring="http"/>
-        </condition>
-    </target>
-
-    <target name="wait-for-shell-url" depends="check-shell-url" unless="got.shell.url">
-        <echo>Waiting for url from the GWT Shell...</echo>
-        <sleep seconds="2"/>
-    </target>
-
-    <target name="no-shell-url" depends="check-shell-url" unless="got.shell.url">
-        <echo level="error">GWT Shell did not produce the url.</echo>
-        <echo level="error">Perhaps it failed or still starting up.</echo>
-        <echo level="error">You can navigate a browser manually if/when the shell is ready.</echo>
-    </target>
-
-    <target name="launch-browser" depends="no-shell-url" if="got.shell.url">
-        <nbbrowse url="${shell.url}"/>
-    </target>
-
 </project>
