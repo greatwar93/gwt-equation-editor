@@ -27,10 +27,12 @@ import org.formed.client.formula.Metrics;
 import org.formed.client.formula.Rectangle;
 import org.formed.client.formula.Undoer;
 import org.formed.client.formula.elements.DivisorElement;
+import org.formed.client.formula.elements.FunctionElement;
 import org.formed.client.formula.elements.LeftCloser;
 import org.formed.client.formula.elements.OperatorElement;
 import org.formed.client.formula.elements.PoweredElement;
 import org.formed.client.formula.elements.RightCloser;
+import org.formed.client.formula.elements.RootElement;
 import org.formed.client.formula.elements.SimpleElement;
 
 /**
@@ -275,7 +277,7 @@ public abstract class BaseDrawer implements Drawer {
             return Command.ZERO_COMMAND;
         }
 
-        if (item instanceof SimpleElement) {
+        if (item instanceof SimpleElement || item instanceof FunctionElement || item instanceof RootElement || item instanceof DivisorElement) {
             return new Command() {
 
                 FormulaItem item2 = null;
@@ -328,7 +330,7 @@ public abstract class BaseDrawer implements Drawer {
             return Command.ZERO_COMMAND;
         }
 
-        if (item instanceof SimpleElement) {
+        if (item instanceof SimpleElement || item instanceof FunctionElement || item instanceof RootElement || item instanceof DivisorElement) {
             return new Command() {
 
                 FormulaItem item2 = null;
@@ -405,14 +407,18 @@ public abstract class BaseDrawer implements Drawer {
             setCursor(rightCommand.execute());
             undoer.add(rightCommand);
         } else {
-            Cursor rightCursor = currentItem.getParent().getYourRight(currentItem);
+//            Cursor rightCursor = currentItem.getParent().getYourRight(currentItem);
+            Cursor rightCursor = null;
             SimpleElement rightSimpleItem = null;
             boolean rightSimple = false;
-            if (rightCursor != null) {
-                rightCursor.setPosition(0);
-                if (rightCursor.getItem() instanceof SimpleElement) {
-                    rightSimpleItem = (SimpleElement) rightCursor.getItem();
-                    rightSimple = true;
+            if (currentItem.isYourEnd(cursor)) {
+                rightCursor = currentItem.getParent().getYourRight(currentItem);
+                if (rightCursor != null) {
+                    rightCursor.setPosition(0);
+                    if (rightCursor.getItem() instanceof SimpleElement) {
+                        rightSimpleItem = (SimpleElement) rightCursor.getItem();
+                        rightSimple = true;
+                    }
                 }
             }
 
@@ -439,21 +445,19 @@ public abstract class BaseDrawer implements Drawer {
         }
 
         Command command;
-
-        if (currentItem instanceof SimpleElement) {
-            command = makeBreakWith((SimpleElement) currentItem, newItem, cursor.getPosition());
+        int position = cursor.getPosition();
+        if (position == 0) {
+            command = makeInsertBefore(currentItem, newItem);
+        } else if (currentItem instanceof SimpleElement) {
+            command = makeBreakWith((SimpleElement) currentItem, newItem, position);
         } else {
-            if (cursor.getPosition() == 0) {
-                command = makeInsertBefore(currentItem, newItem);
-            } else {
-                command = makeInsertAfter(currentItem, newItem);
-            }
+            command = makeInsertAfter(currentItem, newItem);
         }
 
         setCursor(command.execute());
         undoer.add(command);
         //redraw();
-    }
+        }
 
     public void deleteLeft() {
         Command command = cursor.getItem().makeDeleteLeft(cursor);

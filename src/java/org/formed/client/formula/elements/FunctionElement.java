@@ -30,8 +30,8 @@ public final class FunctionElement extends PoweredElement {
 
     private String name;
     private Formula formula;
-    private static final RightCloser right = new RightCloser();
-    private static final LeftCloser left = new LeftCloser();
+    //private final RightCloser right = new RightCloser();
+    //private final LeftCloser left = new LeftCloser();
 
     public FunctionElement(String name) {
         super();
@@ -87,24 +87,25 @@ public final class FunctionElement extends PoweredElement {
     public Metrics draw(Drawer drawer, int x, int y, int size) {
         Metrics metrics = measure(drawer, size);
 
-        if(highlighted){
-            drawer.fillRect(x, y-metrics.getHeightUp(), x+metrics.getWidth(), y+metrics.getHeightDown(), highlightR, highlightG, highlightB);
+        if (highlighted) {
+            drawer.fillRect(x, y - metrics.getHeightUp(), x + metrics.getWidth(), y + metrics.getHeightDown(), highlightR, highlightG, highlightB);
         }
 
         metrics = super.draw(drawer, x, y, size);
+        metrics.setWidth(metrics.getWidth() + 2);
 
         if (formula != null) {
-            if (formula.isComplex()) {
-                metrics.add(left.draw(drawer, x + metrics.getWidth(), y, size));
-                metrics.add(formula.draw(drawer, x + metrics.getWidth(), y, size));
-                metrics.add(right.draw(drawer, x + metrics.getWidth(), y, size));
-            } else {
-                metrics.add(formula.draw(drawer, x + metrics.getWidth(), y, size));
-            }
+            /*            if (formula.isComplex()) {
+            metrics.add(left.draw(drawer, x + metrics.getWidth(), y, size));
+            metrics.add(formula.draw(drawer, x + metrics.getWidth(), y, size));
+            metrics.add(right.draw(drawer, x + metrics.getWidth(), y, size));
+            } else {*/
+            metrics.add(formula.draw(drawer, x + metrics.getWidth(), y, size));
+//            }
         }
 
-        if(strokeThrough){
-            drawer.drawLine(x, y+metrics.getHeightDown(), x+metrics.getWidth(), y-metrics.getHeightUp());
+        if (strokeThrough) {
+            drawer.drawLine(x, y + metrics.getHeightDown(), x + metrics.getWidth(), y - metrics.getHeightUp());
         }
 
         drawer.addDrawnItem(this, x, y, metrics);
@@ -114,26 +115,33 @@ public final class FunctionElement extends PoweredElement {
     @Override
     public Metrics measure(Drawer drawer, int size) {
         Metrics metrics = super.measure(drawer, size);
+        metrics.setWidth(metrics.getWidth() + 2);
 
         if (formula != null) {
-            if (formula.isComplex()) {
-                metrics.add(left.measure(drawer, size));
-                metrics.add(formula.calculateMetrics(drawer, size));
-                metrics.add(right.measure(drawer, size));
-            } else {
-                metrics.add(formula.calculateMetrics(drawer, size));
-            }
+            /*            if (formula.isComplex()) {
+            metrics.add(left.measure(drawer, size));
+            metrics.add(formula.calculateMetrics(drawer, size));
+            metrics.add(right.measure(drawer, size));
+            } else {*/
+            metrics.add(formula.calculateMetrics(drawer, size));
+//            }
         }
 
         return metrics;
     }
 
     @Override
+    public boolean isYourEnd(Cursor cursor) {
+        return cursor.getItem() == this && cursor.getPosition() == -1;
+    }
+
+    @Override
     public Cursor getLast() {
-        if (formula != null) {
-            return formula.getLast();
+        return formula.getLast();
+        /*        if (formula != null) {
+        return formula.getLast();
         }
-        return super.getLast();
+        return super.getLast();*/
     }
 
     @Override
@@ -151,6 +159,10 @@ public final class FunctionElement extends PoweredElement {
             return formula.getFirst();
         }
 
+        if (child == formula) {
+            return getCursor(-1);
+        }
+
         return super.childAsksRight(child);
     }
 
@@ -163,7 +175,20 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
+    public Cursor getLeft(int oldPosition) {
+        if (oldPosition == -1) {
+            return formula.getLast();
+        }
+
+        return super.getLeft(oldPosition);
+    }
+
+    @Override
     public Cursor getRight(int oldPosition) {
+        if (oldPosition == -1) {
+            return parent.getRight(this);
+        }
+
         if (oldPosition >= val.length()) {
             if (formula != null) {
                 return formula.getFirst();
@@ -171,6 +196,27 @@ public final class FunctionElement extends PoweredElement {
         }
 
         return super.getRight(oldPosition);
+    }
+
+    @Override
+    public Cursor getCursor(int position) {
+        if (position == -1) {
+            return new Cursor(this, -1);
+        }
+        return super.getCursor(position);
+    }
+
+    @Override
+    public void reMeasureCursor(Drawer drawer, Cursor cursor) {
+        if (cursor.getPosition() == -1) {
+            Metrics metrics = measure(drawer, storedSize);
+            cursor.setX(storedX + metrics.getWidth());
+            cursor.setY(storedY);
+            cursor.setHeightUp(metrics.getHeightUp());
+            cursor.setHeightDown(metrics.getHeightDown());
+        } else {
+            super.reMeasureCursor(drawer, cursor);
+        }
     }
 
     @Override

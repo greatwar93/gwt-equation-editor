@@ -176,6 +176,11 @@ public final class RootElement extends BaseElement {
     }
 
     @Override
+    public boolean isYourEnd(Cursor cursor) {
+        return cursor.getItem() == this && cursor.getPosition() >= 1;
+    }
+
+    @Override
     public Cursor getCursor(int position) {
         if (position == 0) {
             return new Cursor(this, 0);
@@ -191,7 +196,8 @@ public final class RootElement extends BaseElement {
 
     @Override
     public Cursor getLast() {
-        return getCursor(1);
+        return formula.getLast();
+        //return getCursor(1);
     }
 
     @Override
@@ -227,7 +233,8 @@ public final class RootElement extends BaseElement {
             return formula.getFirst();
         }
 
-        return getLast();
+        return getCursor(1);
+        //return getLast();
     }
 
     @Override

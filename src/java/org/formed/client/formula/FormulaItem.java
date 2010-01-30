@@ -72,6 +72,8 @@ public interface FormulaItem {
     //Get position when come down from child-formula
     Cursor childAsksDown(Formula child);
 
+    boolean isYourEnd(Cursor cursor);
+
     //Child-formula calls this when it's got empty
     //void childCollapsed(Formula child);
 

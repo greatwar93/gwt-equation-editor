@@ -16,8 +16,13 @@ limitations under the License.
  */
 package org.formed.client.formula;
 
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.RootPanel;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.formed.client.formula.elements.FunctionElement;
 import org.formed.client.formula.elements.LeftCloser;
 import org.formed.client.formula.elements.PlaceElement;
 import org.formed.client.formula.elements.RightCloser;
@@ -29,12 +34,13 @@ import org.formed.client.formula.elements.RightCloser;
 public class Formula {
 
     public static final Formula ZERO_FORMULA = new Formula();
-    private PlaceElement place = new PlaceElement();
+    private final PlaceElement place = new PlaceElement();
     private final List<FormulaItem> items = new ArrayList<FormulaItem>();
     private FormulaItem parent = null;
     private boolean metricsValid = false;
     private int storedSize = 0;
     private Metrics metrics = new Metrics(0, 0, 0);
+    private final Map<FormulaItem, FormulaItem> addedMap = new HashMap<FormulaItem, FormulaItem>();
 
     public Formula() {
         place.setParent(this);
@@ -55,7 +61,7 @@ public class Formula {
         return clone;
     }
 
-    public void setShowPlace(boolean showPlace){
+    public void setShowPlace(boolean showPlace) {
         place.setShow(showPlace);
     }
 
@@ -119,6 +125,18 @@ public class Formula {
         return items.isEmpty();
     }
 
+    private boolean isInFunction() {
+        return parent == null ? false : parent instanceof FunctionElement;
+    }
+
+    private boolean hasFirstLeftCloser() {
+        return items.size() < 1 ? false : items.get(0) instanceof LeftCloser;
+    }
+
+    private boolean hasLastRightCloser() {
+        return items.size() < 1 ? false : items.get(items.size() - 1) instanceof RightCloser;
+    }
+
     public boolean isComplex() {
         if (items.size() > 1) {
             return true;
@@ -131,7 +149,7 @@ public class Formula {
         return false;
     }
 
-    public int getItemsCount(){
+    public int getItemsCount() {
         return items.size();
     }
 
@@ -139,10 +157,10 @@ public class Formula {
         storedSize = size;
         Metrics drawnMetrics = new Metrics(0, 0, 0);
         if (items.isEmpty()) {
-            drawer.drawDebugText("E" + items.size());
+            //drawer.drawDebugText("E" + items.size());
             drawnMetrics.add(place.draw(drawer, x + drawnMetrics.getWidth(), y, size));
         } else {
-            drawer.drawDebugText("" + items.size());
+            //drawer.drawDebugText("" + items.size());
             for (FormulaItem item : items) {
                 drawnMetrics.add(item.draw(drawer, x + drawnMetrics.getWidth(), y, size));
                 drawnMetrics.setWidth(drawnMetrics.getWidth() + 1);
@@ -175,9 +193,90 @@ public class Formula {
         return metrics.cloneMetrics();
     }
 
+    //private static int i = 0;
+    private void addClosersIfNeededOnInsert(FormulaItem item) {
+        int position = items.indexOf(item);
+        if (isInFunction() && items.size() > 1) {
+            //RootPanel.get().add(new HTML(position+":"+(items.size()-1)+" "+(item instanceof LeftCloser)+":"+hasLastRightCloser()+" "+(item instanceof RightCloser)+":"+hasFirstLeftCloser()), 10, 300 + i * 30);
+            //i++;
+            if (position == 0 && item instanceof LeftCloser && !hasLastRightCloser()) {
+                addLastCloser(new RightCloser(), item);
+            } else if (position == items.size() - 1 && item instanceof RightCloser && !hasFirstLeftCloser()) {
+                addFirstCloser(new LeftCloser(), item);
+            } else if (!hasFirstLeftCloser() || !hasLastRightCloser()) {
+                addFirstCloser(new LeftCloser(), item);
+                addLastCloser(new RightCloser(), item);
+            }
+        }
+    }
+
+    private void addClosersIfNeededOnReplace(FormulaItem newItem, FormulaItem oldItem) {
+        int position = items.indexOf(newItem);
+        if (isInFunction() && items.size() > 1) {
+
+            if (oldItem instanceof LeftCloser && newItem instanceof LeftCloser) {
+                return;
+            }
+            if (oldItem instanceof RightCloser && newItem instanceof RightCloser) {
+                return;
+            }
+
+            if (position == 0 && newItem instanceof LeftCloser && !hasLastRightCloser()) {
+                addLastCloser(new RightCloser(), newItem);
+            } else if (position == items.size() - 1 && newItem instanceof RightCloser && !hasFirstLeftCloser()) {
+                addFirstCloser(new LeftCloser(), newItem);
+            } else if (!hasFirstLeftCloser() || !hasLastRightCloser()) {
+                addFirstCloser(new LeftCloser(), newItem);
+                addLastCloser(new RightCloser(), newItem);
+            }
+        }
+    }
+
+    private boolean checkClosersOnRemove(int index) {
+        if (isInFunction() && items.size() > 3) {
+            if (index == 0 && items.get(index) instanceof LeftCloser) {
+                return false;
+            }
+            if (index == items.size() - 1 && items.get(index) instanceof RightCloser) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean checkClosersOnRemove(FormulaItem item) {
+        int index = items.indexOf(item);
+        return index == -1 ? true : checkClosersOnRemove(index);
+    }
+
+    private void removeAdded(FormulaItem item) {
+        FormulaItem closer = addedMap.get(item);
+        if (closer != null) {
+            items.remove(closer);
+            closer.setParent(null);
+            addedMap.remove(item);
+        }
+    }
+
+    private void addFirstCloser(FormulaItem closer, FormulaItem item) {
+        closer.setParent(this);
+        items.add(0, closer);
+        addedMap.put(item, closer);
+    }
+
+    private void addLastCloser(FormulaItem closer, FormulaItem item) {
+        closer.setParent(this);
+        items.add(closer);
+        addedMap.put(item, closer);
+    }
+
     public Formula add(FormulaItem item) {
         item.setParent(this);
         items.add(item);
+
+        addClosersIfNeededOnInsert(item);
+
         invalidatePlaces();
         return this;
     }
@@ -186,6 +285,9 @@ public class Formula {
         if (position >= 0 && position <= items.size()) {
             item.setParent(this);
             items.add(position, item);
+
+            addClosersIfNeededOnInsert(item);
+
             invalidatePlaces();
         }
         return this;
@@ -195,10 +297,16 @@ public class Formula {
         if (items.indexOf(after) >= 0) {
             item.setParent(this);
             items.add(items.indexOf(after) + 1, item);
+
+            addClosersIfNeededOnInsert(item);
+
             invalidatePlaces();
         } else if (after == place) {
             item.setParent(this);
             items.add(item);
+
+            addClosersIfNeededOnInsert(item);
+
             invalidatePlaces();
         }
         return this;
@@ -208,10 +316,16 @@ public class Formula {
         if (items.indexOf(before) >= 0) {
             item.setParent(this);
             items.add(items.indexOf(before), item);
+
+            addClosersIfNeededOnInsert(item);
+
             invalidatePlaces();
         } else if (before == place) {
             item.setParent(this);
             items.add(item);
+
+            addClosersIfNeededOnInsert(item);
+
             invalidatePlaces();
         }
         return this;
@@ -222,25 +336,41 @@ public class Formula {
             oldItem.setParent(null);
             newItem.setParent(this);
             items.set(items.indexOf(oldItem), newItem);
+
+            addClosersIfNeededOnReplace(newItem, oldItem);
+
             invalidatePlaces();
         } else if (oldItem == place) {
             newItem.setParent(this);
             items.add(newItem);
+
+            addClosersIfNeededOnInsert(newItem);
+
             invalidatePlaces();
         }
         return this;
     }
 
     public Formula remove(FormulaItem item) {
+        if (!checkClosersOnRemove(item)) {
+            return this;
+        }
         items.remove(item);
         item.setParent(null);
+        removeAdded(item);
         return this;
     }
 
     public Cursor removeLeft(FormulaItem item) {
         int index = items.indexOf(item);
+
         if (index > 0) {
-            items.remove(index - 1);
+            if (checkClosersOnRemove(index - 1)) {
+                FormulaItem removeItem = items.get(index - 1);
+                items.remove(index - 1);
+                removeItem.setParent(null);
+                removeAdded(removeItem);
+            }
         }
 
         if (items.size() > 0) {
@@ -253,7 +383,12 @@ public class Formula {
     public Cursor removeRight(FormulaItem item) {
         int index = items.indexOf(item);
         if (index < items.size()) {
-            items.remove(index + 1);
+            if (checkClosersOnRemove(index + 1)) {
+                FormulaItem removeItem = items.get(index + 1);
+                items.remove(index + 1);
+                removeItem.setParent(null);
+                removeAdded(removeItem);
+            }
             return item.getLast();
         } else {
             return getLast();
@@ -262,9 +397,13 @@ public class Formula {
 
     public Formula removeAt(int position) {
         if (position >= 0 && position < items.size()) {
+            if (!checkClosersOnRemove(position)) {
+                return this;
+            }
             FormulaItem item = items.get(position);
             items.remove(position);
             item.setParent(null);
+            removeAdded(item);
             invalidatePlaces();
         }
         return this;
@@ -379,10 +518,12 @@ public class Formula {
         return getLastItem().getLast();
     }
 
-    public FormulaItem findLeftCloser(FormulaItem item){
+    public FormulaItem findLeftCloser(FormulaItem item) {
         int posTo = items.indexOf(item);
-        if(posTo<0) return null;
-        
+        if (posTo < 0) {
+            return null;
+        }
+
         int closers = 0;
         for (int pos = posTo; pos >= 0; pos--) {
             FormulaItem posItem = items.get(pos);
@@ -399,9 +540,11 @@ public class Formula {
         return null;
     }
 
-    public FormulaItem findRightCloser(FormulaItem item){
+    public FormulaItem findRightCloser(FormulaItem item) {
         int posFrom = items.indexOf(item);
-        if(posFrom<0) return null;
+        if (posFrom < 0) {
+            return null;
+        }
 
         int size = items.size();
         int closers = 0;
@@ -464,12 +607,12 @@ public class Formula {
     /*
      * Find maximum heightUp and heightDown of items in a specified part of a Formula
      */
-    public Metrics findMaxHeights(Drawer drawer, int size, int posFrom, int count){
-        int posTo = Math.min(items.size(), posFrom+count);
+    public Metrics findMaxHeights(Drawer drawer, int size, int posFrom, int count) {
+        int posTo = Math.min(items.size(), posFrom + count);
         posFrom = Math.max(0, posFrom);
         int maxHeightUp = 0;
         int maxHeightDown = 0;
-        for(int i = posFrom; i < posTo; i++){
+        for (int i = posFrom; i < posTo; i++) {
             Metrics itemMetrics = items.get(i).measure(drawer, size);
             maxHeightUp = Math.max(maxHeightUp, itemMetrics.getHeightUp());
             maxHeightDown = Math.max(maxHeightDown, itemMetrics.getHeightDown());

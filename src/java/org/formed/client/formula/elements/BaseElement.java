@@ -79,14 +79,14 @@ public abstract class BaseElement implements FormulaItem {
 
         Metrics metrics = drawer.textMetrics(val, size);
 
-        if(highlighted){
-            drawer.fillRect(x, y-metrics.getHeightUp(), x+metrics.getWidth(), y+metrics.getHeightDown(), highlightR, highlightG, highlightB);
+        if (highlighted) {
+            drawer.fillRect(x, y - metrics.getHeightUp(), x + metrics.getWidth(), y + metrics.getHeightDown(), highlightR, highlightG, highlightB);
         }
 
         drawer.drawText(val, size, x, y);
 
-        if(strokeThrough){
-            drawer.drawLine(x, y+metrics.getHeightDown(), x+metrics.getWidth(), y-metrics.getHeightUp());
+        if (strokeThrough) {
+            drawer.drawLine(x, y + metrics.getHeightDown(), x + metrics.getWidth(), y - metrics.getHeightUp());
         }
 
         drawer.addDrawnItem(this, x, y, metrics);
@@ -106,6 +106,10 @@ public abstract class BaseElement implements FormulaItem {
 
     private String getPart(int position) {
         return val.substring(0, position);
+    }
+
+    public boolean isYourEnd(Cursor cursor) {
+        return cursor.getItem() == this && cursor.getPosition() >= val.length();
     }
 
     public Cursor getCursor(Drawer drawer, int x, int y) {
@@ -338,7 +342,9 @@ public abstract class BaseElement implements FormulaItem {
 
         if (cursor.getPosition() <= 0) { //Remove item to the left
             final FormulaItem left = parent_backup.getLeftItem(THIS);
-            if(left == null) return Command.ZERO_COMMAND;
+            if (left == null) {
+                return Command.ZERO_COMMAND;
+            }
 
             return new Command() {
 
@@ -352,6 +358,7 @@ public abstract class BaseElement implements FormulaItem {
             };
         } else { //Remove this item
             return new Command() {
+
                 final int pos = parent_backup.getItemPosition(THIS);
 
                 public Cursor execute() {
@@ -372,7 +379,6 @@ public abstract class BaseElement implements FormulaItem {
         }
     }
 
-
     public Command makeDeleteRight(final Cursor cursor) {
         if (parent == null) {
             return Command.ZERO_COMMAND;
@@ -383,7 +389,9 @@ public abstract class BaseElement implements FormulaItem {
 
         if (cursor.getPosition() > 0) { //Remove item to the right
             final FormulaItem right = parent_backup.getRightItem(THIS);
-            if(right == null) return Command.ZERO_COMMAND;
+            if (right == null) {
+                return Command.ZERO_COMMAND;
+            }
 
             return new Command() {
 
@@ -397,6 +405,7 @@ public abstract class BaseElement implements FormulaItem {
             };
         } else { //Remove this item
             return new Command() {
+
                 final int pos = parent_backup.getItemPosition(THIS);
 
                 public Cursor execute() {
@@ -416,5 +425,4 @@ public abstract class BaseElement implements FormulaItem {
             };
         }
     }
-
 }

@@ -151,6 +151,11 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
+    public boolean isYourEnd(Cursor cursor) {
+        return cursor.getItem() == this && cursor.getPosition() >= 1;
+    }
+
+    @Override
     public Cursor getCursor(Drawer drawer, int x, int y) {
         Metrics metrics = measure(drawer, storedSize);
         if (x - storedX < metrics.getWidth() / 2) {
