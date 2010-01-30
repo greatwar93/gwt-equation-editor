@@ -1,0 +1,58 @@
+GettingStarted: How to start using Formula Editor library with *GWT* and *Java SE*.
+(c) 2010 Bulat Sirazetdinov
+
+All API and class hierarchies are subject to change !
+Please, provide your ideas of better API. :)
+
+There is an *example* of an editor built over this library:
+Example.java (in org.formed.client.example package).
+You can get started by looking at it, playing with it and building your own version.
+
+
+= GWT =
+
+If you want to use another *Canvas* implementation than we do, then follow the
+*Java SE* section instructions.
+
+
+= Java SE =
+
+If you want to use this library within Java SE application you'll have to:
+
+  a) derive a new descendant from a BaseDrawer class. Just look at SurfaceDrawer
+     class and do the same. There's not much work to be done - you have to
+     provide line drawing, text measuring and rendering routines, etc.
+
+  b) re-write Example.java to use your Drawer implementation instead of
+     SurfaceDrawer, and to use the UI-rendering and event handling of the
+     *Java SE* GUI framework that you are using.
+
+
+= Architecture =
+
+Formulas (equations) are constructed with Formula objects and FormulaItem
+implementations: SimpleElement, OperatorElement, LeftCloser, RightCloser,
+                 DivisorElement, FunctionElement, RootElement.
+Just have a look at the top of Example.java code. You might need other classes
+from org.formed.client.formula.elements package (BaseElement, PoweredElement,
+PlaceElement) if you want to add your own types of items (elements).
+
+Editing capabilities are coded:
+  * mostly in BaseDrawer abstract class where only platform independent code is
+    present (SurfaceDrawer is derived from it and adds actual rendering of
+    primitives). If you want, you can code completely different Drawer
+    implementation.
+  * the other part is in Example.java.
+
+Platform specific rendering code is isolated in SurfaceDrawer class that is
+derived from BaseDrawer abstract class (where only platform independent code
+is present).
+
+Cursor class is used to specify the place where the cursor is positioned
+in a formula. You have to tackle with it only if you are redoing editor
+internals - BaseDrawer etc. (but in that case you'll have it a lot).
+
+Undo/redo: we use Command pattern for this. All commands are provided to Undoer
+by the Drawer that you use. But the origin of them is different:
+  * some commands are constructed by FormulaItem implementations
+  * and some are by BaseDrawer implementation of Drawer.

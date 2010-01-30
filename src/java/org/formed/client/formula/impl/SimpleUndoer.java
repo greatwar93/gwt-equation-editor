@@ -24,10 +24,24 @@ import org.formed.client.formula.Undoer;
  *
  * @author Bulat Sirazetdinov
  */
-public class SimpleUndoer implements Undoer {
+public final class SimpleUndoer implements Undoer {
 
-    List<Command> undos = new ArrayList<Command>();
-    List<Command> redos = new ArrayList<Command>();
+    private int maxSteps = 100;
+    private List<Command> undos = new ArrayList<Command>();
+    private List<Command> redos = new ArrayList<Command>();
+
+    public SimpleUndoer() {
+    }
+
+    public SimpleUndoer(int maxSteps) {
+        this.maxSteps = maxSteps;
+    }
+
+    private void shrinkToMaxSteps(){
+        while(undos.size() > maxSteps){
+            undos.remove(0);
+        }
+    }
 
     public void add(Command command) {
         if (command == Command.ZERO_COMMAND) {
@@ -36,6 +50,8 @@ public class SimpleUndoer implements Undoer {
         
         undos.add(command);
         redos.clear();
+
+        shrinkToMaxSteps();
     }
 
     public void clear() {
@@ -77,5 +93,7 @@ public class SimpleUndoer implements Undoer {
         undos.add(command);
         redos.remove(command);
         command.execute();
+
+        shrinkToMaxSteps();
     }
 }

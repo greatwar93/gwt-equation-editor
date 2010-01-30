@@ -328,7 +328,7 @@ public abstract class BaseElement implements FormulaItem {
     }
      */
 
-    public Command deleteLeft(final Cursor cursor) {
+    public Command makeDeleteLeft(final Cursor cursor) {
         if (parent == null) {
             return Command.ZERO_COMMAND;
         }
@@ -373,7 +373,7 @@ public abstract class BaseElement implements FormulaItem {
     }
 
 
-    public Command deleteRight(final Cursor cursor) {
+    public Command makeDeleteRight(final Cursor cursor) {
         if (parent == null) {
             return Command.ZERO_COMMAND;
         }

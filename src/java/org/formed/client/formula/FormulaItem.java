@@ -82,8 +82,8 @@ public interface FormulaItem {
     Cursor insertChar(int pos, FormulaItem item);
     Cursor removeChar(int pos);
 
-    Command deleteLeft(Cursor cursor);
-    Command deleteRight(Cursor cursor);
+    Command makeDeleteLeft(Cursor cursor);
+    Command makeDeleteRight(Cursor cursor);
 
     void invalidatePlaces(Formula source);
     

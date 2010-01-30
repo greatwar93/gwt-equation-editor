@@ -371,6 +371,16 @@ public class Example {
                 redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
         });
+        final Button piButton = new Button("π", new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.insert('π');
+                drawer.redraw();
+                surface.setFocus(true);
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
+            }
+        });
         final Button angleButton = new Button("∠", new ClickHandler() {
 
             public void onClick(ClickEvent event) {
@@ -420,6 +430,7 @@ public class Example {
         greaterOrEqualButton.setWidth(BUTTON_WIDTH+"px");
 
         alphaButton.setWidth(BUTTON_WIDTH+"px");
+        piButton.setWidth(BUTTON_WIDTH+"px");
         angleButton.setWidth(BUTTON_WIDTH+"px");
         degreeButton.setWidth(BUTTON_WIDTH+"px");
         infinityButton.setWidth(BUTTON_WIDTH+"px");
@@ -441,9 +452,10 @@ public class Example {
         RootPanel.get().add(greaterOrEqualButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 110);
 
         RootPanel.get().add(alphaButton, 10 + (10 + BUTTON_WIDTH) * 0, HEIGHT + 140);
-        RootPanel.get().add(angleButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 140);
-        RootPanel.get().add(degreeButton, 10 + (10 + BUTTON_WIDTH) * 2, HEIGHT + 140);
-        RootPanel.get().add(infinityButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 140);
+        RootPanel.get().add(piButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 140);
+        RootPanel.get().add(angleButton, 10 + (10 + BUTTON_WIDTH) * 2, HEIGHT + 140);
+        RootPanel.get().add(degreeButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 140);
+        RootPanel.get().add(infinityButton, 10 + (10 + BUTTON_WIDTH) * 4, HEIGHT + 140);
         //Special buttons inserted
 
 

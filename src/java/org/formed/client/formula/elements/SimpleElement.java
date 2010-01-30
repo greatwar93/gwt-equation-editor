@@ -27,7 +27,8 @@ import org.formed.client.formula.FormulaItem;
  */
 public final class SimpleElement extends PoweredElement {
 
-    protected boolean addNext = false; //Should next item be concatenated with this in the case of undo.
+    private boolean addNext = false; //Should next item be concatenated with this in the case of undo.
+    private final SimpleElement THIS = this;
 
     public SimpleElement(String name) {
         super();
@@ -71,6 +72,55 @@ public final class SimpleElement extends PoweredElement {
     public void setAddNext(boolean addNext) {
         this.addNext = addNext;
     }
+/*
+    public Command makeBreakWith(final int pos, final FormulaItem item){
+        if(parent == null) return Command.ZERO_COMMAND;
+
+        final Formula parent_backup = parent;
+
+        return new Command() {
+
+            SimpleElement newItem = null;
+
+            public Cursor execute() {
+                newItem = breakWith1(pos, item);
+                return item.getLast();
+            }
+
+            public void undo() {
+                parent_backup.remove(item);
+
+                if(newItem != null){
+                    addItem(newItem);
+                    parent_backup.remove(newItem);
+                    newItem = null;
+                }
+            }
+        };
+    }
+*/
+    protected SimpleElement breakWith1(int pos, FormulaItem item) {
+        addNext = false;
+        if (parent == null) {
+            return null;
+        }
+
+        SimpleElement  newItem = null;
+        if (pos < val.length()) {
+            addNext = true;
+            parent.insertAfter(item, this);
+            newItem = new SimpleElement(val.substring(pos), getPower());
+            parent.insertAfter(newItem, item);
+            setName(val.substring(0, pos));
+            setPower(null);
+        } else {
+            parent.insertAfter(item, this);
+        }
+
+        invalidatePlaces(null);
+
+        return newItem;
+    }
 
     public Cursor breakWith(int pos, FormulaItem item) {
         addNext = false;
@@ -78,6 +128,8 @@ public final class SimpleElement extends PoweredElement {
             return item.getCursor(pos);
         }
 
+        breakWith1(pos, item);
+/*
         if (pos < val.length()) {
             addNext = true;
             parent.insertAfter(item, this);
@@ -89,13 +141,14 @@ public final class SimpleElement extends PoweredElement {
         }
 
         invalidatePlaces(null);
-
+*/
         return item.getLast(); //Why doesn't it work ?
     }
 
     public void addItem(SimpleElement item){
         val = val + item.getName();
         setPower(item.getPower());
+        item.setPower(null);
         addNext = false;
     }
 
@@ -175,7 +228,7 @@ public final class SimpleElement extends PoweredElement {
      */
 
     @Override
-    public Command deleteLeft(Cursor cursor) {
+    public Command makeDeleteLeft(Cursor cursor) {
         final FormulaItem THIS = this;
         final int pos = cursor.getPosition();
         final Cursor newCursor = cursor.makeClone();
@@ -264,7 +317,7 @@ public final class SimpleElement extends PoweredElement {
     }
 
     @Override
-    public Command deleteRight(Cursor cursor) {
+    public Command makeDeleteRight(Cursor cursor) {
         final FormulaItem THIS = this;
         final int pos = cursor.getPosition();
         final Cursor newCursor = cursor.makeClone();

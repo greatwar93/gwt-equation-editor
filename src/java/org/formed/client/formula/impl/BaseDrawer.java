@@ -39,13 +39,12 @@ import org.formed.client.formula.elements.SimpleElement;
  */
 public abstract class BaseDrawer implements Drawer {
 
-    protected Formula formula;
+    protected final Formula formula;
     protected final Undoer undoer;
     protected Cursor cursor = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
     protected Cursor cursor2 = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
     protected FormulaItem highlighted1 = null;
     protected FormulaItem highlighted2 = null;
-    private FormulaItem highlightedItem = new SimpleElement("");
     protected final Map<FormulaItem, Rectangle> items = new HashMap<FormulaItem, Rectangle>();
     protected final Map<Formula, Rectangle> formulas = new HashMap<Formula, Rectangle>();
     protected final Drawer THIS_DRAWER = this;
@@ -164,7 +163,8 @@ public abstract class BaseDrawer implements Drawer {
         return setCursor(cursor.getItem().getRight(cursor.getPosition()));
     }
 
-    protected Command makeCommandBreakWith(final SimpleElement currentItem, final FormulaItem newItem, final int pos) {
+    protected Command makeBreakWith(final SimpleElement currentItem, final FormulaItem newItem, final int pos) {
+        //return currentItem.makeBreakWith(pos, newItem);
         final Formula parent_backup = currentItem.getParent();
         return new Command() {
 
@@ -191,7 +191,7 @@ public abstract class BaseDrawer implements Drawer {
         };
     }
 
-    protected Command makeCommandInsertAfter(final FormulaItem currentItem, final FormulaItem newItem) {
+    protected Command makeInsertAfter(final FormulaItem currentItem, final FormulaItem newItem) {
         final Formula parent_backup = currentItem.getParent();
         return new Command() {
 
@@ -206,7 +206,7 @@ public abstract class BaseDrawer implements Drawer {
         };
     }
 
-    protected Command makeCommandInsertBefore(final FormulaItem currentItem, final FormulaItem newItem) {
+    protected Command makeInsertBefore(final FormulaItem currentItem, final FormulaItem newItem) {
         final Formula parent_backup = currentItem.getParent();
         return new Command() {
 
@@ -221,7 +221,7 @@ public abstract class BaseDrawer implements Drawer {
         };
     }
 
-    protected Command makeCommandInsertCharInSimple(final FormulaItem item, final int pos, final char c) {
+    protected Command makeInsertCharInSimple(final FormulaItem item, final int pos, final char c) {
         return new Command() {
 
             public Cursor execute() {
@@ -235,7 +235,7 @@ public abstract class BaseDrawer implements Drawer {
         };
     }
 
-    protected Command makeCommandInsertChar(final FormulaItem item, final int pos, final FormulaItem newItem) {
+    protected Command makeInsertChar(final FormulaItem item, final int pos, final FormulaItem newItem) {
         return new Command() {
 
             public Cursor execute() {
@@ -264,13 +264,13 @@ public abstract class BaseDrawer implements Drawer {
         }
     }
 
-    protected Command makeCommandLeftToDivisor(final DivisorElement newItem) {
-        final Formula parent = newItem.getParent();
-        if (parent == null) {
+    protected Command makeLeftToDivisor(final DivisorElement newItem) {
+        final Formula parent_backup = newItem.getParent();
+        if (parent_backup == null) {
             return Command.ZERO_COMMAND;
         }
 
-        final FormulaItem item = parent.getLeftItem(newItem);
+        final FormulaItem item = parent_backup.getLeftItem(newItem);
         if (item == null) {
             return Command.ZERO_COMMAND;
         }
@@ -278,30 +278,38 @@ public abstract class BaseDrawer implements Drawer {
         if (item instanceof SimpleElement) {
             return new Command() {
 
+                FormulaItem item2 = null;
+
                 public Cursor execute() {
-                    parent.remove(item);
-                    newItem.getFormula1().add(item);
+                    item2 = parent_backup.getLeftItem(newItem);
+                    if (item2 != null) {
+                        parent_backup.remove(item2);
+                        newItem.getFormula1().add(item2);
+                    }
                     return newItem.getFormula2().getFirst();
                 }
 
                 public void undo() {
-                    newItem.getFormula1().remove(item);
-                    parent.insertBefore(item, newItem);
+                    if (item2 != null) {
+                        newItem.getFormula1().remove(item2);
+                        parent_backup.insertBefore(item2, newItem);
+                        item2 = null;
+                    }
                 }
             };
         } else if (item instanceof RightCloser) {
-            int posTo = parent.getItemPosition(item);
-            final int posFrom = parent.findLeftCloserPos(posTo);
+            int posTo = parent_backup.getItemPosition(item);
+            final int posFrom = parent_backup.findLeftCloserPos(posTo);
             final int size = posTo - posFrom + 1;
             return new Command() {
 
                 public Cursor execute() {
-                    moveFormula(parent, posFrom, size, newItem.getFormula1(), 0);
+                    moveFormula(parent_backup, posFrom, size, newItem.getFormula1(), 0);
                     return newItem.getFormula1().getLast();
                 }
 
                 public void undo() {
-                    moveFormula(newItem.getFormula1(), 0, size, parent, posFrom);
+                    moveFormula(newItem.getFormula1(), 0, size, parent_backup, posFrom);
                 }
             };
         }
@@ -309,13 +317,13 @@ public abstract class BaseDrawer implements Drawer {
         return Command.ZERO_COMMAND;
     }
 
-    protected Command makeCommandRightToDivisor(final DivisorElement newItem) {
-        final Formula parent = newItem.getParent();
-        if (parent == null) {
+    protected Command makeRightToDivisor(final DivisorElement newItem) {
+        final Formula parent_backup = newItem.getParent();
+        if (parent_backup == null) {
             return Command.ZERO_COMMAND;
         }
 
-        final FormulaItem item = parent.getRightItem(newItem);
+        final FormulaItem item = parent_backup.getRightItem(newItem);
         if (item == null) {
             return Command.ZERO_COMMAND;
         }
@@ -323,30 +331,38 @@ public abstract class BaseDrawer implements Drawer {
         if (item instanceof SimpleElement) {
             return new Command() {
 
+                FormulaItem item2 = null;
+
                 public Cursor execute() {
-                    parent.remove(item);
-                    newItem.getFormula2().add(item);
+                    item2 = parent_backup.getRightItem(newItem);
+                    if (item2 != null) {
+                        parent_backup.remove(item2);
+                        newItem.getFormula2().add(item2);
+                    }
                     return newItem.getLast();
                 }
 
                 public void undo() {
-                    newItem.getFormula2().remove(item);
-                    parent.insertAfter(item, newItem);
+                    if (item2 != null) {
+                        newItem.getFormula2().remove(item2);
+                        parent_backup.insertAfter(item2, newItem);
+                        item2 = null;
+                    }
                 }
             };
         } else if (item instanceof LeftCloser) {
-            final int posFrom = parent.getItemPosition(item);
-            int posTo = parent.findRightCloserPos(posFrom);
+            final int posFrom = parent_backup.getItemPosition(item);
+            int posTo = parent_backup.findRightCloserPos(posFrom);
             final int size = posTo - posFrom + 1;
             return new Command() {
 
                 public Cursor execute() {
-                    moveFormula(parent, posFrom, size, newItem.getFormula2(), 0);
+                    moveFormula(parent_backup, posFrom, size, newItem.getFormula2(), 0);
                     return newItem.getLast();
                 }
 
                 public void undo() {
-                    moveFormula(newItem.getFormula2(), 0, size, parent, posFrom);
+                    moveFormula(newItem.getFormula2(), 0, size, parent_backup, posFrom);
                 }
             };
         }
@@ -381,11 +397,11 @@ public abstract class BaseDrawer implements Drawer {
             DivisorElement newItem = new DivisorElement();
             insertElement(newItem);
 
-            Command leftCommand = makeCommandLeftToDivisor(newItem);
+            Command leftCommand = makeLeftToDivisor(newItem);
             setCursor(leftCommand.execute());
             undoer.add(leftCommand);
 
-            Command rightCommand = makeCommandRightToDivisor(newItem);
+            Command rightCommand = makeRightToDivisor(newItem);
             setCursor(rightCommand.execute());
             undoer.add(rightCommand);
         } else {
@@ -402,12 +418,12 @@ public abstract class BaseDrawer implements Drawer {
 
             Command command;
             if (currentItem instanceof SimpleElement) {
-                command = makeCommandInsertCharInSimple(currentItem, cursor.getPosition(), c);
+                command = makeInsertCharInSimple(currentItem, cursor.getPosition(), c);
             } else if (rightSimple) {
-                command = makeCommandInsertCharInSimple(rightSimpleItem, rightCursor.getPosition(), c);
+                command = makeInsertCharInSimple(rightSimpleItem, rightCursor.getPosition(), c);
             } else {
                 SimpleElement newSimple = new SimpleElement("" + c);
-                command = makeCommandInsertChar(currentItem, cursor.getPosition(), newSimple);
+                command = makeInsertChar(currentItem, cursor.getPosition(), newSimple);
             }
             setCursor(command.execute());
             undoer.add(command);
@@ -425,12 +441,12 @@ public abstract class BaseDrawer implements Drawer {
         Command command;
 
         if (currentItem instanceof SimpleElement) {
-            command = makeCommandBreakWith((SimpleElement) currentItem, newItem, cursor.getPosition());
+            command = makeBreakWith((SimpleElement) currentItem, newItem, cursor.getPosition());
         } else {
             if (cursor.getPosition() == 0) {
-                command = makeCommandInsertBefore(currentItem, newItem);
+                command = makeInsertBefore(currentItem, newItem);
             } else {
-                command = makeCommandInsertAfter(currentItem, newItem);
+                command = makeInsertAfter(currentItem, newItem);
             }
         }
 
@@ -440,7 +456,7 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void deleteLeft() {
-        Command command = cursor.getItem().deleteLeft(cursor);
+        Command command = cursor.getItem().makeDeleteLeft(cursor);
         setCursor(command.execute());
         undoer.add(command);
 
@@ -448,14 +464,14 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void deleteRight() {
-        Command command = cursor.getItem().deleteRight(cursor);
+        Command command = cursor.getItem().makeDeleteRight(cursor);
         setCursor(command.execute());
         undoer.add(command);
 
         redraw();
     }
 
-    public FormulaItem selectItemAt(int x, int y) {
+    public FormulaItem findItemAt(int x, int y) {
         Rectangle minRect = null;
         FormulaItem minRectItem = null;
         for (FormulaItem item : items.keySet()) {
@@ -467,6 +483,12 @@ public abstract class BaseDrawer implements Drawer {
                 }
             }
         }
+
+        return minRectItem;
+    }
+
+    public FormulaItem selectItemAt(int x, int y) {
+        FormulaItem minRectItem = findItemAt(x, y);
 
         if (minRectItem != null) {
             cursor = minRectItem.getCursor(this, x, y);
@@ -477,6 +499,7 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public FormulaItem highlightItemAt(int x, int y) {
+        //Switch off highlighting
         if (highlighted1 != null) {
             highlighted1.highlightOff();
             highlighted1 = null;
@@ -486,20 +509,12 @@ public abstract class BaseDrawer implements Drawer {
             highlighted2 = null;
         }
 
-        Rectangle minRect = null;
-        FormulaItem minRectItem = null;
-        for (FormulaItem item : items.keySet()) {
-            Rectangle rect = items.get(item);
-            if (rect.isInside(x, y)) {
-                if (rect.isSmaller(minRect)) {
-                    minRectItem = item;
-                    minRect = rect;
-                }
-            }
-        }
+        FormulaItem minRectItem = findItemAt(x, y);
+
         if (minRectItem != null) {
             cursor2 = minRectItem.getCursor(this, x, y);
 
+            //Highlight Closer items
             if (minRectItem instanceof LeftCloser) {
                 highlighted1 = minRectItem;
                 highlighted2 = ((LeftCloser) minRectItem).getRightCloser();
@@ -525,22 +540,5 @@ public abstract class BaseDrawer implements Drawer {
         redraw();
 
         return minRectItem;
-        /*        Rectangle minRect = null;
-        FormulaItem minRectItem = null;
-        for (FormulaItem item : items.keySet()) {
-        Rectangle rect = items.get(item);
-        if (rect.isInside(x, y)) {
-        if (rect.isSmaller(minRect)) {
-        minRectItem = item;
-        minRect = rect;
-        }
-        }
-        }
-        if (minRect != null) {
-        highlightedItem = minRectItem;
-        redraw();
-        }
-
-        return minRectItem;*/
     }
 }
