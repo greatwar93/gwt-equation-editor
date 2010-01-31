@@ -18,6 +18,7 @@ package org.formed.client.formula.elements;
 
 import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
+import org.formed.client.formula.CursorFixer;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
@@ -82,6 +83,17 @@ public final class FunctionElement extends PoweredElement {
             formula.setShowPlace(true);
         }
         formula.setParent(this);
+    }
+
+    @Override
+    public boolean isYouOrInsideYou(FormulaItem item) {
+        if (super.isYouOrInsideYou(item)) {
+            return true;
+        }
+        if (formula.isInsideYou(item)) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -250,7 +262,7 @@ public final class FunctionElement extends PoweredElement {
 
 
     @Override
-    public Command buildBreakWith(final Cursor cursor, final FormulaItem item) {
+    public Command buildBreakWith(final Cursor cursor, final FormulaItem item, final CursorFixer fixer) {
         if (!hasParent() || item == null || cursor == null) {
             return Command.ZERO_COMMAND;
         }
@@ -272,12 +284,14 @@ public final class FunctionElement extends PoweredElement {
                 val = newItem.getName() + val;
                 parent_backup.remove(newItem);
                 parent_backup.remove(item);
+                fixer.removed(newItem, THIS.getCursor(pos));
+                fixer.removed(item, THIS.getCursor(pos));
             }
         };
     }
 
     @Override
-    public Command buildIncorporateRight() {
-        return buildIncorporateRight(formula);
+    public Command buildIncorporateRight(final CursorFixer fixer) {
+        return buildIncorporateRight(formula, fixer);
     }
 }

@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
+import org.formed.client.formula.CursorFixer;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
@@ -50,10 +51,13 @@ public abstract class BaseDrawer implements Drawer {
     protected final Drawer THIS_DRAWER = this;
     protected Metrics drawerMetrics = new Metrics(0, 0, 0);
     protected int debugTexts = 0;
+    protected SimpleCursorFixer fixer = new SimpleCursorFixer();
 
     public BaseDrawer(Formula formula) {
         this.formula = formula;
         this.undoer = Undoer.ZERO_UNDOER;
+
+        populateFixer();
 
         formula.invalidateMetrics();
     }
@@ -61,6 +65,8 @@ public abstract class BaseDrawer implements Drawer {
     public BaseDrawer(Formula formula, Undoer undoer) {
         this.formula = formula;
         this.undoer = undoer;
+
+        populateFixer();
 
         formula.invalidateMetrics();
     }
@@ -137,12 +143,18 @@ public abstract class BaseDrawer implements Drawer {
         return sizeFrom;
     }
 
+    protected void populateFixer(){
+        fixer.clear();
+        fixer.addCursor(cursor);
+    }
+
     private boolean setCursor(Cursor newCursor) {
         if (newCursor == null) {
             return false;
         }
 
         cursor = newCursor;
+        populateFixer();
         redraw();
         return true;
     }
@@ -188,55 +200,56 @@ public abstract class BaseDrawer implements Drawer {
         Command command = null;
         switch (currentItem.getHowToInsert(cursor, newItem)) {
             case INSERT:
-                command = currentItem.buildInsert(cursor, newItem);
+                command = currentItem.buildInsert(cursor, newItem, fixer);
                 setCursor(command.execute());
                 undoer.add(command);
                 break;
 
             case BREAK:
-                command = currentItem.buildBreakWith(cursor, newItem);
+                command = currentItem.buildBreakWith(cursor, newItem, fixer);
                 setCursor(command.execute());
                 undoer.add(command);
 
-                command = newItem.buildIncorporateLeft();
+                command = newItem.buildIncorporateLeft(fixer);
                 setCursor(command.execute());
                 undoer.add(command);
 
-                command = newItem.buildIncorporateRight();
+                command = newItem.buildIncorporateRight(fixer);
                 setCursor(command.execute());
                 undoer.add(command);
                 break;
 
             case LEFT:
-                command = currentItem.buildInsertBefore(newItem);
+                command = currentItem.buildInsertBefore(newItem, fixer);
                 setCursor(command.execute());
                 undoer.add(command);
 
-                command = newItem.buildIncorporateLeft();
+                command = newItem.buildIncorporateLeft(fixer);
                 setCursor(command.execute());
                 undoer.add(command);
 
-                command = newItem.buildIncorporateRight();
+                command = newItem.buildIncorporateRight(fixer);
                 setCursor(command.execute());
                 undoer.add(command);
                 break;
 
             case RIGHT:
-                command = currentItem.buildInsertAfter(newItem);
+                command = currentItem.buildInsertAfter(newItem, fixer);
                 setCursor(command.execute());
                 undoer.add(command);
 
-                command = newItem.buildIncorporateLeft();
+                command = newItem.buildIncorporateLeft(fixer);
                 setCursor(command.execute());
                 undoer.add(command);
 
-                command = newItem.buildIncorporateRight();
+                command = newItem.buildIncorporateRight(fixer);
                 setCursor(command.execute());
                 undoer.add(command);
                 break;
 
             default:
         }
+        redraw();
     }
 
     public void insert(char c) {
@@ -263,13 +276,12 @@ public abstract class BaseDrawer implements Drawer {
         } else if (c == '/') {
             insertElement(new DivisorElement());
         } else {
-            insertElement(new SimpleElement(""+c));
+            insertElement(new SimpleElement("" + c));
         }
-        redraw();
     }
 
     public void deleteLeft() {
-        Command command = cursor.getItem().buildDeleteLeft(cursor);
+        Command command = cursor.getItem().buildDeleteLeft(cursor, fixer);
         setCursor(command.execute());
         undoer.add(command);
 
@@ -277,7 +289,7 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void deleteRight() {
-        Command command = cursor.getItem().buildDeleteRight(cursor);
+        Command command = cursor.getItem().buildDeleteRight(cursor, fixer);
         setCursor(command.execute());
         undoer.add(command);
 

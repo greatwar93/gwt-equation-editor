@@ -52,6 +52,9 @@ public interface FormulaItem {
     //Returns true if an item is a complex one
     boolean isComplex();
 
+    //Returns true if specified item is this one or inside it
+    boolean isYouOrInsideYou(FormulaItem item);
+
     //Draw this item on a specified drawer in a specified position of a specified size
     Metrics draw(Drawer drawer, int x, int y, int size);
 
@@ -118,26 +121,26 @@ public interface FormulaItem {
     HowToInsert getHowToInsert(Cursor cursor, FormulaItem item);
 
     //Create Command to insert specified item into this item
-    Command buildInsert(Cursor cursor, FormulaItem item);
+    Command buildInsert(Cursor cursor, FormulaItem item, CursorFixer fixer);
 
     //Create Command to break this item with the specified item
-    Command buildBreakWith(Cursor cursor, FormulaItem item);
+    Command buildBreakWith(Cursor cursor, FormulaItem item, CursorFixer fixer);
 
     //Create Command to insert specified item before this item
-    Command buildInsertBefore(FormulaItem item);
+    Command buildInsertBefore(FormulaItem item, CursorFixer fixer);
 
     //Create Command to insert specified item after this item
-    Command buildInsertAfter(FormulaItem item);
+    Command buildInsertAfter(FormulaItem item, CursorFixer fixer);
 
     //Create Command to incorporate item from the left
-    Command buildIncorporateLeft();
+    Command buildIncorporateLeft(CursorFixer fixer);
 
     //Create Command to incorporate item from the right
-    Command buildIncorporateRight();
+    Command buildIncorporateRight(CursorFixer fixer);
 
     //Create Command to delete something left to cursor
-    Command buildDeleteLeft(Cursor cursor);
+    Command buildDeleteLeft(Cursor cursor, CursorFixer fixer);
 
     //Create Command to delete something right to cursor
-    Command buildDeleteRight(Cursor cursor);
+    Command buildDeleteRight(Cursor cursor, CursorFixer fixer);
 }

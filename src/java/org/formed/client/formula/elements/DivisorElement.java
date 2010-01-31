@@ -18,6 +18,7 @@ package org.formed.client.formula.elements;
 
 import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
+import org.formed.client.formula.CursorFixer;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
@@ -81,6 +82,20 @@ public final class DivisorElement extends BaseElement {
     }
 
     public boolean isComplex() {
+        return false;
+    }
+
+    @Override
+    public boolean isYouOrInsideYou(FormulaItem item) {
+        if (super.isYouOrInsideYou(item)) {
+            return true;
+        }
+        if (formula1.isInsideYou(item)) {
+            return true;
+        }
+        if (formula2.isInsideYou(item)) {
+            return true;
+        }
         return false;
     }
 
@@ -256,7 +271,7 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public Command buildIncorporateLeft() {
+    public Command buildIncorporateLeft(final CursorFixer fixer) {
         if (!hasParent()) {
             return Command.ZERO_COMMAND;
         }
@@ -284,7 +299,9 @@ public final class DivisorElement extends BaseElement {
             };
         }
 
-        if(!item.isIncorporatable()) return Command.ZERO_COMMAND;
+        if (!item.isIncorporatable()) {
+            return Command.ZERO_COMMAND;
+        }
         return new Command() {
 
             public Cursor execute() {
@@ -301,7 +318,7 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public Command buildIncorporateRight() {
-        return buildIncorporateRight(formula2);
+    public Command buildIncorporateRight(final CursorFixer fixer) {
+        return buildIncorporateRight(formula2, fixer);
     }
 }

@@ -18,6 +18,7 @@ package org.formed.client.formula.elements;
 
 import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
+import org.formed.client.formula.CursorFixer;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
@@ -82,6 +83,20 @@ public final class RootElement extends BaseElement {
         return false;
     }
 
+    @Override
+    public boolean isYouOrInsideYou(FormulaItem item) {
+        if (super.isYouOrInsideYou(item)) {
+            return true;
+        }
+        if (formula.isInsideYou(item)) {
+            return true;
+        }
+        if (formulaPower.isInsideYou(item)) {
+            return true;
+        }
+        return false;
+    }
+    
     @Override
     public Metrics draw(Drawer drawer, int x, int y, int size) {
         storedSize = size;
@@ -282,7 +297,7 @@ public final class RootElement extends BaseElement {
     }
 
     @Override
-    public Command buildIncorporateRight() {
-        return buildIncorporateRight(formula);
+    public Command buildIncorporateRight(final CursorFixer fixer) {
+        return buildIncorporateRight(formula, fixer);
     }
 }

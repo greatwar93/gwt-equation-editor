@@ -18,6 +18,7 @@ package org.formed.client.formula.elements;
 
 import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
+import org.formed.client.formula.CursorFixer;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
@@ -51,6 +52,17 @@ public abstract class PoweredElement extends BaseElement {
 
     public boolean isComplex() {
         return !formulaPower.isEmpty();
+    }
+
+    @Override
+    public boolean isYouOrInsideYou(FormulaItem item) {
+        if (super.isYouOrInsideYou(item)) {
+            return true;
+        }
+        if (formulaPower.isInsideYou(item)) {
+            return true;
+        }
+        return false;
     }
 
     public Formula getPower() {
@@ -176,7 +188,7 @@ public abstract class PoweredElement extends BaseElement {
         return getCursor(pos + s.length());
     }
 
-    public Cursor undoInsertString(int pos, String s) {
+    public Cursor undoInsertString(int pos, String s, CursorFixer fixer) {
         val = val.substring(0, pos) + val.substring(pos + s.length());
 
         if (val.length() <= 0) {
@@ -186,8 +198,10 @@ public abstract class PoweredElement extends BaseElement {
                 Formula parent_backup = removeFromParent(); //this commands clear parent so we need a backup to finish all commands
 
                 if (cursor.getItem() == this) {
+                    fixer.removed(this, parent_backup.getFirst());
                     return parent_backup.getFirst();
                 } else {
+                    fixer.removed(this, cursor);
                     return cursor;
                 }
             }
@@ -198,7 +212,7 @@ public abstract class PoweredElement extends BaseElement {
     }
 
     @Override
-    public Command buildInsert(Cursor cursor, FormulaItem item) {
+    public Command buildInsert(Cursor cursor, FormulaItem item, final CursorFixer fixer) {
         if (item == null || cursor == null) {
             return Command.ZERO_COMMAND;
         }
@@ -216,7 +230,7 @@ public abstract class PoweredElement extends BaseElement {
             }
 
             public void undo() {
-                undoInsertString(pos, s);
+                undoInsertString(pos, s, fixer);
             }
         };
     }

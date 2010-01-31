@@ -18,6 +18,7 @@ package org.formed.client.formula.impl;
 import java.util.ArrayList;
 import java.util.List;
 import org.formed.client.formula.Command;
+import org.formed.client.formula.CursorFixer;
 import org.formed.client.formula.Undoer;
 
 /**
@@ -37,8 +38,8 @@ public final class SimpleUndoer implements Undoer {
         this.maxSteps = maxSteps;
     }
 
-    private void shrinkToMaxSteps(){
-        while(undos.size() > maxSteps){
+    private void shrinkToMaxSteps() {
+        while (undos.size() > maxSteps) {
             undos.remove(0);
         }
     }
@@ -47,7 +48,7 @@ public final class SimpleUndoer implements Undoer {
         if (command == Command.ZERO_COMMAND) {
             return;
         }
-        
+
         undos.add(command);
         redos.clear();
 

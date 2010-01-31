@@ -126,7 +126,8 @@ public class Formula {
     }
 
     private boolean isInFunction() {
-        return parent == null ? false : parent instanceof FunctionElement;
+        return false;
+        //return parent == null ? false : parent instanceof FunctionElement;
     }
 
     private boolean hasFirstLeftCloser() {
@@ -147,6 +148,15 @@ public class Formula {
         }
 
         return false;
+    }
+
+    public boolean isInsideYou(FormulaItem insideItem) {
+        for (FormulaItem item : items) {
+            if (item.isYouOrInsideYou(insideItem)) {
+                return true;
+            }
+        }
+        return insideItem == place;
     }
 
     public int getItemsCount() {

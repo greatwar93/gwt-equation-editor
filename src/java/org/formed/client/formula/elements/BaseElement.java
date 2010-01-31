@@ -18,6 +18,7 @@ package org.formed.client.formula.elements;
 
 import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
+import org.formed.client.formula.CursorFixer;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
@@ -85,6 +86,10 @@ public abstract class BaseElement implements FormulaItem {
         return true;
     }
 
+    public boolean isYouOrInsideYou(FormulaItem item) {
+        return this == item;
+    }
+    
     public void setStrokeThrough(boolean strokeThrough) {
         this.strokeThrough = strokeThrough;
     }
@@ -238,7 +243,7 @@ public abstract class BaseElement implements FormulaItem {
     }
 
     public Cursor getEditPlace() {
-        return getCursor(getLength());
+        return getCursor(1);
     }
 
     public Cursor childAsksLeft(Formula child) {
@@ -279,7 +284,7 @@ public abstract class BaseElement implements FormulaItem {
         metricsValid = false;
     }
 
-    public Command buildDeleteLeft(final Cursor cursor) {
+    public Command buildDeleteLeft(final Cursor cursor, final CursorFixer fixer) {
         if (parent == null) {
             return Command.ZERO_COMMAND;
         }
@@ -295,7 +300,9 @@ public abstract class BaseElement implements FormulaItem {
             return new Command() {
 
                 public Cursor execute() {
-                    return parent_backup.removeLeft(THIS);
+                    Cursor newCursor = parent_backup.removeLeft(THIS);
+                    fixer.removed(left, newCursor);
+                    return newCursor;
                 }
 
                 public void undo() {
@@ -315,6 +322,8 @@ public abstract class BaseElement implements FormulaItem {
                         newCursor = parent_backup.getFirst();
                     }
 
+                    fixer.removed(THIS, newCursor);
+
                     return newCursor;
                 }
 
@@ -325,7 +334,7 @@ public abstract class BaseElement implements FormulaItem {
         }
     }
 
-    public Command buildDeleteRight(final Cursor cursor) {
+    public Command buildDeleteRight(final Cursor cursor, final CursorFixer fixer) {
         if (parent == null) {
             return Command.ZERO_COMMAND;
         }
@@ -341,7 +350,9 @@ public abstract class BaseElement implements FormulaItem {
             return new Command() {
 
                 public Cursor execute() {
-                    return parent_backup.removeRight(THIS);
+                    Cursor newCursor = parent_backup.removeRight(THIS);
+                    fixer.removed(right, newCursor);
+                    return newCursor;
                 }
 
                 public void undo() {
@@ -361,6 +372,8 @@ public abstract class BaseElement implements FormulaItem {
                         newCursor = parent_backup.getLast();
                     }
 
+                    fixer.removed(THIS, newCursor);
+
                     return newCursor;
                 }
 
@@ -375,7 +388,7 @@ public abstract class BaseElement implements FormulaItem {
         return HowToInsert.LEFT;
     }
 
-    public Command buildInsertAfter(final FormulaItem item) {
+    public Command buildInsertAfter(final FormulaItem item, final CursorFixer fixer) {
         if (!hasParent() || item == null) {
             return Command.ZERO_COMMAND;
         }
@@ -391,11 +404,12 @@ public abstract class BaseElement implements FormulaItem {
 
             public void undo() {
                 parent_backup.remove(item);
+                fixer.removed(item, getLast());
             }
         };
     }
 
-    public Command buildInsertBefore(final FormulaItem item) {
+    public Command buildInsertBefore(final FormulaItem item, final CursorFixer fixer) {
         if (!hasParent() || item == null) {
             return Command.ZERO_COMMAND;
         }
@@ -411,27 +425,28 @@ public abstract class BaseElement implements FormulaItem {
 
             public void undo() {
                 parent_backup.remove(item);
+                fixer.removed(item, getFirst());
             }
         };
     }
 
-    public Command buildBreakWith(Cursor cursor, FormulaItem item) {
+    public Command buildBreakWith(Cursor cursor, FormulaItem item, final CursorFixer fixer) {
         return Command.ZERO_COMMAND;
     }
 
-    public Command buildInsert(Cursor cursor, FormulaItem item) {
+    public Command buildInsert(Cursor cursor, FormulaItem item, final CursorFixer fixer) {
         return Command.ZERO_COMMAND;
     }
 
-    public Command buildIncorporateLeft() {
+    public Command buildIncorporateLeft(final CursorFixer fixer) {
         return Command.ZERO_COMMAND;
     }
 
-    public Command buildIncorporateRight() {
+    public Command buildIncorporateRight(final CursorFixer fixer) {
         return Command.ZERO_COMMAND;
     }
 
-    protected Command buildIncorporateRight(final Formula dest) {
+    protected Command buildIncorporateRight(final Formula dest, final CursorFixer fixer) {
         if (!hasParent() || dest == null) {
             return Command.ZERO_COMMAND;
         }
@@ -463,7 +478,7 @@ public abstract class BaseElement implements FormulaItem {
         return new Command() {
 
             public Cursor execute() {
-                item.removeFromParent();
+                parent_backup.remove(item);
                 dest.add(item);
                 return getLast();
             }
