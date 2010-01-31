@@ -18,6 +18,7 @@ package org.formed.client.formula.elements;
 
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.FormulaItem;
+import org.formed.client.formula.FormulaItem.HowToInsert;
 
 /**
  *
@@ -43,6 +44,11 @@ public final class OperatorElement extends BaseElement {
         return false;
     }
 
+    @Override
+    public boolean isIncorporatable() {
+        return false;
+    }
+
     public String getName() {
         return name;
     }
@@ -53,16 +59,10 @@ public final class OperatorElement extends BaseElement {
     }
 
     @Override
-    public Cursor insertChar(Cursor cursor, char c) {
-        if (parent == null) {
-            return null;
-        }
-        FormulaItem item = new SimpleElement("" + c);
-        if (cursor.getPosition() == 0) {
-            parent.insertBefore(item, this);
-        } else {
-            parent.insertAfter(item, this);
-        }
-        return item.getLast();
+    public HowToInsert getHowToInsert(Cursor cursor, FormulaItem item) {
+        if(item == null || cursor == null) return HowToInsert.NONE;
+
+        return cursor.getPosition() <= 0 ? HowToInsert.LEFT : HowToInsert.RIGHT;
     }
+
 }

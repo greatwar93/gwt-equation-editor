@@ -16,7 +16,6 @@ limitations under the License.
  */
 package org.formed.client.formula.elements;
 
-import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.Metrics;
@@ -105,15 +104,4 @@ public final class PlaceElement extends BaseElement {
     }
      */
 
-    @Override
-    public Cursor insertChar(Cursor cursor, char c) {
-        parent.add(new SimpleElement("" + c));
-        return parent.getLast();
-    }
-
-    @Override
-    public Cursor removeChar(int pos) {
-        parent.removeAt(0);
-        return parent.getFirst();
-    }
 }

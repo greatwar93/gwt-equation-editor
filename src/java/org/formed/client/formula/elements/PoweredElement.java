@@ -16,9 +16,11 @@ limitations under the License.
  */
 package org.formed.client.formula.elements;
 
+import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
+import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.Metrics;
 
 /**
@@ -158,5 +160,64 @@ public abstract class PoweredElement extends BaseElement {
     public void invalidateMetrics() {
         super.invalidateMetrics();
         formulaPower.invalidateMetrics();
+    }
+
+    public String getTextBefore(Cursor cursor) {
+        return val.substring(0, cursor.getPosition());
+    }
+
+    public String getTextAfter(Cursor cursor) {
+        return val.substring(cursor.getPosition());
+    }
+
+    public Cursor insertString(int pos, String s) {
+        val = val.substring(0, pos) + s + val.substring(pos);
+        invalidatePlaces(null);
+        return getCursor(pos + s.length());
+    }
+
+    public Cursor undoInsertString(int pos, String s) {
+        val = val.substring(0, pos) + val.substring(pos + s.length());
+
+        if (val.length() <= 0) {
+            if (hasParent()) {
+                Cursor cursor = parent.getLeft(this);
+
+                Formula parent_backup = removeFromParent(); //this commands clear parent so we need a backup to finish all commands
+
+                if (cursor.getItem() == this) {
+                    return parent_backup.getFirst();
+                } else {
+                    return cursor;
+                }
+            }
+        }
+
+        invalidatePlaces(null);
+        return getCursor(pos);
+    }
+
+    @Override
+    public Command buildInsert(Cursor cursor, FormulaItem item) {
+        if (item == null || cursor == null) {
+            return Command.ZERO_COMMAND;
+        }
+        if (!(item instanceof SimpleElement)) {
+            return Command.ZERO_COMMAND;
+        }
+
+        final int pos = cursor.getPosition();
+        final String s = ((SimpleElement) item).getName();
+
+        return new Command() {
+
+            public Cursor execute() {
+                return insertString(pos, s);
+            }
+
+            public void undo() {
+                undoInsertString(pos, s);
+            }
+        };
     }
 }

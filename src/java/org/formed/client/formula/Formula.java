@@ -40,7 +40,7 @@ public class Formula {
     private boolean metricsValid = false;
     private int storedSize = 0;
     private Metrics metrics = new Metrics(0, 0, 0);
-    private final Map<FormulaItem, FormulaItem> addedMap = new HashMap<FormulaItem, FormulaItem>();
+    private final Map<FormulaItem, List<FormulaItem>> addedMap = new HashMap<FormulaItem, List<FormulaItem>>();
 
     public Formula() {
         place.setParent(this);
@@ -192,8 +192,8 @@ public class Formula {
 
         return metrics.cloneMetrics();
     }
+    private static int i = 0;
 
-    //private static int i = 0;
     private void addClosersIfNeededOnInsert(FormulaItem item) {
         int position = items.indexOf(item);
         if (isInFunction() && items.size() > 1) {
@@ -251,10 +251,13 @@ public class Formula {
     }
 
     private void removeAdded(FormulaItem item) {
-        FormulaItem closer = addedMap.get(item);
-        if (closer != null) {
-            items.remove(closer);
-            closer.setParent(null);
+        List<FormulaItem> closers = addedMap.get(item);
+        if (closers != null) {
+            //items.removeAll(closers);
+            for (FormulaItem closer : closers) {
+                items.remove(closer);
+                closer.setParent(null);
+            }
             addedMap.remove(item);
         }
     }
@@ -262,13 +265,29 @@ public class Formula {
     private void addFirstCloser(FormulaItem closer, FormulaItem item) {
         closer.setParent(this);
         items.add(0, closer);
-        addedMap.put(item, closer);
+
+        List<FormulaItem> closers = addedMap.get(item);
+        if (closers == null) {
+            closers = new ArrayList<FormulaItem>();
+            addedMap.put(item, closers);
+            RootPanel.get().add(new HTML("first"), 10, 300 + i * 30);
+            i++;
+        }
+        closers.add(item);
     }
 
     private void addLastCloser(FormulaItem closer, FormulaItem item) {
         closer.setParent(this);
         items.add(closer);
-        addedMap.put(item, closer);
+
+        List<FormulaItem> closers = addedMap.get(item);
+        if (closers == null) {
+            closers = new ArrayList<FormulaItem>();
+            addedMap.put(item, closers);
+            RootPanel.get().add(new HTML("first"), 10, 300 + i * 30);
+            i++;
+        }
+        closers.add(item);
     }
 
     public Formula add(FormulaItem item) {
@@ -619,5 +638,35 @@ public class Formula {
         }
 
         return new Metrics(0, maxHeightUp, maxHeightDown);
+    }
+
+    /*
+     * Move specified formula part to another formula
+     */
+    public void moveFormula(Formula source, int posFrom, int size, Formula dest, int posTo) {
+        for (int i = 0; i < size; i++) {
+            FormulaItem item = source.getItem(posFrom);
+            if (item == null) {
+                return;
+            }
+            source.remove(item);
+            dest.insertAt(posTo, item);
+            posTo++;
+        }
+    }
+
+    /*
+     * Move specified formula part to another formula
+     */
+    public void moveFormula(int posFrom, int size, Formula dest, int posTo) {
+        for (int i = 0; i < size; i++) {
+            FormulaItem item = getItem(posFrom);
+            if (item == null) {
+                return;
+            }
+            remove(item);
+            dest.insertAt(posTo, item);
+            posTo++;
+        }
     }
 }

@@ -16,6 +16,7 @@ limitations under the License.
  */
 package org.formed.client.formula.elements;
 
+import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
@@ -131,17 +132,13 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public boolean isYourEnd(Cursor cursor) {
-        return cursor.getItem() == this && cursor.getPosition() == -1;
+    public Cursor getLast() {
+        return getCursor(-1);
     }
 
     @Override
-    public Cursor getLast() {
+    public Cursor getEditPlace() {
         return formula.getLast();
-        /*        if (formula != null) {
-        return formula.getLast();
-        }
-        return super.getLast();*/
     }
 
     @Override
@@ -234,9 +231,53 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public Cursor insertChar(Cursor cursor, char c) {
-        int pos = cursor.getPosition();
-        setName(name.substring(0, pos) + c + name.substring(pos));
-        return getCursor(pos + 1);
+    public HowToInsert getHowToInsert(Cursor cursor, FormulaItem item) {
+        if (item == null || cursor == null) {
+            return HowToInsert.NONE;
+        }
+
+        if (cursor.getPosition() == -1) {
+            return HowToInsert.RIGHT;
+        }
+
+        if (!(item instanceof SimpleElement)) {
+            return cursor.getPosition() == 0 ? HowToInsert.LEFT : HowToInsert.BREAK;
+        }
+
+        SimpleElement simpleItem = (SimpleElement) item;
+        return simpleItem.getPower().isEmpty() ? HowToInsert.INSERT : HowToInsert.BREAK;
+    }
+
+
+    @Override
+    public Command buildBreakWith(final Cursor cursor, final FormulaItem item) {
+        if (!hasParent() || item == null || cursor == null) {
+            return Command.ZERO_COMMAND;
+        }
+        final Formula parent_backup = parent;
+        final int pos = cursor.getPosition();
+
+        final SimpleElement newItem = new SimpleElement("");
+        return new Command() {
+
+            public Cursor execute() {
+                newItem.setName(val.substring(0, pos-1));
+                val = val.substring(pos);
+                parent_backup.add(newItem);
+                parent_backup.add(item);
+                return item.getEditPlace();
+            }
+
+            public void undo() {
+                val = newItem.getName() + val;
+                parent_backup.remove(newItem);
+                parent_backup.remove(item);
+            }
+        };
+    }
+
+    @Override
+    public Command buildIncorporateRight() {
+        return buildIncorporateRight(formula);
     }
 }

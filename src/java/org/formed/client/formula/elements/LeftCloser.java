@@ -16,6 +16,7 @@ limitations under the License.
 */
 package org.formed.client.formula.elements;
 
+import org.formed.client.formula.Cursor;
 import org.formed.client.formula.FormulaItem;
 
 /**
@@ -39,8 +40,25 @@ public final class LeftCloser extends BaseElement {
         return false;
     }
 
+    @Override
+    public boolean isLeftCloser() {
+        return true;
+    }
+
+    @Override
+    public boolean isIncorporatable() {
+        return false;
+    }
+
     public FormulaItem getRightCloser(){
         if(parent == null) return null;
         return parent.findRightCloser(this);
+    }
+
+    @Override
+    public HowToInsert getHowToInsert(Cursor cursor, FormulaItem item) {
+        if(item == null || cursor == null) return HowToInsert.NONE;
+
+        return cursor.getPosition() <= 0 ? HowToInsert.LEFT : HowToInsert.RIGHT;
     }
 }

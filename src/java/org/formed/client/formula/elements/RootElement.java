@@ -16,6 +16,7 @@ limitations under the License.
  */
 package org.formed.client.formula.elements;
 
+import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
@@ -88,8 +89,8 @@ public final class RootElement extends BaseElement {
         storedY = y;
 
         Metrics metrics = measure(drawer, size);
-        if(highlighted){
-            drawer.fillRect(x, y-metrics.getHeightUp(), x+metrics.getWidth(), y+metrics.getHeightDown(), highlightR, highlightG, highlightB);
+        if (highlighted) {
+            drawer.fillRect(x, y - metrics.getHeightUp(), x + metrics.getWidth(), y + metrics.getHeightDown(), highlightR, highlightG, highlightB);
         }
 
         metrics = new Metrics(4, 0, 0);
@@ -124,8 +125,8 @@ public final class RootElement extends BaseElement {
         metrics.setHeightUp(Math.max(metrics2.getHeightUp() + 4, metrics.getHeight() + metrics2.getHeight() / 2));
         metrics.setHeightDown(metrics2.getHeightDown());
 
-        if(strokeThrough){
-            drawer.drawLine(x, y+metrics.getHeightDown(), x+metrics.getWidth(), y-metrics.getHeightUp());
+        if (strokeThrough) {
+            drawer.drawLine(x, y + metrics.getHeightDown(), x + metrics.getWidth(), y - metrics.getHeightUp());
         }
 
         drawer.addDrawnItem(this, x, y, metrics);
@@ -176,11 +177,6 @@ public final class RootElement extends BaseElement {
     }
 
     @Override
-    public boolean isYourEnd(Cursor cursor) {
-        return cursor.getItem() == this && cursor.getPosition() >= 1;
-    }
-
-    @Override
     public Cursor getCursor(int position) {
         if (position == 0) {
             return new Cursor(this, 0);
@@ -196,8 +192,13 @@ public final class RootElement extends BaseElement {
 
     @Override
     public Cursor getLast() {
+        //return formula.getLast();
+        return getCursor(1);
+    }
+
+    @Override
+    public Cursor getEditPlace() {
         return formula.getLast();
-        //return getCursor(1);
     }
 
     @Override
@@ -269,5 +270,19 @@ public final class RootElement extends BaseElement {
         super.invalidateMetrics();
         formula.invalidateMetrics();
         formulaPower.invalidateMetrics();
+    }
+
+    @Override
+    public HowToInsert getHowToInsert(Cursor cursor, FormulaItem item) {
+        if (item == null || cursor == null) {
+            return HowToInsert.NONE;
+        }
+
+        return cursor.getPosition() <= 0 ? HowToInsert.LEFT : HowToInsert.RIGHT;
+    }
+
+    @Override
+    public Command buildIncorporateRight() {
+        return buildIncorporateRight(formula);
     }
 }

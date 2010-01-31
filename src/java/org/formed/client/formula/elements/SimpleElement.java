@@ -20,6 +20,7 @@ import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
+import org.formed.client.formula.FormulaItem.HowToInsert;
 
 /**
  *
@@ -27,8 +28,7 @@ import org.formed.client.formula.FormulaItem;
  */
 public final class SimpleElement extends PoweredElement {
 
-    private boolean addNext = false; //Should next item be concatenated with this in the case of undo.
-    private final SimpleElement THIS = this;
+    protected boolean addNext = false; //Should next item be concatenated with this in the case of undo.
 
     public SimpleElement(String name) {
         super();
@@ -72,46 +72,27 @@ public final class SimpleElement extends PoweredElement {
     public void setAddNext(boolean addNext) {
         this.addNext = addNext;
     }
-/*
-    public Command makeBreakWith(final int pos, final FormulaItem item){
-        if(parent == null) return Command.ZERO_COMMAND;
 
-        final Formula parent_backup = parent;
-
-        return new Command() {
-
-            SimpleElement newItem = null;
-
-            public Cursor execute() {
-                newItem = breakWith1(pos, item);
-                return item.getLast();
-            }
-
-            public void undo() {
-                parent_backup.remove(item);
-
-                if(newItem != null){
-                    addItem(newItem);
-                    parent_backup.remove(newItem);
-                    newItem = null;
-                }
-            }
-        };
+    public void addItem(SimpleElement item) {
+        val = val + item.getName();
+        setPower(item.getPower());
+        item.setPower(null);
+        addNext = false;
     }
-*/
+
     protected SimpleElement breakWith1(int pos, FormulaItem item) {
         addNext = false;
         if (parent == null) {
             return null;
         }
 
-        SimpleElement  newItem = null;
+        SimpleElement newItem = null;
         if (pos < val.length()) {
             addNext = true;
             parent.insertAfter(item, this);
             newItem = new SimpleElement(val.substring(pos), getPower());
             parent.insertAfter(newItem, item);
-            setName(val.substring(0, pos));
+            val = val.substring(0, pos);
             setPower(null);
         } else {
             parent.insertAfter(item, this);
@@ -129,107 +110,24 @@ public final class SimpleElement extends PoweredElement {
         }
 
         breakWith1(pos, item);
-/*
+        /*
         if (pos < val.length()) {
-            addNext = true;
-            parent.insertAfter(item, this);
-            parent.insertAfter(new SimpleElement(val.substring(pos), getPower()), item);
-            setName(val.substring(0, pos));
-            setPower(null);
+        addNext = true;
+        parent.insertAfter(item, this);
+        parent.insertAfter(new SimpleElement(val.substring(pos), getPower()), item);
+        setName(val.substring(0, pos));
+        setPower(null);
         } else {
-            parent.insertAfter(item, this);
+        parent.insertAfter(item, this);
         }
 
         invalidatePlaces(null);
-*/
+         */
         return item.getLast(); //Why doesn't it work ?
     }
 
-    public void addItem(SimpleElement item){
-        val = val + item.getName();
-        setPower(item.getPower());
-        item.setPower(null);
-        addNext = false;
-    }
-
-    public String getTextBefore(Cursor cursor) {
-        return val.substring(0, cursor.getPosition());
-    }
-
-    public String getTextAfter(Cursor cursor) {
-        return val.substring(cursor.getPosition());
-    }
-
     @Override
-    public Cursor insertChar(Cursor cursor, char c) {
-        return insertChar(cursor.getPosition(), c);
-    }
-
-    @Override
-    public Cursor insertChar(int pos, char c) {
-        val = val.substring(0, pos) + c + val.substring(pos);
-        invalidatePlaces(null);
-        return getCursor(pos + 1);
-    }
-
-    @Override
-    public Cursor removeChar(int pos) {
-        val = val.substring(0, pos) + val.substring(pos + 1);
-
-        if (val.length() <= 0) {
-            if (parent != null) {
-                final Formula parent_backup = parent;
-                Cursor cursor = parent_backup.getLeft(this);
-
-                parent_backup.remove(this);
-
-                if (cursor.getItem() == this) {
-                    return parent_backup.getFirst();
-                } else {
-                    return cursor;
-                }
-            }
-        }
-
-        invalidatePlaces(null);
-        return getCursor(pos);
-    }
-    /*
-    @Override
-    public Cursor deleteLeft(Drawer drawer, Cursor cursor) {
-    int pos = cursor.getPosition();
-    if (pos <= 0) {
-    if (parent != null) {
-    return parent.removeLeft(drawer, this);
-    }
-    return cursor;
-    }
-
-    val = val.substring(0, pos - 1) + val.substring(pos);
-    cursor.setPosition(pos - 1);
-
-    return cursor;
-    }
-
-    @Override
-    public Cursor deleteRight(Drawer drawer, Cursor cursor) {
-    int pos = cursor.getPosition();
-    if (pos >= val.length()) {
-    if (parent != null) {
-    return parent.removeRight(drawer, this);
-    }
-    return cursor;
-    }
-
-    val = val.substring(0, pos) + val.substring(pos + 1);
-
-    return cursor;
-    }
-     */
-
-    @Override
-    public Command makeDeleteLeft(Cursor cursor) {
-        final FormulaItem THIS = this;
+    public Command buildDeleteLeft(Cursor cursor) {
         final int pos = cursor.getPosition();
         final Cursor newCursor = cursor.makeClone();
         final Formula parent_backup = parent;
@@ -317,8 +215,7 @@ public final class SimpleElement extends PoweredElement {
     }
 
     @Override
-    public Command makeDeleteRight(Cursor cursor) {
-        final FormulaItem THIS = this;
+    public Command buildDeleteRight(Cursor cursor) {
         final int pos = cursor.getPosition();
         final Cursor newCursor = cursor.makeClone();
         final Formula parent_backup = parent;
@@ -398,6 +295,126 @@ public final class SimpleElement extends PoweredElement {
 
             public void undo() {
                 val = oldVal;
+            }
+        };
+    }
+
+    @Override
+    public Command buildBreakWith(final Cursor cursor, final FormulaItem item) {
+        if (!hasParent() || item == null || cursor == null) {
+            return Command.ZERO_COMMAND;
+        }
+        final Formula parent_backup = parent;
+        final int pos = cursor.getPosition();
+
+        return new Command() {
+
+            public Cursor execute() {
+                breakWith(pos, item);
+                return item.getEditPlace();
+            }
+
+            public void undo() {
+                parent_backup.remove(item);
+                if (!isAddNext()) {
+                    return;
+                }
+
+                setAddNext(false);
+                FormulaItem item = parent_backup.getRightItem(THIS);
+                if (!(item instanceof SimpleElement)) {
+                    return;
+                }
+
+                addItem((SimpleElement) item);
+                parent_backup.remove(item);
+            }
+        };
+    }
+
+    @Override
+    public HowToInsert getHowToInsert(Cursor cursor, FormulaItem item) {
+        if (item == null || cursor == null) {
+            return HowToInsert.NONE;
+        }
+
+        if (item instanceof SimpleElement) {
+            if (((SimpleElement) item).getPower().isEmpty()) {
+                return HowToInsert.INSERT;
+            }
+        }
+
+        int pos = cursor.getPosition();
+        if (pos <= 0) {
+            return HowToInsert.LEFT;
+        } else if (pos >= val.length()) {
+            return HowToInsert.RIGHT;
+        } else {
+            return HowToInsert.BREAK;
+        }
+    }
+
+    @Override
+    public Command buildIncorporateLeft() {
+        if (!hasParent()) {
+            return Command.ZERO_COMMAND;
+        }
+        FormulaItem item = parent.getLeftItem(this);
+        if (item == null) {
+            return Command.ZERO_COMMAND;
+        }
+        if (!(item instanceof SimpleElement)) {
+            return Command.ZERO_COMMAND;
+        }
+        final SimpleElement simpleItem = (SimpleElement) item;
+        if (!simpleItem.getPower().isEmpty()) {
+            return Command.ZERO_COMMAND;
+        }
+
+        final Formula parent_backup = parent;
+        return new Command() {
+
+            public Cursor execute() {
+                simpleItem.removeFromParent();
+                return insertString(0, simpleItem.getName());
+            }
+
+            public void undo() {
+                undoInsertString(0, simpleItem.getName());
+                parent_backup.insertBefore(simpleItem, THIS);
+            }
+        };
+    }
+
+    @Override
+    public Command buildIncorporateRight() {
+        if (!hasParent() || !getPower().isEmpty()) {
+            return Command.ZERO_COMMAND;
+        }
+        FormulaItem item = parent.getRightItem(this);
+        if (item == null) {
+            return Command.ZERO_COMMAND;
+        }
+        if (!(item instanceof SimpleElement)) {
+            return Command.ZERO_COMMAND;
+        }
+        final SimpleElement simpleItem = (SimpleElement) item;
+        final int pos = val.length();
+        final Formula parent_backup = parent;
+        return new Command() {
+
+            public Cursor execute() {
+                setPower(simpleItem.getPower());
+                simpleItem.setPower(null);
+                simpleItem.removeFromParent();
+                return insertString(pos, simpleItem.getName());
+            }
+
+            public void undo() {
+                simpleItem.setPower(getPower());
+                setPower(null);
+                undoInsertString(pos, simpleItem.getName());
+                parent_backup.insertAfter(simpleItem, THIS);
             }
         };
     }

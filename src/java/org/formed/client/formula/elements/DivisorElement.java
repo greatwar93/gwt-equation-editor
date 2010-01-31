@@ -16,10 +16,12 @@ limitations under the License.
  */
 package org.formed.client.formula.elements;
 
+import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
+import org.formed.client.formula.FormulaItem.HowToInsert;
 import org.formed.client.formula.Metrics;
 
 /**
@@ -90,8 +92,8 @@ public final class DivisorElement extends BaseElement {
 
         Metrics metrics = measure(drawer, size);
 
-        if(highlighted){
-            drawer.fillRect(x, y-metrics.getHeightUp(), x+metrics.getWidth(), y+metrics.getHeightDown(), highlightR, highlightG, highlightB);
+        if (highlighted) {
+            drawer.fillRect(x, y - metrics.getHeightUp(), x + metrics.getWidth(), y + metrics.getHeightDown(), highlightR, highlightG, highlightB);
         }
 
         metrics = formula1.calculateMetrics(drawer, size);
@@ -113,8 +115,8 @@ public final class DivisorElement extends BaseElement {
         metrics.setHeightUp(metrics.getHeight());
         metrics.setHeightDown(metrics2.getHeight());
 
-        if(strokeThrough){
-            drawer.drawLine(x, y+metrics.getHeightDown(), x+metrics.getWidth(), y-metrics.getHeightUp());
+        if (strokeThrough) {
+            drawer.drawLine(x, y + metrics.getHeightDown(), x + metrics.getWidth(), y - metrics.getHeightUp());
         }
 
         drawer.addDrawnItem(this, x, y, metrics);
@@ -151,11 +153,6 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public boolean isYourEnd(Cursor cursor) {
-        return cursor.getItem() == this && cursor.getPosition() >= 1;
-    }
-
-    @Override
     public Cursor getCursor(Drawer drawer, int x, int y) {
         Metrics metrics = measure(drawer, storedSize);
         if (x - storedX < metrics.getWidth() / 2) {
@@ -182,6 +179,11 @@ public final class DivisorElement extends BaseElement {
     @Override
     public Cursor getLast() {
         return getCursor(1);
+    }
+
+    @Override
+    public Cursor getEditPlace() {
+        return formula1.getFirst();
     }
 
     @Override
@@ -242,5 +244,64 @@ public final class DivisorElement extends BaseElement {
         super.invalidateMetrics();
         formula1.invalidateMetrics();
         formula2.invalidateMetrics();
+    }
+
+    @Override
+    public HowToInsert getHowToInsert(Cursor cursor, FormulaItem item) {
+        if (item == null || cursor == null) {
+            return HowToInsert.NONE;
+        }
+
+        return cursor.getPosition() <= 0 ? HowToInsert.LEFT : HowToInsert.RIGHT;
+    }
+
+    @Override
+    public Command buildIncorporateLeft() {
+        if (!hasParent()) {
+            return Command.ZERO_COMMAND;
+        }
+
+        final FormulaItem item = parent.getLeftItem(this);
+        if (item == null) {
+            return Command.ZERO_COMMAND;
+        }
+
+        final Formula parent_backup = parent;
+        if (item.isRightCloser()) {
+            int posTo = parent.getItemPosition(item);
+            final int posFrom = parent.findLeftCloserPos(posTo);
+            final int size = posTo - posFrom + 1;
+            return new Command() {
+
+                public Cursor execute() {
+                    parent_backup.moveFormula(posFrom, size, formula1, 0);
+                    return formula2.getFirst();
+                }
+
+                public void undo() {
+                    formula1.moveFormula(0, size, parent_backup, posFrom);
+                }
+            };
+        }
+
+        if(!item.isIncorporatable()) return Command.ZERO_COMMAND;
+        return new Command() {
+
+            public Cursor execute() {
+                item.removeFromParent();
+                formula1.add(item);
+                return formula2.getFirst();
+            }
+
+            public void undo() {
+                formula1.remove(item);
+                parent_backup.insertBefore(item, THIS);
+            }
+        };
+    }
+
+    @Override
+    public Command buildIncorporateRight() {
+        return buildIncorporateRight(formula2);
     }
 }
