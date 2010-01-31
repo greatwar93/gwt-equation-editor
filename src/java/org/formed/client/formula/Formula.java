@@ -464,7 +464,7 @@ public class Formula {
             }
             return null;
         }
-        return items.get(index).getFirst();
+        return items.get(index).getMovementFirst();
     }
 
     public Cursor getYourRight(FormulaItem item) {
@@ -472,7 +472,7 @@ public class Formula {
         if (index >= items.size()) {
             return null;
         }
-        return items.get(index).getFirst();
+        return items.get(index).getMovementFirst();
     }
 
     public Cursor getYourLeft(FormulaItem item) {
@@ -500,7 +500,7 @@ public class Formula {
     }
 
     public FormulaItem getItem(int position) {
-        return items.get(position);
+        return (position < 0 || position >= items.size()) ? null : items.get(position);
     }
 
     public int getItemPosition(FormulaItem item) {
@@ -540,7 +540,7 @@ public class Formula {
     }
 
     public Cursor getFirst() {
-        return getFirstItem().getFirst();
+        return getFirstItem().getMovementFirst();
     }
 
     public Cursor getLast() {

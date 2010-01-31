@@ -86,10 +86,14 @@ public abstract class BaseElement implements FormulaItem {
         return true;
     }
 
+    public boolean isEmpty() {
+        return val.isEmpty();
+    }
+
     public boolean isYouOrInsideYou(FormulaItem item) {
         return this == item;
     }
-    
+
     public void setStrokeThrough(boolean strokeThrough) {
         this.strokeThrough = strokeThrough;
     }
@@ -229,12 +233,16 @@ public abstract class BaseElement implements FormulaItem {
         return new Cursor(this, position);
     }
 
-    public Cursor getFirst() {
+    public Cursor getMovementFirst() {
         if (getLength() > 0 && parent != null) {
             if (!parent.isFirst(this)) {
                 return getCursor(1);
             }
         }
+        return getCursor(0);
+    }
+
+    public Cursor getFirst() {
         return getCursor(0);
     }
 
@@ -284,7 +292,7 @@ public abstract class BaseElement implements FormulaItem {
         metricsValid = false;
     }
 
-    public Command buildDeleteLeft(final Cursor cursor, final CursorFixer fixer) {
+    public Command buildSimpleDeleteLeft(final Cursor cursor, final CursorFixer fixer) {
         if (parent == null) {
             return Command.ZERO_COMMAND;
         }
@@ -292,23 +300,12 @@ public abstract class BaseElement implements FormulaItem {
         final Formula parent_backup = parent;
 
         if (cursor.getPosition() <= 0) { //Remove item to the left
-            final FormulaItem left = parent_backup.getLeftItem(THIS);
-            if (left == null) {
+            FormulaItem left = parent_backup.getLeftItem(this);
+            if (left == null || left == this) {
                 return Command.ZERO_COMMAND;
             }
 
-            return new Command() {
-
-                public Cursor execute() {
-                    Cursor newCursor = parent_backup.removeLeft(THIS);
-                    fixer.removed(left, newCursor);
-                    return newCursor;
-                }
-
-                public void undo() {
-                    parent_backup.insertBefore(left, THIS);
-                }
-            };
+            return left.buildDeleteLeft(left.getLast(), fixer);
         } else { //Remove this item
             return new Command() {
 
@@ -334,7 +331,7 @@ public abstract class BaseElement implements FormulaItem {
         }
     }
 
-    public Command buildDeleteRight(final Cursor cursor, final CursorFixer fixer) {
+    public Command buildSimpleDeleteRight(final Cursor cursor, final CursorFixer fixer) {
         if (parent == null) {
             return Command.ZERO_COMMAND;
         }
@@ -342,23 +339,12 @@ public abstract class BaseElement implements FormulaItem {
         final Formula parent_backup = parent;
 
         if (cursor.getPosition() > 0) { //Remove item to the right
-            final FormulaItem right = parent_backup.getRightItem(THIS);
-            if (right == null) {
+            final FormulaItem right = parent_backup.getRightItem(this);
+            if (right == null || right == this) {
                 return Command.ZERO_COMMAND;
             }
 
-            return new Command() {
-
-                public Cursor execute() {
-                    Cursor newCursor = parent_backup.removeRight(THIS);
-                    fixer.removed(right, newCursor);
-                    return newCursor;
-                }
-
-                public void undo() {
-                    parent_backup.insertAfter(right, THIS);
-                }
-            };
+            return right.buildDeleteRight(right.getFirst(), fixer);
         } else { //Remove this item
             return new Command() {
 
@@ -382,6 +368,125 @@ public abstract class BaseElement implements FormulaItem {
                 }
             };
         }
+    }
+
+    @Override
+    public Command buildDeleteLeft(Cursor cursor, final CursorFixer fixer) {
+        final int pos = cursor.getPosition();
+        final Cursor newCursor = cursor.makeClone();
+        final Formula parent_backup = parent;
+        if (pos <= 0) { //Delete in adjecent item
+            FormulaItem left = parent_backup.getLeftItem(this);
+            if (left == null || left == this) {
+                return Command.ZERO_COMMAND;
+            }
+
+            return left.buildDeleteLeft(left.getLast(), fixer);
+        }
+
+        //Delete char
+        final String oldVal = val;
+        newCursor.setPosition(pos - 1);
+        return new Command() {
+
+            boolean reInsert = false;
+            int reInsertPos = 0;
+
+            public Cursor execute() {
+                val = val.substring(0, pos - 1) + val.substring(pos);
+
+                if (isEmpty()) { //This item is empty now, remove it
+                    reInsert = true;
+                    reInsertPos = parent_backup.getItemPosition(THIS);
+                    parent_backup.remove(THIS);
+
+                    FormulaItem item = parent_backup.getItem(reInsertPos); //Try next item
+                    if (item != null) {
+                        newCursor.setCursor(item.getFirst());
+                    } else {
+                        item = parent_backup.getItem(reInsertPos - 1); //Try previous item
+                        if (item != null) {
+                            newCursor.setCursor(item.getLast());
+                        }else{
+                            newCursor.setCursor(parent_backup.getFirst());
+                        }
+                    }
+
+                    fixer.removed(THIS, newCursor);
+                } else {
+                    reInsert = false;
+                }
+
+                return newCursor;
+            }
+
+            public void undo() {
+                val = oldVal;
+                if (reInsert) { //Re insert this item
+                    parent_backup.insertAt(reInsertPos, THIS);
+                    reInsert = false;
+                }
+            }
+        };
+    }
+
+    @Override
+    public Command buildDeleteRight(Cursor cursor, final CursorFixer fixer) {
+        final int pos = cursor.getPosition();
+        final Cursor newCursor = cursor.makeClone();
+        final Formula parent_backup = parent;
+        if (pos >= val.length()) { //Delete in adjacent item
+            final FormulaItem right = parent_backup.getRightItem(this);
+            if (right == null || right == this) {
+                return Command.ZERO_COMMAND;
+            }
+
+            return right.buildDeleteRight(right.getFirst(), fixer);
+        }
+
+        //Delete char
+        final String oldVal = val;
+        return new Command() {
+
+            boolean reInsert = false;
+            int reInsertPos = 0;
+
+            public Cursor execute() {
+                val = val.substring(0, pos) + val.substring(pos + 1);
+
+                if (THIS.isEmpty()) { //This item is empty now, remove it
+                    reInsert = true;
+                    reInsertPos = parent_backup.getItemPosition(THIS);
+                    parent_backup.remove(THIS);
+
+                    FormulaItem item = parent_backup.getItem(reInsertPos); //Try next item
+                    if (item != null) {
+                        newCursor.setCursor(item.getFirst());
+                    } else {
+                        item = parent_backup.getItem(reInsertPos - 1); //Try previous item
+                        if (item != null) {
+                            newCursor.setCursor(item.getLast());
+                        }else{
+                            newCursor.setCursor(parent_backup.getFirst());
+                        }
+                    }
+
+                    fixer.removed(THIS, newCursor);
+                } else {
+                    reInsert = false;
+                }
+
+                return newCursor;
+            }
+
+            public void undo() {
+                val = oldVal;
+                if (reInsert) { //Re insert this item
+                    parent_backup.insertAt(reInsertPos, THIS);
+                    reInsert = false;
+                }
+            }
+        };
     }
 
     public HowToInsert getHowToInsert(Cursor cursor, FormulaItem item) {
@@ -425,7 +530,7 @@ public abstract class BaseElement implements FormulaItem {
 
             public void undo() {
                 parent_backup.remove(item);
-                fixer.removed(item, getFirst());
+                fixer.removed(item, getMovementFirst());
             }
         };
     }
@@ -434,8 +539,56 @@ public abstract class BaseElement implements FormulaItem {
         return Command.ZERO_COMMAND;
     }
 
+    public Cursor insertString(int pos, String s) {
+        val = val.substring(0, pos) + s + val.substring(pos);
+        invalidatePlaces(null);
+        return getCursor(pos + s.length());
+    }
+
+    public Cursor undoInsertString(int pos, String s, CursorFixer fixer) {
+        val = val.substring(0, pos) + val.substring(pos + s.length());
+
+        if (val.length() <= 0) {
+            if (hasParent()) {
+                Cursor cursor = parent.getLeft(this);
+
+                Formula parent_backup = removeFromParent(); //this commands clear parent so we need a backup to finish all commands
+
+                if (cursor.getItem() == this) {
+                    fixer.removed(this, parent_backup.getFirst());
+                    return parent_backup.getFirst();
+                } else {
+                    fixer.removed(this, cursor);
+                    return cursor;
+                }
+            }
+        }
+
+        invalidatePlaces(null);
+        return getCursor(pos);
+    }
+
     public Command buildInsert(Cursor cursor, FormulaItem item, final CursorFixer fixer) {
-        return Command.ZERO_COMMAND;
+        if (item == null || cursor == null) {
+            return Command.ZERO_COMMAND;
+        }
+        if (!(item instanceof SimpleElement)) {
+            return Command.ZERO_COMMAND;
+        }
+
+        final int pos = cursor.getPosition();
+        final String s = ((SimpleElement) item).getName();
+
+        return new Command() {
+
+            public Cursor execute() {
+                return insertString(pos, s);
+            }
+
+            public void undo() {
+                undoInsertString(pos, s, fixer);
+            }
+        };
     }
 
     public Command buildIncorporateLeft(final CursorFixer fixer) {
@@ -474,7 +627,9 @@ public abstract class BaseElement implements FormulaItem {
             };
         }
 
-        if(!item.isIncorporatable()) return Command.ZERO_COMMAND;
+        if (!item.isIncorporatable()) {
+            return Command.ZERO_COMMAND;
+        }
         return new Command() {
 
             public Cursor execute() {

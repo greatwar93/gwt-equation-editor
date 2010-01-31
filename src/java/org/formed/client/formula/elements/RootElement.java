@@ -79,6 +79,11 @@ public final class RootElement extends BaseElement {
         formulaPower.setParent(this);
     }
 
+    @Override
+    public boolean isEmpty() {
+        return false;
+    }
+
     public boolean isComplex() {
         return false;
     }
@@ -201,7 +206,7 @@ public final class RootElement extends BaseElement {
     }
 
     @Override
-    public Cursor getFirst() {
+    public Cursor getMovementFirst() {
         return getCursor(0);
     }
 
@@ -240,7 +245,7 @@ public final class RootElement extends BaseElement {
             return formulaPower.getLast();
         }
 
-        return getFirst();
+        return getMovementFirst();
     }
 
     @Override
@@ -285,6 +290,16 @@ public final class RootElement extends BaseElement {
         super.invalidateMetrics();
         formula.invalidateMetrics();
         formulaPower.invalidateMetrics();
+    }
+
+    @Override
+    public Command buildDeleteLeft(Cursor cursor, CursorFixer fixer) {
+        return buildSimpleDeleteLeft(cursor, fixer);
+    }
+
+    @Override
+    public Command buildDeleteRight(Cursor cursor, CursorFixer fixer) {
+        return buildSimpleDeleteRight(cursor, fixer);
     }
 
     @Override

@@ -81,6 +81,11 @@ public final class DivisorElement extends BaseElement {
         formula2.setParent(this);
     }
 
+    @Override
+    public boolean isEmpty() {
+        return false;
+    }
+
     public boolean isComplex() {
         return false;
     }
@@ -187,7 +192,7 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
-    public Cursor getFirst() {
+    public Cursor getMovementFirst() {
         return getCursor(0);
     }
 
@@ -219,7 +224,7 @@ public final class DivisorElement extends BaseElement {
 
     @Override
     public Cursor childAsksLeft(Formula child) {
-        return getFirst();
+        return getMovementFirst();
     }
 
     @Override
@@ -259,6 +264,16 @@ public final class DivisorElement extends BaseElement {
         super.invalidateMetrics();
         formula1.invalidateMetrics();
         formula2.invalidateMetrics();
+    }
+
+    @Override
+    public Command buildDeleteLeft(Cursor cursor, CursorFixer fixer) {
+        return buildSimpleDeleteLeft(cursor, fixer);
+    }
+
+    @Override
+    public Command buildDeleteRight(Cursor cursor, CursorFixer fixer) {
+        return buildSimpleDeleteRight(cursor, fixer);
     }
 
     @Override

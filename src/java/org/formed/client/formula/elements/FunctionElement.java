@@ -86,6 +86,11 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
+    public boolean isEmpty() {
+        return super.isEmpty() && formula.isEmpty();
+    }
+
+    @Override
     public boolean isYouOrInsideYou(FormulaItem item) {
         if (super.isYouOrInsideYou(item)) {
             return true;
@@ -243,6 +248,47 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
+    public Command buildDeleteLeft(Cursor cursor, final CursorFixer fixer) {
+        //position -1 is a rightmost position for a function, that differs from other FormulaItems, so this method should be handled here
+        if (parent == null) {
+            return Command.ZERO_COMMAND;
+        }
+
+        final Formula parent_backup = parent;
+
+        if (cursor.getPosition() == 0) { //Remove item to the left
+            FormulaItem left = parent_backup.getLeftItem(this);
+            if (left == null || left == this) {
+                return Command.ZERO_COMMAND;
+            }
+
+            return left.buildDeleteLeft(left.getLast(), fixer);
+        } else if (cursor.getPosition() == -1) { //Remove this item
+            return new Command() {
+
+                final int pos = parent_backup.getItemPosition(THIS);
+
+                public Cursor execute() {
+                    Cursor newCursor = parent_backup.getLeft(THIS);
+                    parent_backup.remove(THIS);
+
+                    if (newCursor == null) {
+                        newCursor = parent_backup.getFirst();
+                    }
+
+                    fixer.removed(THIS, newCursor);
+
+                    return newCursor;
+                }
+
+                public void undo() {
+                    parent_backup.insertAt(pos, THIS);
+                }
+            };
+        }else return super.buildDeleteLeft(cursor, fixer);
+    }
+
+    @Override
     public HowToInsert getHowToInsert(Cursor cursor, FormulaItem item) {
         if (item == null || cursor == null) {
             return HowToInsert.NONE;
@@ -252,42 +298,14 @@ public final class FunctionElement extends PoweredElement {
             return HowToInsert.RIGHT;
         }
 
-        if (!(item instanceof SimpleElement)) {
-            return cursor.getPosition() == 0 ? HowToInsert.LEFT : HowToInsert.BREAK;
+        if(item instanceof RootElement || item instanceof FunctionElement){
+            return cursor.getPosition() == -1 ? HowToInsert.RIGHT : HowToInsert.LEFT;
+        }else if (!(item instanceof SimpleElement)) {
+            return cursor.getPosition() == 0 ? HowToInsert.LEFT : HowToInsert.RIGHT;
         }
 
         SimpleElement simpleItem = (SimpleElement) item;
         return simpleItem.getPower().isEmpty() ? HowToInsert.INSERT : HowToInsert.BREAK;
-    }
-
-
-    @Override
-    public Command buildBreakWith(final Cursor cursor, final FormulaItem item, final CursorFixer fixer) {
-        if (!hasParent() || item == null || cursor == null) {
-            return Command.ZERO_COMMAND;
-        }
-        final Formula parent_backup = parent;
-        final int pos = cursor.getPosition();
-
-        final SimpleElement newItem = new SimpleElement("");
-        return new Command() {
-
-            public Cursor execute() {
-                newItem.setName(val.substring(0, pos-1));
-                val = val.substring(pos);
-                parent_backup.add(newItem);
-                parent_backup.add(item);
-                return item.getEditPlace();
-            }
-
-            public void undo() {
-                val = newItem.getName() + val;
-                parent_backup.remove(newItem);
-                parent_backup.remove(item);
-                fixer.removed(newItem, THIS.getCursor(pos));
-                fixer.removed(item, THIS.getCursor(pos));
-            }
-        };
     }
 
     @Override

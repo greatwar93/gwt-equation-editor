@@ -49,6 +49,9 @@ public interface FormulaItem {
     //Returns true if an item can be incorporated
     boolean isIncorporatable();
 
+    //Returns true if an item is empty
+    boolean isEmpty();
+
     //Returns true if an item is a complex one
     boolean isComplex();
 
@@ -84,9 +87,12 @@ public interface FormulaItem {
     Cursor getDown(int oldPosition);
 
     //Get position when come right from parent-formula
+    Cursor getMovementFirst();
+
+    //Get first position
     Cursor getFirst();
 
-    //Get position when come left from parent-formula
+    //Get last position
     Cursor getLast();
 
     //Get position when just inserted an item

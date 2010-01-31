@@ -29,8 +29,6 @@ import org.formed.client.formula.FormulaItem.HowToInsert;
  */
 public final class SimpleElement extends PoweredElement {
 
-    protected boolean addNext = false; //Should next item be concatenated with this in the case of undo.
-
     public SimpleElement(String name) {
         super();
         setName(name);
@@ -66,30 +64,19 @@ public final class SimpleElement extends PoweredElement {
         val = name;
     }
 
-    public boolean isAddNext() {
-        return addNext;
-    }
-
-    public void setAddNext(boolean addNext) {
-        this.addNext = addNext;
-    }
-
     protected void addItem(SimpleElement item) {
         val = val + item.getName();
         setPower(item.getPower());
         item.setPower(null);
         //item.setName("");
-        addNext = false;
     }
 
     protected SimpleElement breakWith(int pos, FormulaItem item, SimpleElement newItem) {
-        addNext = false;
         if (parent == null) {
             return null;
         }
 
         if (pos < val.length()) {
-            addNext = true;
             parent.insertAfter(item, this);
             if (newItem == null) {
                 newItem = new SimpleElement(val.substring(pos), getPower());
@@ -107,192 +94,6 @@ public final class SimpleElement extends PoweredElement {
         invalidatePlaces(null);
 
         return newItem;
-    }
-
-    @Override
-    public Command buildDeleteLeft(Cursor cursor, final CursorFixer fixer) {
-        final int pos = cursor.getPosition();
-        final Cursor newCursor = cursor.makeClone();
-        final Formula parent_backup = parent;
-        if (pos <= 0) { //Delete adjecent item
-            if (parent_backup == null) {
-                return Command.ZERO_COMMAND;
-            }
-
-            final FormulaItem left = parent_backup.getLeftItem(this);
-            return new Command() {
-
-                public Cursor execute() {
-                    Cursor newCursor = parent_backup.removeLeft(THIS);
-                    fixer.removed(left, newCursor);
-                    return newCursor;
-                }
-
-                public void undo() {
-                    parent_backup.insertBefore(left, THIS);
-                }
-            };
-
-
-        } else if (val.length() <= 1) { //Delete this item, cause it is empty now
-            val = "";
-
-            if (parent_backup == null) {
-                return Command.ZERO_COMMAND;
-            }
-
-            final FormulaItem left = parent_backup.getLeftItem(this);
-            if (left != null) {
-                return new Command() {
-
-                    public Cursor execute() {
-                        parent_backup.remove(THIS);
-                        fixer.removed(THIS, left.getLast());
-                        return left.getLast();
-                    }
-
-                    public void undo() {
-                        parent_backup.insertAfter(THIS, left);
-                    }
-                };
-            }
-
-            final FormulaItem right = parent_backup.getRightItem(this);
-            if (right != null) {
-                return new Command() {
-
-                    public Cursor execute() {
-                        parent_backup.remove(THIS);
-                        fixer.removed(THIS, right.getFirst());
-                        return right.getFirst();
-                    }
-
-                    public void undo() {
-                        parent_backup.insertBefore(THIS, right);
-                    }
-                };
-            }
-
-            return new Command() {
-
-                public Cursor execute() {
-                    parent_backup.remove(THIS);
-                    fixer.removed(THIS, parent_backup.getFirst());
-                    return parent_backup.getFirst();
-                }
-
-                public void undo() {
-                    parent_backup.add(THIS);
-                }
-            };
-        }
-
-        //Delete char
-        final String oldVal = val;
-        return new Command() {
-
-            public Cursor execute() {
-                val = val.substring(0, pos - 1) + val.substring(pos);
-                newCursor.setPosition(pos - 1);
-
-                return newCursor;
-            }
-
-            public void undo() {
-                val = oldVal;
-            }
-        };
-    }
-
-    @Override
-    public Command buildDeleteRight(Cursor cursor, final CursorFixer fixer) {
-        final int pos = cursor.getPosition();
-        final Cursor newCursor = cursor.makeClone();
-        final Formula parent_backup = parent;
-        if (pos >= val.length()) { //Delete adjacent item
-            if (parent_backup == null) {
-                return Command.ZERO_COMMAND;
-            }
-
-            final FormulaItem right = parent_backup.getRightItem(this);
-            return new Command() {
-
-                public Cursor execute() {
-                    Cursor newCursor = parent_backup.removeRight(THIS);
-                    fixer.removed(right, newCursor);
-                    return newCursor;
-                }
-
-                public void undo() {
-                    parent_backup.insertAfter(right, THIS);
-                }
-            };
-        } else if (val.length() <= 1) { //Delete this item, cause it is empty now
-            val = "";
-            if (parent_backup == null) {
-                return Command.ZERO_COMMAND;
-            }
-
-            final FormulaItem right = parent_backup.getRightItem(this);
-            if (right != null) {
-                return new Command() {
-
-                    public Cursor execute() {
-                        parent_backup.remove(THIS);
-                        fixer.removed(THIS, right.getFirst());
-                        return right.getFirst();
-                    }
-
-                    public void undo() {
-                        parent_backup.insertBefore(THIS, right);
-                    }
-                };
-            }
-
-            final FormulaItem left = parent_backup.getLeftItem(this);
-            if (left != null) {
-                return new Command() {
-
-                    public Cursor execute() {
-                        parent_backup.remove(THIS);
-                        fixer.removed(THIS, left.getLast());
-                        return left.getLast();
-                    }
-
-                    public void undo() {
-                        parent_backup.insertAfter(THIS, left);
-                    }
-                };
-            }
-
-            return new Command() {
-
-                public Cursor execute() {
-                    parent_backup.remove(THIS);
-                    fixer.removed(THIS, parent_backup.getFirst());
-                    return parent_backup.getFirst();
-                }
-
-                public void undo() {
-                    parent_backup.add(THIS);
-                }
-            };
-        }
-
-        //Delete char
-        final String oldVal = val;
-        return new Command() {
-
-            public Cursor execute() {
-                val = val.substring(0, pos) + val.substring(pos + 1);
-
-                return newCursor;
-            }
-
-            public void undo() {
-                val = oldVal;
-            }
-        };
     }
 
     @Override
