@@ -17,8 +17,10 @@ limitations under the License.
 package org.formed.client.formula.elements;
 
 import org.formed.client.formula.Cursor;
+import org.formed.client.formula.Drawer;
 import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.FormulaItem.HowToInsert;
+import org.formed.client.formula.Metrics;
 
 /**
  *
@@ -56,6 +58,34 @@ public final class OperatorElement extends BaseElement {
     public void setName(String name) {
         this.name = name;
         val = name;
+    }
+
+
+    @Override
+    public Metrics draw(Drawer drawer, int x, int y, int size) {
+        Metrics metrics = measure(drawer, size);
+
+        if (highlighted) {
+            drawer.fillRect(x, y - metrics.getHeightUp(), x + metrics.getWidth(), y + metrics.getHeightDown(), highlightR, highlightG, highlightB);
+        }
+
+        metrics = super.draw(drawer, x+2, y, size);
+        metrics.setWidth(metrics.getWidth() + 4);
+
+        if (strokeThrough) {
+            drawer.drawLine(x, y + metrics.getHeightDown(), x + metrics.getWidth(), y - metrics.getHeightUp());
+        }
+
+        drawer.addDrawnItem(this, x, y, metrics);
+        return metrics;
+    }
+
+    @Override
+    public Metrics measure(Drawer drawer, int size) {
+        Metrics metrics = super.measure(drawer, size);
+        metrics.setWidth(metrics.getWidth() + 4);
+
+        return metrics;
     }
 
     @Override
