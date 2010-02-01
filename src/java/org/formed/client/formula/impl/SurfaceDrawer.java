@@ -160,9 +160,9 @@ public final class SurfaceDrawer extends BaseDrawer {
 
     @Override
     public void redrawCursor() {
-        if (cursor2 != null) {
+        if (cursorHighlight != null) {
             surface.setStrokeStyle(new Color(220, 220, 220));
-            surface.strokeShape(new ShapeBuilder().drawLineSegment(cursor2.getX(), cursor2.getY() - cursor2.getHeightUp(), cursor2.getX(), cursor2.getY() + cursor2.getHeightDown()).build());
+            surface.strokeShape(new ShapeBuilder().drawLineSegment(cursorHighlight.getX(), cursorHighlight.getY() - cursorHighlight.getHeightUp(), cursorHighlight.getX(), cursorHighlight.getY() + cursorHighlight.getHeightDown()).build());
             surface.setStrokeStyle(new Color(0, 0, 0));
         }
 

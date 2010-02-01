@@ -151,12 +151,28 @@ public class Formula {
     }
 
     public boolean isInsideYou(FormulaItem insideItem) {
+        /*        for (FormulaItem item : items) {
+        if (item.isYouOrInsideYou(insideItem)) {
+        return true;
+        }
+        }*/
+
+        return insideItem == place ? true : posInsideYou(insideItem) >= 0;
+    }
+
+    public int posInsideYou(FormulaItem insideItem) {
+        if (insideItem == place) {
+            return 0;
+        }
+
+        int pos = 0;
         for (FormulaItem item : items) {
             if (item.isYouOrInsideYou(insideItem)) {
-                return true;
+                return pos;
             }
+            pos++;
         }
-        return insideItem == place;
+        return -1;
     }
 
     public int getItemsCount() {
@@ -323,16 +339,11 @@ public class Formula {
     }
 
     public Formula insertAfter(FormulaItem item, FormulaItem after) {
-        if (items.indexOf(after) >= 0) {
+        if (after == place) {
+            add(item);
+        } else if (items.indexOf(after) >= 0) {
             item.setParent(this);
             items.add(items.indexOf(after) + 1, item);
-
-            addClosersIfNeededOnInsert(item);
-
-            invalidatePlaces();
-        } else if (after == place) {
-            item.setParent(this);
-            items.add(item);
 
             addClosersIfNeededOnInsert(item);
 
@@ -342,16 +353,11 @@ public class Formula {
     }
 
     public Formula insertBefore(FormulaItem item, FormulaItem before) {
-        if (items.indexOf(before) >= 0) {
+        if (before == place) {
+            add(item);
+        } else if (items.indexOf(before) >= 0) {
             item.setParent(this);
             items.add(items.indexOf(before), item);
-
-            addClosersIfNeededOnInsert(item);
-
-            invalidatePlaces();
-        } else if (before == place) {
-            item.setParent(this);
-            items.add(item);
 
             addClosersIfNeededOnInsert(item);
 

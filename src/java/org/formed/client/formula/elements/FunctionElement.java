@@ -56,7 +56,7 @@ public final class FunctionElement extends PoweredElement {
     }
 
     public FormulaItem makeClone() {
-        FunctionElement clone = new FunctionElement(name, formula.makeClone(), parent.makeClone());
+        FunctionElement clone = new FunctionElement(name, formula.makeClone(), getPower().makeClone());
         clone.setParent(parent);
 
         return clone;

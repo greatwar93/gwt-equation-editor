@@ -16,6 +16,7 @@ limitations under the License.
  */
 package org.formed.client.example;
 
+import com.google.gwt.event.dom.client.MouseDownEvent;
 import org.formed.client.formula.*;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -34,6 +35,7 @@ import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
 import com.google.gwt.event.dom.client.MouseMoveHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
@@ -133,6 +135,40 @@ public class Example {
         RootPanel.get().add(redoButton, undoButton.getOffsetWidth() + 20, HEIGHT + 20);
 
 
+        //Editor cut, copy and paste buttons
+        final Button cutButton = new Button("Cut");
+        final Button copyButton = new Button("Copy");
+        final Button pasteButton = new Button("Paste");
+
+        cutButton.addClickHandler(new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.cut();
+                surface.setFocus(true);
+            }
+        });
+
+        copyButton.addClickHandler(new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.copy();
+                surface.setFocus(true);
+            }
+        });
+
+        pasteButton.addClickHandler(new ClickHandler() {
+
+            public void onClick(ClickEvent event) {
+                drawer.paste();
+                surface.setFocus(true);
+            }
+        });
+
+        RootPanel.get().add(cutButton, redoButton.getAbsoluteLeft()+redoButton.getOffsetWidth() + 30, HEIGHT + 20);
+        RootPanel.get().add(copyButton, cutButton.getAbsoluteLeft()+cutButton.getOffsetWidth() + 10, HEIGHT + 20);
+        RootPanel.get().add(pasteButton, copyButton.getAbsoluteLeft()+copyButton.getOffsetWidth() + 10, HEIGHT + 20);
+
+
         //Editor keyboard handlers
         surface.addKeyDownHandler(new KeyDownHandler() {
 
@@ -151,14 +187,24 @@ public class Example {
                     drawer.deleteRight();
                 } else if (keycode == KeyCodes.KEY_BACKSPACE) {
                     drawer.deleteLeft();
-                } else if (event.isControlKeyDown() && keycode == 45) {
-                    //keys.setHTML(keys.getHTML() + "+dPaste");
-                } else if (event.isControlKeyDown() && keycode == 86) {
-                    //keys.setHTML(keys.getHTML() + "+dPaste");
+                } else if (event.isShiftKeyDown() && keycode == KeyCodes.KEY_DELETE) {
+                    keys.setHTML(keys.getHTML() + "+dCut");
+                    drawer.cut();
+                } else if (event.isControlKeyDown() && keycode == 88) {
+                    keys.setHTML(keys.getHTML() + "+dCut");
+                    drawer.cut();
                 } else if (event.isShiftKeyDown() && keycode == 45) {
-                    //keys.setHTML(keys.getHTML() + "+dCopy");
+                    keys.setHTML(keys.getHTML() + "+dPaste");
+                    drawer.paste();
+                } else if (event.isControlKeyDown() && keycode == 86) {
+                    keys.setHTML(keys.getHTML() + "+dPaste");
+                    drawer.paste();
+                } else if (event.isControlKeyDown() && keycode == 45) {
+                    keys.setHTML(keys.getHTML() + "+dCopy");
+                    drawer.copy();
                 } else if (event.isControlKeyDown() && keycode == 67) {
-                    //keys.setHTML(keys.getHTML() + "+dCopy");
+                    keys.setHTML(keys.getHTML() + "+dCopy");
+                    drawer.copy();
                 } else if ((event.isControlKeyDown() && (keycode == 90 || keycode == KeyCodes.KEY_BACKSPACE)) || keycode == KeyCodes.KEY_ESCAPE) {
                     undoer.undo();
                     drawer.redraw();
@@ -209,17 +255,26 @@ public class Example {
         surface.addMouseMoveHandler(new MouseMoveHandler() {
 
             public void onMouseMove(MouseMoveEvent event) {
-                drawer.highlightItemAt(event.getX(), event.getY());
+                //drawer.highlightItemAt(event.getX(), event.getY());
+                drawer.mouseMoveAt(event.getX(), event.getY());
             }
         });
 
         surface.addMouseUpHandler(new MouseUpHandler() {
 
             public void onMouseUp(MouseUpEvent event) {
-                drawer.selectItemAt(event.getX(), event.getY());
+                //drawer.selectItemAt(event.getX(), event.getY());
+                drawer.mouseUpAt(event.getX(), event.getY());
             }
         });
 
+        surface.addMouseDownHandler(new MouseDownHandler() {
+
+            public void onMouseDown(MouseDownEvent event) {
+                //drawer.selectItemAt(event.getX(), event.getY());
+                drawer.mouseDownAt(event.getX(), event.getY());
+            }
+        });
 
         //Insert special buttons
         final Button sinButton = new Button("sin", new ClickHandler() {
