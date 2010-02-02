@@ -259,41 +259,32 @@ public abstract class BaseDrawer implements Drawer {
         redraw();
     }
 
-    protected void lightInsertElement(FormulaItem newItem) {
-        if (newItem == null || cursor == null) {
-            return;
+    protected Command lightInsertElement(Cursor currentCursor, FormulaItem newItem) {
+        if (newItem == null || currentCursor == null) {
+            return Command.ZERO_COMMAND;
         }
 
-        FormulaItem currentItem = cursor.getItem();
+        FormulaItem currentItem = currentCursor.getItem();
         if (currentItem == null) {
-            return;
+            return Command.ZERO_COMMAND;
         }
 
-        Command command = null;
-        switch (currentItem.getHowToInsert(cursor, newItem)) {
+        switch (currentItem.getHowToInsert(currentCursor, newItem)) {
             case INSERT:
-                command = currentItem.buildInsert(cursor, newItem, fixer);
-                setCursor(command.execute());
-                undoer.add(command);
-                break;
+                return currentItem.buildInsert(currentCursor, newItem, fixer);
 
             case BREAK:
-                command = currentItem.buildBreakWith(cursor, newItem, fixer);
-                setCursor(command.execute());
-                undoer.add(command);
+                return currentItem.buildBreakWith(currentCursor, newItem, fixer);
 
             case LEFT:
-                command = currentItem.buildInsertBefore(newItem, fixer);
-                setCursor(command.execute());
-                undoer.add(command);
+                return currentItem.buildInsertBefore(newItem, fixer);
 
             case RIGHT:
-                command = currentItem.buildInsertAfter(newItem, fixer);
-                setCursor(command.execute());
-                undoer.add(command);
+                return currentItem.buildInsertAfter(newItem, fixer);
 
             default:
         }
+        return Command.ZERO_COMMAND;
     }
 
     public void insert(char c) {
@@ -355,17 +346,54 @@ public abstract class BaseDrawer implements Drawer {
     protected boolean deleteSelection() {
         if (selected) {
             selected = false;
+            final Formula parent_backup = selectedParent;
+            final int deletedFrom = selectedPosFrom;
+            final List<FormulaItem> deletedItems = new ArrayList<FormulaItem>();
+
             for (int pos = selectedPosTo; pos >= selectedPosFrom; pos--) {
                 FormulaItem item = selectedParent.getItem(pos);
-                selectedParent.remove(item);
-                //fixer.removed(item, );
+                item.highlightOff();
+                deletedItems.add(item);
             }
-            FormulaItem item = selectedParent.getItem(selectedPosFrom);
-            if (item != null) {
-                setCursor(item.getFirst());
-            } else {
-                setCursor(selectedParent.getFirst());
-            }
+
+            Command command = new Command() {
+
+                boolean deleted = false;
+
+                public Cursor execute() {
+                    if (!deleted) {
+                        deleted = true;
+
+                        for (FormulaItem item : deletedItems) {
+                            Cursor cursor = parent_backup.getRight(item);
+                            parent_backup.remove(item);
+                            fixer.removed(item, cursor);
+                        }
+                    }
+
+                    FormulaItem item = selectedParent.getItem(deletedFrom);
+                    if (item != null) {
+                        return item.getFirst();
+                    } else {
+                        return selectedParent.getFirst();
+                    }
+                }
+
+                public void undo() {
+                    if (!deleted) {
+                        return;
+                    }
+
+                    deleted = false;
+                    //int pos = deletedFrom;
+                    for (FormulaItem item : deletedItems) {
+                        parent_backup.insertAt(deletedFrom, item);
+                        //pos++;
+                    }
+                }
+            };
+            setCursor(command.execute());
+            undoer.add(command);
             return true;
         }
         return false;
@@ -381,7 +409,9 @@ public abstract class BaseDrawer implements Drawer {
     public void copy() {
         copiedItems.clear();
         for (int pos = selectedPosFrom; pos <= selectedPosTo; pos++) {
-            copiedItems.add(selectedParent.getItem(pos).makeClone());
+            FormulaItem item = selectedParent.getItem(pos).makeClone();
+            item.setParent(null);
+            copiedItems.add(item);
         }
     }
 
@@ -390,11 +420,40 @@ public abstract class BaseDrawer implements Drawer {
             deleteSelection();
         }
 
+        //Make list of insertion commands
+        final List<Command> commands = new ArrayList<Command>();
+        Cursor currentCursor = cursor.makeClone();
         for (FormulaItem item : copiedItems) {
             FormulaItem newItem = item.makeClone();
-            lightInsertElement(newItem);
-            setCursor(newItem.getLast());
+            Command command = lightInsertElement(currentCursor, newItem);
+            setCursor(command.execute()); //Execute them here and use grandCommand only to undo/redo.
+            if (command != Command.ZERO_COMMAND) {
+                commands.add(command);
+            }
+            currentCursor = newItem.getLast();
         }
+
+        //Make one command that executes all insertion commands from the list
+        if (!commands.isEmpty()) {
+            Command grandCommand = new Command() {
+
+                public Cursor execute() {
+                    Cursor cursor = null;
+                    for (Command command : commands) {
+                        cursor = command.execute();
+                    }
+                    return cursor;
+                }
+
+                public void undo() {
+                    for (int i = commands.size() - 1; i >= 0; i--) {
+                        commands.get(i).undo();
+                    }
+                }
+            };
+            undoer.add(grandCommand);
+        }
+
         redraw();
 //        drawText("" + copiedItems.size(), 20, 10, 40);
     }
@@ -448,11 +507,39 @@ public abstract class BaseDrawer implements Drawer {
             return false;
         }
 
+        //Find nearest common parent
         Formula parent = parentFrom;
         int itemPosFrom = parentFrom.getItemPosition(itemFrom);
         int itemPosTo = parentTo.getItemPosition(itemTo);
-        if (parentFrom == parentTo) { //All in one formula
-        } else {
+        if (parentFrom != parentTo) { //Items aren't in one sub-formula
+            while (true) {
+                if (parentFrom != null) {
+                    int pos = parentFrom.posInsideYou(itemTo);
+                    if (pos >= 0) {//itemTo is inside itemFroms parent
+                        itemPosFrom = parentFrom.posInsideYou(itemFrom);
+                        itemPosTo = pos;
+                        parent = parentFrom;
+                        break;
+                    }
+
+                    FormulaItem item = parentFrom.getParent();
+                    parentFrom = (item != null) ? item.getParent() : null;
+                } else if (parentTo != null) {
+                    int pos = parentTo.posInsideYou(itemFrom);
+                    if (pos >= 0) {//itemFrom is inside itemTos parent
+                        itemPosTo = parentTo.posInsideYou(itemTo);
+                        itemPosFrom = pos;
+                        parent = parentTo;
+                        break;
+                    }
+
+                    FormulaItem item = parentTo.getParent();
+                    parentTo = (item != null) ? item.getParent() : null;
+                } else { //Items aren't in one formula
+                    return false;
+                }
+            }
+
             int pos = parentFrom.posInsideYou(itemTo);
             if (pos >= 0) {//itemTo is inside itemFroms parent
                 itemPosTo = pos;
