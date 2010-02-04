@@ -145,6 +145,9 @@ public class Example {
             public void onClick(ClickEvent event) {
                 drawer.cut();
                 surface.setFocus(true);
+
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
         });
 
@@ -153,6 +156,9 @@ public class Example {
             public void onClick(ClickEvent event) {
                 drawer.copy();
                 surface.setFocus(true);
+
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
         });
 
@@ -161,12 +167,15 @@ public class Example {
             public void onClick(ClickEvent event) {
                 drawer.paste();
                 surface.setFocus(true);
+
+                undoButton.setEnabled(undoer.getUndoCount() > 0);
+                redoButton.setEnabled(undoer.getRedoCount() > 0);
             }
         });
 
-        RootPanel.get().add(cutButton, redoButton.getAbsoluteLeft()+redoButton.getOffsetWidth() + 30, HEIGHT + 20);
-        RootPanel.get().add(copyButton, cutButton.getAbsoluteLeft()+cutButton.getOffsetWidth() + 10, HEIGHT + 20);
-        RootPanel.get().add(pasteButton, copyButton.getAbsoluteLeft()+copyButton.getOffsetWidth() + 10, HEIGHT + 20);
+        RootPanel.get().add(cutButton, redoButton.getAbsoluteLeft() + redoButton.getOffsetWidth() + 30, HEIGHT + 20);
+        RootPanel.get().add(copyButton, cutButton.getAbsoluteLeft() + cutButton.getOffsetWidth() + 10, HEIGHT + 20);
+        RootPanel.get().add(pasteButton, copyButton.getAbsoluteLeft() + copyButton.getOffsetWidth() + 10, HEIGHT + 20);
 
 
         //Editor keyboard handlers
@@ -175,42 +184,91 @@ public class Example {
             public void onKeyDown(KeyDownEvent event) {
                 final int keycode = event.getNativeKeyCode();
                 arrow = true;
+
                 if (event.isLeftArrow()) {
-                    drawer.moveCursorLeft();
+                    if (event.isShiftKeyDown()) {
+                        //Shift-Left arrow - move selecting cursor left
+                        drawer.selectLeft();
+                    } else {
+                        //Left arrow - move cursor left
+                        drawer.moveCursorLeft();
+                    }
                 } else if (event.isRightArrow()) {
-                    drawer.moveCursorRight();
+                    if (event.isShiftKeyDown()) {
+                        //Shift-Rigth arrow - move selecting cursor right
+                        drawer.selectRight();
+                    } else {
+                        //Rigth arrow - move cursor right
+                        drawer.moveCursorRight();
+                    }
                 } else if (event.isUpArrow()) {
-                    drawer.moveCursorUp();
+                    if (event.isShiftKeyDown()) {
+                        //Shift-Up arrow - move selecting cursor up
+                        drawer.selectUp();
+                    } else {
+                        //Up arrow - move cursor up
+                        drawer.moveCursorUp();
+                    }
                 } else if (event.isDownArrow()) {
-                    drawer.moveCursorDown();
+                    if (event.isShiftKeyDown()) {
+                        //Shift-Down arrow - move selecting cursor down
+                        drawer.selectDown();
+                    } else {
+                        //Down arrow - move cursor up
+                        drawer.moveCursorDown();
+                    }
+
+                } else if (keycode == 32) {
+                    if (event.isControlKeyDown()) {
+                        //Ctrl-Space - auto-complete
+                    } else {
+                        //Space - move cursor right
+                        drawer.moveCursorRight();
+                    }
+
                 } else if (keycode == KeyCodes.KEY_DELETE) {
-                    drawer.deleteRight();
+                    if (event.isShiftKeyDown()) {
+                        //Shift-Del - cut selected
+                        drawer.cut();
+                    } else {
+                        //Del - delete to the right from cursor
+                        drawer.deleteRight();
+                    }
                 } else if (keycode == KeyCodes.KEY_BACKSPACE) {
-                    drawer.deleteLeft();
-                } else if (event.isShiftKeyDown() && keycode == KeyCodes.KEY_DELETE) {
-                    keys.setHTML(keys.getHTML() + "+dCut");
-                    drawer.cut();
+                    if (event.isControlKeyDown()) {
+                        //Ctrl-Backspace - undo
+                        undoer.undo();
+                        drawer.redraw();
+                    } else {
+                        //Backspace - delete from the left from cursor
+                        drawer.deleteLeft();
+                    }
+
                 } else if (event.isControlKeyDown() && keycode == 88) {
-                    keys.setHTML(keys.getHTML() + "+dCut");
+                    //Ctrl-X - cut selected
                     drawer.cut();
                 } else if (event.isShiftKeyDown() && keycode == 45) {
-                    keys.setHTML(keys.getHTML() + "+dPaste");
+                    //Shift-Ins - paste
                     drawer.paste();
                 } else if (event.isControlKeyDown() && keycode == 86) {
-                    keys.setHTML(keys.getHTML() + "+dPaste");
+                    //Ctrl-V - paste
                     drawer.paste();
                 } else if (event.isControlKeyDown() && keycode == 45) {
-                    keys.setHTML(keys.getHTML() + "+dCopy");
+                    //Ctrl-C - copy selected
                     drawer.copy();
                 } else if (event.isControlKeyDown() && keycode == 67) {
-                    keys.setHTML(keys.getHTML() + "+dCopy");
+                    //Ctrl-Ins - copy selected
                     drawer.copy();
-                } else if ((event.isControlKeyDown() && (keycode == 90 || keycode == KeyCodes.KEY_BACKSPACE)) || keycode == KeyCodes.KEY_ESCAPE) {
+
+                } else if ((event.isControlKeyDown() && keycode == 90) || keycode == KeyCodes.KEY_ESCAPE) {
+                    //Ctrl-Z Esc - undo
                     undoer.undo();
                     drawer.redraw();
                 } else if (event.isControlKeyDown() && keycode == 89) {
+                    //Ctrl-Y - redo
                     undoer.redo();
                     drawer.redraw();
+
                 } else if (event.isControlKeyDown()) {
                     keys.setHTML(keys.getHTML() + "+p" + event.getNativeKeyCode());
                 } else {
@@ -230,9 +288,14 @@ public class Example {
         surface.addKeyPressHandler(new KeyPressHandler() {
 
             public void onKeyPress(KeyPressEvent event) {
-                if (!arrow) {
-                    drawer.insert(event.getCharCode());
-                } else {
+                if (!arrow) { //Insert entered char
+                    if (event.getCharCode() == '^') {
+                        //^ - move cursor to power
+                        drawer.moveCursorToPower();
+                    } else {
+                        drawer.insert(event.getCharCode());
+                    }
+                } else { //skip event
                     arrow = false;
                 }
                 event.preventDefault();
@@ -468,27 +531,27 @@ public class Example {
         });
 
         final int BUTTON_WIDTH = 50;
-        sinButton.setWidth(BUTTON_WIDTH+"px");
-        cosButton.setWidth(BUTTON_WIDTH+"px");
-        tgButton.setWidth(BUTTON_WIDTH+"px");
-        ctgButton.setWidth(BUTTON_WIDTH+"px");
-        rootButton.setWidth(BUTTON_WIDTH+"px");
+        sinButton.setWidth(BUTTON_WIDTH + "px");
+        cosButton.setWidth(BUTTON_WIDTH + "px");
+        tgButton.setWidth(BUTTON_WIDTH + "px");
+        ctgButton.setWidth(BUTTON_WIDTH + "px");
+        rootButton.setWidth(BUTTON_WIDTH + "px");
 
-        arcsinButton.setWidth(BUTTON_WIDTH+"px");
-        arccosButton.setWidth(BUTTON_WIDTH+"px");
-        arctgButton.setWidth(BUTTON_WIDTH+"px");
-        arcctgButton.setWidth(BUTTON_WIDTH+"px");
+        arcsinButton.setWidth(BUTTON_WIDTH + "px");
+        arccosButton.setWidth(BUTTON_WIDTH + "px");
+        arctgButton.setWidth(BUTTON_WIDTH + "px");
+        arcctgButton.setWidth(BUTTON_WIDTH + "px");
 
-        divideButton.setWidth(BUTTON_WIDTH+"px");
-        plusMinusButton.setWidth(BUTTON_WIDTH+"px");
-        lessOrEqualButton.setWidth(BUTTON_WIDTH+"px");
-        greaterOrEqualButton.setWidth(BUTTON_WIDTH+"px");
+        divideButton.setWidth(BUTTON_WIDTH + "px");
+        plusMinusButton.setWidth(BUTTON_WIDTH + "px");
+        lessOrEqualButton.setWidth(BUTTON_WIDTH + "px");
+        greaterOrEqualButton.setWidth(BUTTON_WIDTH + "px");
 
-        alphaButton.setWidth(BUTTON_WIDTH+"px");
-        piButton.setWidth(BUTTON_WIDTH+"px");
-        angleButton.setWidth(BUTTON_WIDTH+"px");
-        degreeButton.setWidth(BUTTON_WIDTH+"px");
-        infinityButton.setWidth(BUTTON_WIDTH+"px");
+        alphaButton.setWidth(BUTTON_WIDTH + "px");
+        piButton.setWidth(BUTTON_WIDTH + "px");
+        angleButton.setWidth(BUTTON_WIDTH + "px");
+        degreeButton.setWidth(BUTTON_WIDTH + "px");
+        infinityButton.setWidth(BUTTON_WIDTH + "px");
 
         RootPanel.get().add(sinButton, 10 + (10 + BUTTON_WIDTH) * 0, HEIGHT + 50);
         RootPanel.get().add(cosButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 50);

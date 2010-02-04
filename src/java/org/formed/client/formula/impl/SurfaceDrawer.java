@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.Metrics;
+import org.formed.client.formula.Rectangle;
 import org.formed.client.formula.Undoer;
 
 /**
@@ -134,8 +135,10 @@ public final class SurfaceDrawer extends BaseDrawer {
     public int getSmallerSize(int size) {
         return size * 3 / 4;
     }
+    protected int redrawing = 0;
 
     public void redraw() {
+        redrawing++;
         preRedraw();
 
         countLine = 0;
@@ -156,6 +159,23 @@ public final class SurfaceDrawer extends BaseDrawer {
         surface.strokeRectangle(9, 9, 2 + drawerMetrics.getWidth(), 2 + drawerMetrics.getHeight());
 
         postRedraw();
+
+        if (redrawing <= 1) {
+            Rectangle rect = findMaxRect();
+            int width = rect.getX() + rect.getWidth() + 5;
+            int height = rect.getY() + rect.getHeight() + 5;
+            if (width > surface.getWidth() || height > surface.getHeight()) {
+                surface.setWidth(width);
+                surface.setHeight(height);
+                redraw();
+            } else {
+                surface.setWidth(width);
+                surface.setHeight(height);
+                redraw();
+            }
+        }
+
+        redrawing--;
     }
 
     @Override

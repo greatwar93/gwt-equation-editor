@@ -17,6 +17,7 @@ limitations under the License.
 package org.formed.client.formula.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,19 +44,25 @@ public abstract class BaseDrawer implements Drawer {
 
     protected final Formula formula;
     protected final Undoer undoer;
-    protected Cursor cursor = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
-    protected Cursor cursorFrom = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
-    protected Cursor cursorHighlight = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
-    protected Cursor selectionCursorFrom = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
-    protected Cursor selectionCursorTo = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
-    protected FormulaItem highlighted1 = null;
-    protected FormulaItem highlighted2 = null;
-    protected final Map<FormulaItem, Rectangle> items = new HashMap<FormulaItem, Rectangle>();
-    protected final Map<Formula, Rectangle> formulas = new HashMap<Formula, Rectangle>();
     protected final Drawer THIS_DRAWER = this;
     protected Metrics drawerMetrics = new Metrics(0, 0, 0);
     protected int debugTexts = 0;
+    protected final Map<FormulaItem, Rectangle> items = new HashMap<FormulaItem, Rectangle>();
+    protected final Map<Formula, Rectangle> formulas = new HashMap<Formula, Rectangle>();
     protected SimpleCursorFixer fixer = new SimpleCursorFixer();
+    //Cursors
+    protected Cursor cursor = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
+    protected Cursor cursorFrom = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
+    protected Cursor cursorHighlight = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
+    protected FormulaItem highlighted1 = null;
+    protected FormulaItem highlighted2 = null;
+    //Selection handling
+    protected boolean selecting = false;
+    protected boolean canMakeSelection = false;
+    protected boolean selected = false;
+    protected Formula selectedParent = null;
+    protected int selectedPosFrom = 0;
+    protected int selectedPosTo = 0;
 
     public BaseDrawer(Formula formula) {
         this.formula = formula;
@@ -101,6 +108,28 @@ public abstract class BaseDrawer implements Drawer {
         formulas.clear();
         debugTexts = 0;
         markSelection(cursorFrom, cursor);
+    }
+
+    protected Rectangle findMaxRect(){
+        return formulas.get(formula);
+        /*Collection<Rectangle> rects = formulas.values();
+        boolean first = true;
+        int x1 = 0;
+        int x2 = 0;
+        int y1 = 0;
+        int y2 = 0;
+        for(Rectangle rect : rects){
+            if(first){
+                first = false;
+                x1 = rect.getX();
+                y1 = rect.getY();
+                rect.
+            }else{
+
+            }
+        }
+
+        return new Rectangle(0, 0, 0, 0);*/
     }
 
     protected void postRedraw() {
@@ -167,6 +196,8 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public boolean moveCursorUp() {
+        selecting = false;
+        canMakeSelection = false;
         //return setCursor(cursor.getItem().getUp(cursor.getPosition()));
         cursor.moveUp();
         redraw();
@@ -174,6 +205,8 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public boolean moveCursorDown() {
+        selecting = false;
+        canMakeSelection = false;
         //return setCursor(cursor.getItem().getDown(cursor.getPosition()));
         cursor.moveDown();
         redraw();
@@ -181,6 +214,8 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public boolean moveCursorLeft() {
+        selecting = false;
+        canMakeSelection = false;
         //return setCursor(cursor.getItem().getLeft(cursor.getPosition()));
         cursor.moveLeft();
         redraw();
@@ -188,10 +223,65 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public boolean moveCursorRight() {
+        selecting = false;
+        canMakeSelection = false;
         //return setCursor(cursor.getItem().getRight(cursor.getPosition()));
         cursor.moveRight();
         redraw();
         return true;
+    }
+
+    public boolean moveCursorToPower() {
+        selecting = false;
+        canMakeSelection = false;
+        if (cursor.getItem() instanceof PoweredElement) {
+            return moveCursorUp();
+        }
+        return false;
+    }
+
+    public void selectLeft() {
+        if (!selecting) {
+            selecting = true;
+            canMakeSelection = true;
+            cursorFrom = cursor.makeClone();
+            populateFixer();
+        }
+        cursor.moveLeft();
+        redraw();
+    }
+
+    public void selectRight() {
+        if (!selecting) {
+            selecting = true;
+            canMakeSelection = true;
+            cursorFrom = cursor.makeClone();
+            populateFixer();
+        }
+        cursor.moveRight();
+        redraw();
+    }
+
+    public void selectUp() {
+        if (!selecting) {
+            selecting = true;
+            canMakeSelection = true;
+            cursorFrom = cursor.makeClone();
+            populateFixer();
+        }
+        cursor.moveUp();
+        redraw();
+    }
+
+    public void selectDown() {
+        if (!selecting) {
+            selecting = true;
+            canMakeSelection = true;
+            cursorFrom = cursor.makeClone();
+            populateFixer();
+        }
+        cursor.moveDown();
+        redraw();
     }
 
     public void insertElement(FormulaItem newItem) {
@@ -259,7 +349,7 @@ public abstract class BaseDrawer implements Drawer {
         redraw();
     }
 
-    protected Command lightInsertElement(Cursor currentCursor, FormulaItem newItem) {
+    protected Command buildLightInsertElement(Cursor currentCursor, FormulaItem newItem) {
         if (newItem == null || currentCursor == null) {
             return Command.ZERO_COMMAND;
         }
@@ -288,15 +378,18 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void insert(char c) {
+        selecting = false;
+        canMakeSelection = false;
         if (selected) {
             deleteSelection();
         }
 
-        if (c == '^') {
-            if (cursor.getItem() instanceof PoweredElement) {
-                moveCursorUp();
-            }
-        } else if (c == '+') {
+        /*        if (c == '^') {
+        if (cursor.getItem() instanceof PoweredElement) {
+        moveCursorUp();
+        }
+        } else*/
+        if (c == '+') {
             insertElement(new OperatorElement("+"));
         } else if (c == '-') {
             insertElement(new OperatorElement("-"));
@@ -320,6 +413,8 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void deleteLeft() {
+        selecting = false;
+        canMakeSelection = false;
         if (deleteSelection()) {
             return;
         }
@@ -332,6 +427,8 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void deleteRight() {
+        selecting = false;
+        canMakeSelection = false;
         if (deleteSelection()) {
             return;
         }
@@ -401,12 +498,16 @@ public abstract class BaseDrawer implements Drawer {
     protected final List<FormulaItem> copiedItems = new ArrayList<FormulaItem>();
 
     public void cut() {
+        selecting = false;
+        canMakeSelection = false;
         copy();
         deleteSelection();
         redraw();
     }
 
     public void copy() {
+        selecting = false;
+        canMakeSelection = false;
         copiedItems.clear();
         for (int pos = selectedPosFrom; pos <= selectedPosTo; pos++) {
             FormulaItem item = selectedParent.getItem(pos).makeClone();
@@ -416,6 +517,8 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void paste() {
+        selecting = false;
+        canMakeSelection = false;
         if (selected) {
             deleteSelection();
         }
@@ -425,7 +528,7 @@ public abstract class BaseDrawer implements Drawer {
         Cursor currentCursor = cursor.makeClone();
         for (FormulaItem item : copiedItems) {
             FormulaItem newItem = item.makeClone();
-            Command command = lightInsertElement(currentCursor, newItem);
+            Command command = buildLightInsertElement(currentCursor, newItem);
             setCursor(command.execute()); //Execute them here and use grandCommand only to undo/redo.
             if (command != Command.ZERO_COMMAND) {
                 commands.add(command);
@@ -473,12 +576,6 @@ public abstract class BaseDrawer implements Drawer {
 
         return minRectItem;
     }
-    protected boolean selecting = false;
-    protected boolean canMakeSelection = false;
-    protected boolean selected = false;
-    protected Formula selectedParent = null;
-    protected int selectedPosFrom = 0;
-    protected int selectedPosTo = 0;
 
     protected boolean markSelection(Cursor from, Cursor to) {
         if (selected) {
@@ -591,7 +688,7 @@ public abstract class BaseDrawer implements Drawer {
 
         if (minRectItem != null) {
             cursor = minRectItem.getCursor(this, x, y);
-            canMakeSelection = markSelection(cursorFrom, cursor);
+            //canMakeSelection = markSelection(cursorFrom, cursor);
         } else {
             canMakeSelection = false;
         }
