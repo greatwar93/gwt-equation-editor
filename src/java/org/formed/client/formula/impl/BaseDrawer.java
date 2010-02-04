@@ -964,6 +964,57 @@ public abstract class BaseDrawer implements Drawer {
         }
     }
 
+    protected Command buildReplace(FormulaItem currentItem, final String text, int pos, final int size) {
+        if (currentItem instanceof SimpleElement) {
+            final SimpleElement item = (SimpleElement) currentItem;
+            final String oldVal = item.getName();
+            final int fromPos = pos - size;
+            return new Command() {
+
+                public Cursor execute() {
+                    item.replacePart(text, fromPos, size);
+                    return new Cursor(item, fromPos + text.length());
+                }
+
+                public void undo() {
+                    item.setName(oldVal);
+                }
+            };
+        } else if (currentItem instanceof FunctionElement) {
+            final FunctionElement item = (FunctionElement) currentItem;
+            final String oldVal = item.getName();
+            final int fromPos = pos - size;
+            return new Command() {
+
+                public Cursor execute() {
+                    item.replacePart(text, fromPos, size);
+                    return new Cursor(item, fromPos + text.length());
+                }
+
+                public void undo() {
+                    item.setName(oldVal);
+                }
+            };
+        } else if (currentItem instanceof OperatorElement) {
+            final OperatorElement item = (OperatorElement) currentItem;
+            final String oldVal = item.getName();
+            final int fromPos = pos - size;
+            return new Command() {
+
+                public Cursor execute() {
+                    item.replacePart(text, fromPos, size);
+                    return new Cursor(item, fromPos + text.length());
+                }
+
+                public void undo() {
+                    item.setName(oldVal);
+                }
+            };
+        } else {
+            return Command.ZERO_COMMAND;
+        }
+    }
+
     public void selectAutoCompletion() {
         if (!isAutoCompletion) {
             return;
@@ -986,27 +1037,45 @@ public abstract class BaseDrawer implements Drawer {
             return;
         }
 
-        int delFromPos = pos - auto.getFindText().length();
+//        int delFromPos = pos - auto.getFindText().length();
         if (auto.isForNew()) {
             if (currentItem instanceof SimpleElement) {
                 SimpleElement item = (SimpleElement) currentItem;
-                item.replacePart("", delFromPos, auto.getFindText().length());
-                curs.setPosition(delFromPos);
-                Command command = item.buildBreakWith(curs, auto.getNewItem().makeClone(), fixer);
+                FormulaItem newItem = auto.getNewItem().makeClone();
+                //item.replacePart("", delFromPos, auto.getFindText().length());
+                //curs.setPosition(delFromPos);
+                Command command = buildReplace(currentItem, "", pos, auto.getFindText().length());
+                setCursor(command.execute());
+                undoer.add(command);
+
+                command = item.buildBreakWith(curs, newItem, fixer);
+                setCursor(command.execute());
+                undoer.add(command);
+
+                command = newItem.buildIncorporateLeft(fixer);
+                setCursor(command.execute());
+                undoer.add(command);
+
+                command = newItem.buildIncorporateRight(fixer);
                 setCursor(command.execute());
                 undoer.add(command);
             }
         } else {
+            Command command = buildReplace(currentItem, auto.getReplaceWithText(), pos, auto.getFindText().length());
+            setCursor(command.execute());
+            undoer.add(command);
+            /*
             if (currentItem instanceof SimpleElement) {
-                SimpleElement item = (SimpleElement) currentItem;
-                item.replacePart(auto.getReplaceWithText(), pos - auto.getFindText().length(), auto.getFindText().length());
+            SimpleElement item = (SimpleElement) currentItem;
+            item.replacePart(auto.getReplaceWithText(), pos - auto.getFindText().length(), auto.getFindText().length());
             } else if (currentItem instanceof FunctionElement) {
-                FunctionElement item = (FunctionElement) currentItem;
-                item.replacePart(auto.getReplaceWithText(), pos - auto.getFindText().length(), auto.getFindText().length());
+            FunctionElement item = (FunctionElement) currentItem;
+            item.replacePart(auto.getReplaceWithText(), pos - auto.getFindText().length(), auto.getFindText().length());
             } else if (currentItem instanceof OperatorElement) {
-                OperatorElement item = (OperatorElement) currentItem;
-                item.replacePart(auto.getReplaceWithText(), pos - auto.getFindText().length(), auto.getFindText().length());
+            OperatorElement item = (OperatorElement) currentItem;
+            item.replacePart(auto.getReplaceWithText(), pos - auto.getFindText().length(), auto.getFindText().length());
             }
+             */
         }
 
         redraw();
