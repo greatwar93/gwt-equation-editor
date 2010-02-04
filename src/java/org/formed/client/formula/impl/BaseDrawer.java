@@ -1016,6 +1016,9 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void selectAutoCompletion() {
+        selecting = false;
+        canMakeSelection = false;
+        
         if (!isAutoCompletion) {
             return;
         }
@@ -1042,12 +1045,23 @@ public abstract class BaseDrawer implements Drawer {
                 SimpleElement item = (SimpleElement) currentItem;
                 FormulaItem newItem = auto.getNewItem().makeClone();
 
-                Command command = buildReplace(currentItem, "", pos, auto.getFindText().length());
-                setCursor(command.execute());
-                undoer.add(command);
+                final Command command1 = buildReplace(currentItem, "", pos, auto.getFindText().length());
+                setCursor(command1.execute());
+                final Command command2 = item.buildBreakWith(cursor, newItem, fixer);
+                setCursor(command2.execute());
 
-                command = item.buildBreakWith(curs, newItem, fixer);
-                setCursor(command.execute());
+                Command command = new Command() {
+
+                    public Cursor execute() {
+                        command1.execute();
+                        return command2.execute();
+                    }
+
+                    public void undo() {
+                        command2.undo();
+                        command1.undo();
+                    }
+                };
                 undoer.add(command);
 
                 command = newItem.buildIncorporateLeft(fixer);

@@ -156,6 +156,15 @@ public abstract class PoweredElement extends BaseElement {
     }
 
     @Override
+    public Cursor childAsksRight(Formula child) {
+        if (child == formulaPower) {
+            return getLast();
+        } else {
+            return super.childAsksRight(child);
+        }
+    }
+
+    @Override
     public Cursor childAsksDown(Formula child) {
         if (child == formulaPower) {
             return getLast();

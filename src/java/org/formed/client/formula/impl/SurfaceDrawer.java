@@ -152,27 +152,42 @@ public final class SurfaceDrawer extends BaseDrawer {
 
         cursor.reMeasure(this);
         int x = cursor.getX();
-        int maxWidth = 0;
         int y1 = cursor.getY() + cursor.getHeightDown();
         int y = y1;
 
         int i = 0;
+
+        //find width
+        int maxWidth = 0;
+        for (AutoCompletion auto : autoFound) {
+            if (auto.isForNew()) {
+                FormulaItem item = auto.getNewItem();
+                String text = auto.getFindText() + " → ";
+                Metrics metrics = textMetrics(text, 20);
+                Metrics metrics2 = item.measure(this, 20);
+                maxWidth = Math.max(maxWidth, metrics.getWidth() + metrics2.getWidth());
+            } else {
+                String text = auto.getFindText() + " → " + auto.getShowText();
+                Metrics metrics = textMetrics(text, 20);
+                maxWidth = Math.max(maxWidth, metrics.getWidth());
+            }
+        }
+
+        //draw
         for (AutoCompletion auto : autoFound) {
             if (auto.isForNew()) {
                 FormulaItem item = auto.getNewItem();
 
-                String text = auto.getFindText() + " -> ";
+                String text = auto.getFindText() + " → ";
                 Metrics metrics = textMetrics(text, 20);
                 Metrics metrics2 = item.measure(this, 20);
 
-                maxWidth = Math.max(maxWidth, metrics.getWidth() + metrics2.getWidth());
-
                 if (i == autoCompletionPos) {
                     item.setHighlight(255, 255, 0);
-                    fillRect(x, y, x + metrics.getWidth(), y + Math.max(metrics.getHeight(), metrics2.getHeight()) + 2, 255, 255, 0);
+                    fillRect(x, y, x + maxWidth, y + Math.max(metrics.getHeight(), metrics2.getHeight()) + 2, 255, 255, 0);
                 }else{
                     item.setHighlight(255, 255, 255);
-                    fillRect(x, y, x + metrics.getWidth(), y + Math.max(metrics.getHeight(), metrics2.getHeight()) + 2, 255, 255, 255);
+                    fillRect(x, y, x + maxWidth, y + Math.max(metrics.getHeight(), metrics2.getHeight()) + 2, 255, 255, 255);
                 }
 
                 y += Math.max(metrics.getHeightUp(), metrics2.getHeightUp()) + 1;
@@ -182,15 +197,13 @@ public final class SurfaceDrawer extends BaseDrawer {
                 y += Math.max(metrics.getHeightDown(), metrics2.getHeightDown()) + 1;
 
             } else {
-                String text = auto.getFindText() + " -> " + auto.getShowText();
+                String text = auto.getFindText() + " → " + auto.getShowText();
                 Metrics metrics = textMetrics(text, 20);
 
-                maxWidth = Math.max(maxWidth, metrics.getWidth());
-
                 if (i == autoCompletionPos) {
-                    fillRect(x, y, x + metrics.getWidth(), y + metrics.getHeight() + 2, 255, 255, 0);
+                    fillRect(x, y, x + maxWidth, y + metrics.getHeight() + 2, 255, 255, 0);
                 }else{
-                    fillRect(x, y, x + metrics.getWidth(), y + metrics.getHeight() + 2, 255, 255, 255);
+                    fillRect(x, y, x + maxWidth, y + metrics.getHeight() + 2, 255, 255, 255);
                 }
 
                 y += metrics.getHeightUp() + 1;
