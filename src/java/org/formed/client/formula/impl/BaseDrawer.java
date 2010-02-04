@@ -868,7 +868,7 @@ public abstract class BaseDrawer implements Drawer {
         return found;
     }
 
-    protected Cursor findAutoCompletionCursor() {
+    protected Cursor getAutoCompletionCursor() {
         if (cursor == null) {
             return null;
         }
@@ -903,7 +903,7 @@ public abstract class BaseDrawer implements Drawer {
     protected int findAutoCompletions() {
         autoFound.clear();
 
-        Cursor curs = findAutoCompletionCursor();
+        Cursor curs = getAutoCompletionCursor();
         if (curs == null) {
             isAutoCompletion = false;
             return 0;
@@ -1026,7 +1026,7 @@ public abstract class BaseDrawer implements Drawer {
             return;
         }
 
-        Cursor curs = findAutoCompletionCursor();
+        Cursor curs = getAutoCompletionCursor();
         if (curs == null) {
             return;
         }
@@ -1037,13 +1037,11 @@ public abstract class BaseDrawer implements Drawer {
             return;
         }
 
-//        int delFromPos = pos - auto.getFindText().length();
         if (auto.isForNew()) {
             if (currentItem instanceof SimpleElement) {
                 SimpleElement item = (SimpleElement) currentItem;
                 FormulaItem newItem = auto.getNewItem().makeClone();
-                //item.replacePart("", delFromPos, auto.getFindText().length());
-                //curs.setPosition(delFromPos);
+
                 Command command = buildReplace(currentItem, "", pos, auto.getFindText().length());
                 setCursor(command.execute());
                 undoer.add(command);
@@ -1064,18 +1062,6 @@ public abstract class BaseDrawer implements Drawer {
             Command command = buildReplace(currentItem, auto.getReplaceWithText(), pos, auto.getFindText().length());
             setCursor(command.execute());
             undoer.add(command);
-            /*
-            if (currentItem instanceof SimpleElement) {
-            SimpleElement item = (SimpleElement) currentItem;
-            item.replacePart(auto.getReplaceWithText(), pos - auto.getFindText().length(), auto.getFindText().length());
-            } else if (currentItem instanceof FunctionElement) {
-            FunctionElement item = (FunctionElement) currentItem;
-            item.replacePart(auto.getReplaceWithText(), pos - auto.getFindText().length(), auto.getFindText().length());
-            } else if (currentItem instanceof OperatorElement) {
-            OperatorElement item = (OperatorElement) currentItem;
-            item.replacePart(auto.getReplaceWithText(), pos - auto.getFindText().length(), auto.getFindText().length());
-            }
-             */
         }
 
         redraw();

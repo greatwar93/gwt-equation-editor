@@ -197,7 +197,17 @@ public final class FunctionElement extends PoweredElement {
             return formula.getLast();
         }
 
-        return super.getLeft(oldPosition);
+        int position = oldPosition - 1;
+
+        if (position < 0) {
+            if (parent == null) {
+                return null;
+            }
+
+            return parent.getLeft(this);
+        }
+
+        return getCursor(position);
     }
 
     @Override

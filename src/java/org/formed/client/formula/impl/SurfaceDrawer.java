@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import org.formed.client.formula.Formula;
+import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.Metrics;
 import org.formed.client.formula.Rectangle;
 import org.formed.client.formula.Undoer;
@@ -139,9 +140,11 @@ public final class SurfaceDrawer extends BaseDrawer {
     public int getSmallerSize(int size) {
         return size * 3 / 4;
     }
-    protected int redrawing = 0;
+
+    protected int autoCompletionY = 0;
 
     public void drawAutoCompletion() {
+        autoCompletionY = 0;
         int size = autoFound.size();
         if (size <= 0) {
             return;
@@ -155,25 +158,54 @@ public final class SurfaceDrawer extends BaseDrawer {
 
         int i = 0;
         for (AutoCompletion auto : autoFound) {
-            String text = auto.getFindText() + " -> " + auto.getShowText();
-            Metrics metrics = textMetrics(text, 20);
+            if (auto.isForNew()) {
+                FormulaItem item = auto.getNewItem();
 
-            maxWidth = Math.max(maxWidth, metrics.getWidth());
+                String text = auto.getFindText() + " -> ";
+                Metrics metrics = textMetrics(text, 20);
+                Metrics metrics2 = item.measure(this, 20);
 
-            if (i == autoCompletionPos) {
-                fillRect(x, y, x+metrics.getWidth(), y+metrics.getHeight()+2, 255, 255, 0);
+                maxWidth = Math.max(maxWidth, metrics.getWidth() + metrics2.getWidth());
+
+                if (i == autoCompletionPos) {
+                    item.setHighlight(255, 255, 0);
+                    fillRect(x, y, x + metrics.getWidth(), y + Math.max(metrics.getHeight(), metrics2.getHeight()) + 2, 255, 255, 0);
+                }else{
+                    item.setHighlight(255, 255, 255);
+                    fillRect(x, y, x + metrics.getWidth(), y + Math.max(metrics.getHeight(), metrics2.getHeight()) + 2, 255, 255, 255);
+                }
+
+                y += Math.max(metrics.getHeightUp(), metrics2.getHeightUp()) + 1;
+                drawText(text, 20, x, y);
+                item.draw(this, x + metrics.getWidth(), y, 20);
+                item.highlightOff();
+                y += Math.max(metrics.getHeightDown(), metrics2.getHeightDown()) + 1;
+
+            } else {
+                String text = auto.getFindText() + " -> " + auto.getShowText();
+                Metrics metrics = textMetrics(text, 20);
+
+                maxWidth = Math.max(maxWidth, metrics.getWidth());
+
+                if (i == autoCompletionPos) {
+                    fillRect(x, y, x + metrics.getWidth(), y + metrics.getHeight() + 2, 255, 255, 0);
+                }else{
+                    fillRect(x, y, x + metrics.getWidth(), y + metrics.getHeight() + 2, 255, 255, 255);
+                }
+
+                y += metrics.getHeightUp() + 1;
+                drawText(text, 20, x, y);
+                y += metrics.getHeightDown() + 1;
             }
-
-            y += metrics.getHeightUp()+1;
-            drawText(text, 20, x, y);
-            y += metrics.getHeightDown()+1;
 
             i++;
         }
 
-        drawRect(x, y1, x+maxWidth, y);
+        autoCompletionY = y;
+        drawRect(x, y1, x + maxWidth, y);
     }
 
+    protected int redrawing = 0;
     public void redraw() {
         redrawing++;
         preRedraw();
@@ -206,7 +238,7 @@ public final class SurfaceDrawer extends BaseDrawer {
         if (redrawing <= 1) {
             Rectangle rect = findMaxRect();
             int width = rect.getX() + rect.getWidth() + 5;
-            int height = rect.getY() + rect.getHeight() + 5;
+            int height = Math.max(rect.getY() + rect.getHeight() + 5, autoCompletionY + 5);
             if (width > surface.getWidth() || height > surface.getHeight()) {
                 surface.setWidth(width);
                 surface.setHeight(height);
