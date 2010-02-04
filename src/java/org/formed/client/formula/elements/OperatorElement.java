@@ -28,15 +28,16 @@ import org.formed.client.formula.Metrics;
  */
 public final class OperatorElement extends BaseElement {
 
-    private String name;
+    //private String name;
 
     public OperatorElement(String name) {
-        this.name = name;
+        //this.name = name;
         val = name;
     }
 
     public FormulaItem makeClone() {
-        OperatorElement clone = new OperatorElement(name);
+//        OperatorElement clone = new OperatorElement(name);
+        OperatorElement clone = new OperatorElement(val);
         clone.setParent(parent);
         
         return clone;
@@ -52,11 +53,12 @@ public final class OperatorElement extends BaseElement {
     }
 
     public String getName() {
-        return name;
+        return val;
+//        return name;
     }
 
     public void setName(String name) {
-        this.name = name;
+//        this.name = name;
         val = name;
     }
 

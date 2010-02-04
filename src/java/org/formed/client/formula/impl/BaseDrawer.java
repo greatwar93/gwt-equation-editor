@@ -34,6 +34,7 @@ import org.formed.client.formula.elements.LeftCloser;
 import org.formed.client.formula.elements.OperatorElement;
 import org.formed.client.formula.elements.PoweredElement;
 import org.formed.client.formula.elements.RightCloser;
+import org.formed.client.formula.elements.RootElement;
 import org.formed.client.formula.elements.SimpleElement;
 
 /**
@@ -97,9 +98,16 @@ public abstract class BaseDrawer implements Drawer {
         autoFunction.add(new AutoCompletion("sin", "sin", "sin", new FunctionElement("sin"), false));
         autoFunction.add(new AutoCompletion("cos", "cos", "cos", new FunctionElement("sin"), false));
 
+        autoNew.add(new AutoCompletion("root", "root", "root", new RootElement(new Formula(true)), true));
         autoNew.add(new AutoCompletion("arcsin", "arcsin", "arcsin", new FunctionElement("arcsin"), true));
         autoNew.add(new AutoCompletion("sin", "sin", "sin", new FunctionElement("sin"), true));
         autoNew.add(new AutoCompletion("cos", "cos", "cos", new FunctionElement("sin"), true));
+
+        autoNew.add(new AutoCompletion("≤", "lessorequal", "≤", new OperatorElement("≤"), true));
+        autoNew.add(new AutoCompletion("≤", "меньшеилиравно", "≤", new OperatorElement("≤"), true));
+
+        autoNew.add(new AutoCompletion("≥", "greaterorequal", "≥", new OperatorElement("≥"), true));
+        autoNew.add(new AutoCompletion("≥", "большеилиравно", "≥", new OperatorElement("≥"), true));
     }
 
     public void addDrawnItem(FormulaItem item, Rectangle rect) {

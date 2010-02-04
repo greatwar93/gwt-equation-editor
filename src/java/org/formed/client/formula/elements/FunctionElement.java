@@ -30,7 +30,7 @@ import org.formed.client.formula.Metrics;
  */
 public final class FunctionElement extends PoweredElement {
 
-    private String name;
+    //private String name;
     private Formula formula;
     //private final RightCloser right = new RightCloser();
     //private final LeftCloser left = new LeftCloser();
@@ -56,18 +56,20 @@ public final class FunctionElement extends PoweredElement {
     }
 
     public FormulaItem makeClone() {
-        FunctionElement clone = new FunctionElement(name, formula.makeClone(), getPower().makeClone());
+        FunctionElement clone = new FunctionElement(val, formula.makeClone(), getPower().makeClone());
+//        FunctionElement clone = new FunctionElement(name, formula.makeClone(), getPower().makeClone());
         clone.setParent(parent);
 
         return clone;
     }
 
     public String getName() {
-        return name;
+        return val;
+        //return name;
     }
 
     public void setName(String name) {
-        this.name = name;
+        //this.name = name;
         val = name;
     }
 
