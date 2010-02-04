@@ -132,10 +132,47 @@ public final class SurfaceDrawer extends BaseDrawer {
         surface.setFillStyle(new Color(0, 0, 0));
     }
 
+    private void drawRect(int x1, int y1, int x2, int y2) {
+        surface.strokeShape(new ShapeBuilder().moveTo(x1, y1).drawLineTo(x2, y1).drawLineTo(x2, y2).drawLineTo(x1, y2).drawLineTo(x1, y1).build());
+    }
+
     public int getSmallerSize(int size) {
         return size * 3 / 4;
     }
     protected int redrawing = 0;
+
+    public void drawAutoCompletion() {
+        int size = autoFound.size();
+        if (size <= 0) {
+            return;
+        }
+
+        cursor.reMeasure(this);
+        int x = cursor.getX();
+        int maxWidth = 0;
+        int y1 = cursor.getY() + cursor.getHeightDown();
+        int y = y1;
+
+        int i = 0;
+        for (AutoCompletion auto : autoFound) {
+            String text = auto.getFindText() + " -> " + auto.getShowText();
+            Metrics metrics = textMetrics(text, 20);
+
+            maxWidth = Math.max(maxWidth, metrics.getWidth());
+
+            if (i == autoCompletionPos) {
+                fillRect(x, y, x+metrics.getWidth(), y+metrics.getHeight()+2, 255, 255, 0);
+            }
+
+            y += metrics.getHeightUp()+1;
+            drawText(text, 20, x, y);
+            y += metrics.getHeightDown()+1;
+
+            i++;
+        }
+
+        drawRect(x, y1, x+maxWidth, y);
+    }
 
     public void redraw() {
         redrawing++;
@@ -151,8 +188,14 @@ public final class SurfaceDrawer extends BaseDrawer {
         lastFontSize = 0;
 
         Date from = new Date();
+
         formula.invalidateMetrics();
         drawerMetrics = formula.drawAligned(this, 10, 10, 20, Align.TOP);
+
+        if (isAutoCompletion) {
+            drawAutoCompletion();
+        }
+
         Date till = new Date();
         drawText((till.getTime() - from.getTime()) + "ms " + countLine + " " + countText + " " + countMeasure, 20, 0, 10);
 

@@ -141,6 +141,10 @@ public abstract class BaseElement implements FormulaItem {
         return val.length();
     }
 
+    public void replacePart(String replaceWith, int pos, int size) {
+        val = val.substring(0, pos) + replaceWith + val.substring(pos + size);
+    }
+
     private String getPart(int position) {
         return val.substring(0, position);
     }
@@ -407,7 +411,7 @@ public abstract class BaseElement implements FormulaItem {
                         item = parent_backup.getItem(reInsertPos - 1); //Try previous item
                         if (item != null) {
                             newCursor.setCursor(item.getLast());
-                        }else{
+                        } else {
                             newCursor.setCursor(parent_backup.getFirst());
                         }
                     }
@@ -466,7 +470,7 @@ public abstract class BaseElement implements FormulaItem {
                         item = parent_backup.getItem(reInsertPos - 1); //Try previous item
                         if (item != null) {
                             newCursor.setCursor(item.getLast());
-                        }else{
+                        } else {
                             newCursor.setCursor(parent_backup.getFirst());
                         }
                     }

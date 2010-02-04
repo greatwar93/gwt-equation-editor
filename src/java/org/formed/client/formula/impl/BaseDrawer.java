@@ -17,7 +17,6 @@ limitations under the License.
 package org.formed.client.formula.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +29,7 @@ import org.formed.client.formula.Metrics;
 import org.formed.client.formula.Rectangle;
 import org.formed.client.formula.Undoer;
 import org.formed.client.formula.elements.DivisorElement;
+import org.formed.client.formula.elements.FunctionElement;
 import org.formed.client.formula.elements.LeftCloser;
 import org.formed.client.formula.elements.OperatorElement;
 import org.formed.client.formula.elements.PoweredElement;
@@ -71,6 +71,7 @@ public abstract class BaseDrawer implements Drawer {
         populateFixer();
 
         formula.invalidateMetrics();
+        populateAuto();
     }
 
     public BaseDrawer(Formula formula, Undoer undoer) {
@@ -80,6 +81,25 @@ public abstract class BaseDrawer implements Drawer {
         populateFixer();
 
         formula.invalidateMetrics();
+        populateAuto();
+    }
+
+    private void populateAuto() {
+        autoSimple.add(new AutoCompletion("α", "alfa", "α", new SimpleElement("α"), false));
+        autoSimple.add(new AutoCompletion("α", "alpha", "α", new SimpleElement("α"), false));
+        autoSimple.add(new AutoCompletion("α", "альфа", "α", new SimpleElement("α"), false));
+
+        autoSimple.add(new AutoCompletion("β", "beta", "β", new SimpleElement("β"), false));
+        autoSimple.add(new AutoCompletion("β", "beta", "β", new SimpleElement("β"), false));
+        autoSimple.add(new AutoCompletion("β", "бета", "β", new SimpleElement("β"), false));
+
+        autoFunction.add(new AutoCompletion("arcsin", "arcsin", "arcsin", new FunctionElement("arcsin"), false));
+        autoFunction.add(new AutoCompletion("sin", "sin", "sin", new FunctionElement("sin"), false));
+        autoFunction.add(new AutoCompletion("cos", "cos", "cos", new FunctionElement("sin"), false));
+
+        autoNew.add(new AutoCompletion("arcsin", "arcsin", "arcsin", new FunctionElement("arcsin"), true));
+        autoNew.add(new AutoCompletion("sin", "sin", "sin", new FunctionElement("sin"), true));
+        autoNew.add(new AutoCompletion("cos", "cos", "cos", new FunctionElement("sin"), true));
     }
 
     public void addDrawnItem(FormulaItem item, Rectangle rect) {
@@ -108,28 +128,13 @@ public abstract class BaseDrawer implements Drawer {
         formulas.clear();
         debugTexts = 0;
         markSelection(cursorFrom, cursor);
+        if (isAutoCompletion) {
+            findAutoCompletions();
+        }
     }
 
-    protected Rectangle findMaxRect(){
+    protected Rectangle findMaxRect() {
         return formulas.get(formula);
-        /*Collection<Rectangle> rects = formulas.values();
-        boolean first = true;
-        int x1 = 0;
-        int x2 = 0;
-        int y1 = 0;
-        int y2 = 0;
-        for(Rectangle rect : rects){
-            if(first){
-                first = false;
-                x1 = rect.getX();
-                y1 = rect.getY();
-                rect.
-            }else{
-
-            }
-        }
-
-        return new Rectangle(0, 0, 0, 0);*/
     }
 
     protected void postRedraw() {
@@ -409,6 +414,7 @@ public abstract class BaseDrawer implements Drawer {
             insertElement(new DivisorElement());
         } else {
             insertElement(new SimpleElement("" + c));
+            showAutoCompletion();
         }
     }
 
@@ -768,5 +774,247 @@ public abstract class BaseDrawer implements Drawer {
         redraw();
 
         return minRectItem;
+    }
+
+    protected final class AutoCompletion {
+
+        private final String showText;
+        private String findText;
+        private final String replaceWithText;
+        private final FormulaItem newItem;
+        private final boolean forNew;
+
+        public AutoCompletion(String showText, String findText, String replaceWithText, FormulaItem newItem, boolean forNew) {
+            this.showText = showText;
+            this.findText = findText;
+            this.replaceWithText = replaceWithText;
+            this.newItem = newItem;
+            this.forNew = forNew;
+        }
+
+        public boolean isForNew() {
+            return forNew;
+        }
+
+        public String getFindText() {
+            return findText;
+        }
+
+        public void setFindText(String findText) {
+            this.findText = findText;
+        }
+
+        public FormulaItem getNewItem() {
+            return newItem;
+        }
+
+        public String getReplaceWithText() {
+            return replaceWithText;
+        }
+
+        public String getShowText() {
+            return showText;
+        }
+
+        public AutoCompletion makeClone() {
+            return new AutoCompletion(showText, findText, replaceWithText, newItem, forNew);
+        }
+
+        public String match(String text) {
+            int size = Math.min(findText.length(), text.length());
+            int iText = text.length() - size;
+            for (int i = size; i > 0; i--) {
+                String find = findText.substring(0, i);
+                if (find.equals(text.substring(iText))) {
+                    return find;
+                }
+                iText++;
+            }
+            return "";
+        }
+    }
+    protected boolean isAutoCompletion = false;
+    protected int autoCompletionPos = 0;
+    protected final List<AutoCompletion> autoFound = new ArrayList<AutoCompletion>();
+    protected final List<AutoCompletion> autoNew = new ArrayList<AutoCompletion>();
+    protected final List<AutoCompletion> autoSimple = new ArrayList<AutoCompletion>();
+    protected final List<AutoCompletion> autoFunction = new ArrayList<AutoCompletion>();
+    protected final List<AutoCompletion> autoOperator = new ArrayList<AutoCompletion>();
+
+    protected List<AutoCompletion> findAuto(String text, List<AutoCompletion> list) {
+        List<AutoCompletion> found = new ArrayList<AutoCompletion>();
+
+        List<String> alreadyFound = new ArrayList<String>();
+        for (AutoCompletion auto : list) {
+            String foundText = auto.match(text);
+            if (foundText.length() > 0) {
+                if (!alreadyFound.contains(foundText)) {
+                    AutoCompletion foundAuto = auto.makeClone();
+                    foundAuto.setFindText(foundText);
+                    found.add(foundAuto);
+                    alreadyFound.add(foundText);
+                }
+            }
+        }
+
+        return found;
+    }
+
+    protected Cursor findAutoCompletionCursor() {
+        if (cursor == null) {
+            return null;
+        }
+
+        FormulaItem currentItem = cursor.getItem();
+        int pos = cursor.getPosition();
+        if (currentItem == null) {
+            return null;
+        }
+
+        if (pos == 0) {
+            Formula parent = currentItem.getParent();
+            if (parent == null) {
+                return null;
+            }
+
+            currentItem = parent.getLeftItem(currentItem);
+            if (currentItem == null) {
+                return null;
+            }
+
+            Cursor curs = currentItem.getLast();
+            if (curs == null) {
+                return null;
+            }
+            pos = curs.getPosition();
+        }
+
+        return currentItem.getCursor(pos);
+    }
+
+    protected int findAutoCompletions() {
+        autoFound.clear();
+
+        Cursor curs = findAutoCompletionCursor();
+        if (curs == null) {
+            isAutoCompletion = false;
+            return 0;
+        }
+
+        FormulaItem currentItem = curs.getItem();
+        int pos = curs.getPosition();
+        if (currentItem == null) {
+            isAutoCompletion = false;
+            return 0;
+        }
+
+        if (currentItem instanceof SimpleElement) {
+            SimpleElement item = (SimpleElement) currentItem;
+            String text = item.getName().substring(0, pos);
+            autoFound.addAll(findAuto(text, autoSimple));
+            autoFound.addAll(findAuto(text, autoNew));
+        } else if (currentItem instanceof FunctionElement) {
+            FunctionElement item = (FunctionElement) currentItem;
+            String text = item.getName().substring(0, pos);
+            autoFound.addAll(findAuto(text, autoFunction));
+        } else if (currentItem instanceof OperatorElement) {
+            OperatorElement item = (OperatorElement) currentItem;
+            String text = item.getName().substring(0, pos);
+            autoFound.addAll(findAuto(text, autoOperator));
+        }
+
+        int size = autoFound.size();
+        if (autoCompletionPos >= size) {
+            autoCompletionPos = size;
+        }
+
+        if (size <= 0) {
+            isAutoCompletion = false;
+        }
+
+        return size;
+    }
+
+    public boolean isAutoCompletion() {
+        return isAutoCompletion;
+    }
+
+    public void showAutoCompletion() {
+        if (!isAutoCompletion) {
+            if (findAutoCompletions() > 0) {
+                isAutoCompletion = true;
+                autoCompletionPos = 0;
+                redraw();
+            }
+        }
+    }
+
+    public void hideAutoCompletion() {
+        if (isAutoCompletion) {
+            isAutoCompletion = false;
+            redraw();
+        }
+    }
+
+    public void selectAutoCompletion() {
+        if (!isAutoCompletion) {
+            return;
+        }
+        isAutoCompletion = false;
+
+        AutoCompletion auto = autoFound.get(autoCompletionPos);
+        if (auto == null) {
+            return;
+        }
+
+        Cursor curs = findAutoCompletionCursor();
+        if (curs == null) {
+            return;
+        }
+
+        FormulaItem currentItem = curs.getItem();
+        int pos = curs.getPosition();
+        if (currentItem == null) {
+            return;
+        }
+
+        int delFromPos = pos - auto.getFindText().length();
+        if (auto.isForNew()) {
+            if (currentItem instanceof SimpleElement) {
+                SimpleElement item = (SimpleElement) currentItem;
+                item.replacePart("", delFromPos, auto.getFindText().length());
+                curs.setPosition(delFromPos);
+                Command command = item.buildBreakWith(curs, auto.getNewItem().makeClone(), fixer);
+                setCursor(command.execute());
+                undoer.add(command);
+            }
+        } else {
+            if (currentItem instanceof SimpleElement) {
+                SimpleElement item = (SimpleElement) currentItem;
+                item.replacePart(auto.getReplaceWithText(), pos - auto.getFindText().length(), auto.getFindText().length());
+            } else if (currentItem instanceof FunctionElement) {
+                FunctionElement item = (FunctionElement) currentItem;
+                item.replacePart(auto.getReplaceWithText(), pos - auto.getFindText().length(), auto.getFindText().length());
+            } else if (currentItem instanceof OperatorElement) {
+                OperatorElement item = (OperatorElement) currentItem;
+                item.replacePart(auto.getReplaceWithText(), pos - auto.getFindText().length(), auto.getFindText().length());
+            }
+        }
+
+        redraw();
+    }
+
+    public void moveAutoCompletionUp() {
+        if (autoCompletionPos > 0) {
+            autoCompletionPos--;
+            redraw();
+        }
+    }
+
+    public void moveAutoCompletionDown() {
+        if (autoCompletionPos < autoFound.size()) {
+            autoCompletionPos++;
+            redraw();
+        }
     }
 }

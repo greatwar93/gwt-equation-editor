@@ -206,21 +206,44 @@ public class Example {
                         //Shift-Up arrow - move selecting cursor up
                         drawer.selectUp();
                     } else {
-                        //Up arrow - move cursor up
-                        drawer.moveCursorUp();
+                        //Up arrow
+                        if (drawer.isAutoCompletion()) {
+                            //move cursor up
+                            drawer.moveAutoCompletionUp();
+                        } else {
+                            //move cursor up
+                            drawer.moveCursorUp();
+                        }
                     }
                 } else if (event.isDownArrow()) {
                     if (event.isShiftKeyDown()) {
                         //Shift-Down arrow - move selecting cursor down
                         drawer.selectDown();
                     } else {
-                        //Down arrow - move cursor up
-                        drawer.moveCursorDown();
+                        //Down arrow
+                        if (drawer.isAutoCompletion()) {
+                            //move cursor down
+                            drawer.moveAutoCompletionDown();
+                        } else {
+                            //move cursor down
+                            drawer.moveCursorDown();
+                        }
                     }
 
+                } else if (keycode == KeyCodes.KEY_ENTER) {
+                    //Enter - auto-complete
+                    if (drawer.isAutoCompletion()) {
+                        drawer.selectAutoCompletion();
+                    }
+                } else if (keycode == KeyCodes.KEY_ESCAPE) {
+                    //Esc - hide auto-complete
+                    if (drawer.isAutoCompletion()) {
+                        drawer.hideAutoCompletion();
+                    }
                 } else if (keycode == 32) {
                     if (event.isControlKeyDown()) {
-                        //Ctrl-Space - auto-complete
+                        //Ctrl-Space - show auto-complete
+                        drawer.showAutoCompletion();
                     } else {
                         //Space - move cursor right
                         drawer.moveCursorRight();
@@ -260,8 +283,8 @@ public class Example {
                     //Ctrl-Ins - copy selected
                     drawer.copy();
 
-                } else if ((event.isControlKeyDown() && keycode == 90) || keycode == KeyCodes.KEY_ESCAPE) {
-                    //Ctrl-Z Esc - undo
+                } else if (event.isControlKeyDown() && keycode == 90) {
+                    //Ctrl-Z - undo
                     undoer.undo();
                     drawer.redraw();
                 } else if (event.isControlKeyDown() && keycode == 89) {
