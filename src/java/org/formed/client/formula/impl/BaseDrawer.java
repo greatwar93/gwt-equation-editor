@@ -478,9 +478,6 @@ public abstract class BaseDrawer implements Drawer {
         selecting = false;
         canMakeSelection = false;
         final Command command1 = buildDeleteSelection();
-        if (command1 == Command.ZERO_COMMAND) {
-            return;
-        }
         setCursor(command1.execute());
 
         final Command command2 = cursor.getItem().buildDeleteLeft(cursor, fixer);
@@ -508,9 +505,6 @@ public abstract class BaseDrawer implements Drawer {
         selecting = false;
         canMakeSelection = false;
         final Command command1 = buildDeleteSelection();
-        if (command1 == Command.ZERO_COMMAND) {
-            return;
-        }
         setCursor(command1.execute());
 
         final Command command2 = cursor.getItem().buildDeleteRight(cursor, fixer);
