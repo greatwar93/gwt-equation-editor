@@ -17,9 +17,12 @@ limitations under the License.
 package org.formed.client.formula.impl;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Drawer;
@@ -91,8 +94,19 @@ public abstract class BaseDrawer implements Drawer {
         autoSimple.add(new AutoCompletion("α", "альфа", "α", new SimpleElement("α"), false));
 
         autoSimple.add(new AutoCompletion("β", "beta", "β", new SimpleElement("β"), false));
-        autoSimple.add(new AutoCompletion("β", "beta", "β", new SimpleElement("β"), false));
         autoSimple.add(new AutoCompletion("β", "бета", "β", new SimpleElement("β"), false));
+
+        autoSimple.add(new AutoCompletion("γ", "gamma", "γ", new SimpleElement("γ"), false));
+        autoSimple.add(new AutoCompletion("γ", "гамма", "γ", new SimpleElement("γ"), false));
+
+        autoSimple.add(new AutoCompletion("δ", "delta", "δ", new SimpleElement("δ"), false));
+        autoSimple.add(new AutoCompletion("δ", "дельта", "δ", new SimpleElement("δ"), false));
+
+        autoSimple.add(new AutoCompletion("π", "pi", "π", new SimpleElement("π"), false));
+        autoSimple.add(new AutoCompletion("π", "пи", "π", new SimpleElement("π"), false));
+
+        autoSimple.add(new AutoCompletion("∞", "infinity", "∞", new SimpleElement("∞"), false));
+        autoSimple.add(new AutoCompletion("∞", "бесконечность", "∞", new SimpleElement("∞"), false));
 
         autoFunction.add(new AutoCompletion("arcsin", "arcsin", "arcsin", new FunctionElement("arcsin"), false));
         autoFunction.add(new AutoCompletion("sin", "sin", "sin", new FunctionElement("sin"), false));
@@ -298,6 +312,12 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void insertElement(FormulaItem newItem) {
+        Command commandDelSel = Command.ZERO_COMMAND;
+        if (selected) {
+            commandDelSel = buildDeleteSelection();
+            setCursor(commandDelSel.execute());
+        }
+
         if (newItem == null || cursor == null) {
             return;
         }
@@ -310,15 +330,47 @@ public abstract class BaseDrawer implements Drawer {
         Command command = null;
         switch (currentItem.getHowToInsert(cursor, newItem)) {
             case INSERT:
-                command = currentItem.buildInsert(cursor, newItem, fixer);
-                setCursor(command.execute());
-                undoer.add(command);
+                final Command commandInsert = currentItem.buildInsert(cursor, newItem, fixer);
+                setCursor(commandInsert.execute());
+                if (commandDelSel == Command.ZERO_COMMAND) {
+                    undoer.add(commandInsert);
+                } else {
+                    final Command command1 = commandDelSel;
+                    undoer.add(new Command() {
+
+                        public Cursor execute() {
+                            command1.execute();
+                            return commandInsert.execute();
+                        }
+
+                        public void undo() {
+                            commandInsert.undo();
+                            command1.undo();
+                        }
+                    });
+                }
                 break;
 
             case BREAK:
-                command = currentItem.buildBreakWith(cursor, newItem, fixer);
-                setCursor(command.execute());
-                undoer.add(command);
+                final Command commandBreakWith = currentItem.buildBreakWith(cursor, newItem, fixer);
+                setCursor(commandBreakWith.execute());
+                if (commandDelSel == Command.ZERO_COMMAND) {
+                    undoer.add(commandBreakWith);
+                } else {
+                    final Command command1 = commandDelSel;
+                    undoer.add(new Command() {
+
+                        public Cursor execute() {
+                            command1.execute();
+                            return commandBreakWith.execute();
+                        }
+
+                        public void undo() {
+                            commandBreakWith.undo();
+                            command1.undo();
+                        }
+                    });
+                }
 
                 command = newItem.buildIncorporateLeft(fixer);
                 setCursor(command.execute());
@@ -330,9 +382,25 @@ public abstract class BaseDrawer implements Drawer {
                 break;
 
             case LEFT:
-                command = currentItem.buildInsertBefore(newItem, fixer);
-                setCursor(command.execute());
-                undoer.add(command);
+                final Command commandInsertBefore = currentItem.buildInsertBefore(newItem, fixer);
+                setCursor(commandInsertBefore.execute());
+                if (commandDelSel == Command.ZERO_COMMAND) {
+                    undoer.add(commandInsertBefore);
+                } else {
+                    final Command command1 = commandDelSel;
+                    undoer.add(new Command() {
+
+                        public Cursor execute() {
+                            command1.execute();
+                            return commandInsertBefore.execute();
+                        }
+
+                        public void undo() {
+                            commandInsertBefore.undo();
+                            command1.undo();
+                        }
+                    });
+                }
 
                 command = newItem.buildIncorporateLeft(fixer);
                 setCursor(command.execute());
@@ -344,9 +412,25 @@ public abstract class BaseDrawer implements Drawer {
                 break;
 
             case RIGHT:
-                command = currentItem.buildInsertAfter(newItem, fixer);
-                setCursor(command.execute());
-                undoer.add(command);
+                final Command commandInsertAfter = currentItem.buildInsertAfter(newItem, fixer);
+                setCursor(commandInsertAfter.execute());
+                if (commandDelSel == Command.ZERO_COMMAND) {
+                    undoer.add(commandInsertAfter);
+                } else {
+                    final Command command1 = commandDelSel;
+                    undoer.add(new Command() {
+
+                        public Cursor execute() {
+                            command1.execute();
+                            return commandInsertAfter.execute();
+                        }
+
+                        public void undo() {
+                            commandInsertAfter.undo();
+                            command1.undo();
+                        }
+                    });
+                }
 
                 command = newItem.buildIncorporateLeft(fixer);
                 setCursor(command.execute());
@@ -359,6 +443,94 @@ public abstract class BaseDrawer implements Drawer {
 
             default:
         }
+        redraw();
+    }
+
+    public void insert(char c) {
+        selecting = false;
+        canMakeSelection = false;
+
+        if (c == '+') {
+            insertElement(new OperatorElement("+"));
+        } else if (c == '-') {
+            insertElement(new OperatorElement("-"));
+        } else if (c == '*') {
+            insertElement(new OperatorElement("·")); //*·×
+        } else if (c == '<') {
+            insertElement(new OperatorElement("<"));
+        } else if (c == '>') {
+            insertElement(new OperatorElement(">"));
+        } else if (c == '=') {
+            insertElement(new OperatorElement("="));
+        } else if (c == '(') {
+            insertElement(new LeftCloser());
+        } else if (c == ')') {
+            insertElement(new RightCloser());
+        } else if (c == '/') {
+            insertElement(new DivisorElement());
+        } else {
+            insertElement(new SimpleElement("" + c));
+            showAutoCompletion();
+        }
+    }
+
+    public void deleteLeft() {
+        selecting = false;
+        canMakeSelection = false;
+        final Command command1 = buildDeleteSelection();
+        if (command1 == Command.ZERO_COMMAND) {
+            return;
+        }
+        setCursor(command1.execute());
+
+        final Command command2 = cursor.getItem().buildDeleteLeft(cursor, fixer);
+        setCursor(command2.execute());
+
+        Command command = new Command() {
+
+            public Cursor execute() {
+                command1.execute();
+                return command2.execute();
+            }
+
+            public void undo() {
+                command2.undo();
+                command1.undo();
+            }
+        };
+
+        undoer.add(command);
+
+        redraw();
+    }
+
+    public void deleteRight() {
+        selecting = false;
+        canMakeSelection = false;
+        final Command command1 = buildDeleteSelection();
+        if (command1 == Command.ZERO_COMMAND) {
+            return;
+        }
+        setCursor(command1.execute());
+
+        final Command command2 = cursor.getItem().buildDeleteRight(cursor, fixer);
+        setCursor(command2.execute());
+
+        Command command = new Command() {
+
+            public Cursor execute() {
+                command1.execute();
+                return command2.execute();
+            }
+
+            public void undo() {
+                command2.undo();
+                command1.undo();
+            }
+        };
+
+        undoer.add(command);
+
         redraw();
     }
 
@@ -390,124 +562,58 @@ public abstract class BaseDrawer implements Drawer {
         return Command.ZERO_COMMAND;
     }
 
-    public void insert(char c) {
-        selecting = false;
-        canMakeSelection = false;
-        if (selected) {
-            deleteSelection();
+    protected Command buildDeleteSelection() {
+        if (!selected) {
+            return Command.ZERO_COMMAND;
+        }
+        selected = false;
+
+        final Formula parent_backup = selectedParent;
+        final int deletedFrom = selectedPosFrom;
+        final List<FormulaItem> deletedItems = new ArrayList<FormulaItem>();
+
+        for (int pos = selectedPosTo; pos >= selectedPosFrom; pos--) {
+            FormulaItem item = selectedParent.getItem(pos);
+            item.highlightOff();
+            deletedItems.add(item);
         }
 
-        /*        if (c == '^') {
-        if (cursor.getItem() instanceof PoweredElement) {
-        moveCursorUp();
-        }
-        } else*/
-        if (c == '+') {
-            insertElement(new OperatorElement("+"));
-        } else if (c == '-') {
-            insertElement(new OperatorElement("-"));
-        } else if (c == '*') {
-            insertElement(new OperatorElement("·")); //*·×
-        } else if (c == '<') {
-            insertElement(new OperatorElement("<"));
-        } else if (c == '>') {
-            insertElement(new OperatorElement(">"));
-        } else if (c == '=') {
-            insertElement(new OperatorElement("="));
-        } else if (c == '(') {
-            insertElement(new LeftCloser());
-        } else if (c == ')') {
-            insertElement(new RightCloser());
-        } else if (c == '/') {
-            insertElement(new DivisorElement());
-        } else {
-            insertElement(new SimpleElement("" + c));
-            showAutoCompletion();
-        }
-    }
+        return new Command() {
 
-    public void deleteLeft() {
-        selecting = false;
-        canMakeSelection = false;
-        if (deleteSelection()) {
-            return;
-        }
+            boolean deleted = false;
 
-        Command command = cursor.getItem().buildDeleteLeft(cursor, fixer);
-        setCursor(command.execute());
-        undoer.add(command);
+            public Cursor execute() {
+                if (!deleted) {
+                    deleted = true;
 
-        redraw();
-    }
+                    for (FormulaItem item : deletedItems) {
+                        Cursor cursor = parent_backup.getRight(item);
+                        parent_backup.remove(item);
+                        fixer.removed(item, cursor);
+                    }
+                }
 
-    public void deleteRight() {
-        selecting = false;
-        canMakeSelection = false;
-        if (deleteSelection()) {
-            return;
-        }
-
-        Command command = cursor.getItem().buildDeleteRight(cursor, fixer);
-        setCursor(command.execute());
-        undoer.add(command);
-
-        redraw();
-    }
-
-    protected boolean deleteSelection() {
-        if (selected) {
-            selected = false;
-            final Formula parent_backup = selectedParent;
-            final int deletedFrom = selectedPosFrom;
-            final List<FormulaItem> deletedItems = new ArrayList<FormulaItem>();
-
-            for (int pos = selectedPosTo; pos >= selectedPosFrom; pos--) {
-                FormulaItem item = selectedParent.getItem(pos);
-                item.highlightOff();
-                deletedItems.add(item);
+                FormulaItem item = selectedParent.getItem(deletedFrom);
+                if (item != null) {
+                    return item.getFirst();
+                } else {
+                    return selectedParent.getFirst();
+                }
             }
 
-            Command command = new Command() {
-
-                boolean deleted = false;
-
-                public Cursor execute() {
-                    if (!deleted) {
-                        deleted = true;
-
-                        for (FormulaItem item : deletedItems) {
-                            Cursor cursor = parent_backup.getRight(item);
-                            parent_backup.remove(item);
-                            fixer.removed(item, cursor);
-                        }
-                    }
-
-                    FormulaItem item = selectedParent.getItem(deletedFrom);
-                    if (item != null) {
-                        return item.getFirst();
-                    } else {
-                        return selectedParent.getFirst();
-                    }
+            public void undo() {
+                if (!deleted) {
+                    return;
                 }
 
-                public void undo() {
-                    if (!deleted) {
-                        return;
-                    }
-
-                    deleted = false;
-                    //int pos = deletedFrom;
-                    for (FormulaItem item : deletedItems) {
-                        parent_backup.insertAt(deletedFrom, item);
-                        //pos++;
-                    }
+                deleted = false;
+                //int pos = deletedFrom;
+                for (FormulaItem item : deletedItems) {
+                    parent_backup.insertAt(deletedFrom, item);
+                    //pos++;
                 }
-            };
-            setCursor(command.execute());
-            undoer.add(command);
-            return true;
-        }
-        return false;
+            }
+        };
     }
     protected final List<FormulaItem> copiedItems = new ArrayList<FormulaItem>();
 
@@ -515,7 +621,9 @@ public abstract class BaseDrawer implements Drawer {
         selecting = false;
         canMakeSelection = false;
         copy();
-        deleteSelection();
+        Command command = buildDeleteSelection();
+        setCursor(command.execute());
+        undoer.add(command);
         redraw();
     }
 
@@ -533,21 +641,31 @@ public abstract class BaseDrawer implements Drawer {
     public void paste() {
         selecting = false;
         canMakeSelection = false;
+
+        final List<Command> commands = new ArrayList<Command>(); //Lisy of commands
+
         if (selected) {
-            deleteSelection();
+            Command command = buildDeleteSelection();
+            if (command != Command.ZERO_COMMAND) {
+                setCursor(command.execute());
+                commands.add(command);
+            }
         }
 
         //Make list of insertion commands
-        final List<Command> commands = new ArrayList<Command>();
-        Cursor currentCursor = cursor.makeClone();
         for (FormulaItem item : copiedItems) {
             FormulaItem newItem = item.makeClone();
-            Command command = buildLightInsertElement(currentCursor, newItem);
-            setCursor(command.execute()); //Execute them here and use grandCommand only to undo/redo.
+            Command command = buildLightInsertElement(cursor, newItem);
             if (command != Command.ZERO_COMMAND) {
+                //Execute commands here and use grandCommand only to undo/redo.
+                if (newItem instanceof SimpleElement) {
+                    setCursor(command.execute());
+                } else {
+                    command.execute();
+                    setCursor(newItem.getLast());
+                }
                 commands.add(command);
             }
-            currentCursor = newItem.getLast();
         }
 
         //Make one command that executes all insertion commands from the list
@@ -852,18 +970,49 @@ public abstract class BaseDrawer implements Drawer {
     protected List<AutoCompletion> findAuto(String text, List<AutoCompletion> list) {
         List<AutoCompletion> found = new ArrayList<AutoCompletion>();
 
-        List<String> alreadyFound = new ArrayList<String>();
+        Map<String, AutoCompletion> map = new HashMap<String, AutoCompletion>();
+        Set<String> alreadyFound = new TreeSet<String>(new Comparator<String>() {
+
+            public int compare(String o1, String o2) {
+                if (o1.length() > o2.length()) {
+                    return -1;
+                }
+                if (o1.length() < o2.length()) {
+                    return 1;
+                }
+                return o1.compareTo(o2);
+            }
+        });
         for (AutoCompletion auto : list) {
             String foundText = auto.match(text);
             if (foundText.length() > 0) {
                 if (!alreadyFound.contains(foundText)) {
                     AutoCompletion foundAuto = auto.makeClone();
                     foundAuto.setFindText(foundText);
-                    found.add(foundAuto);
+                    map.put(foundText, foundAuto);
                     alreadyFound.add(foundText);
                 }
             }
         }
+
+        for (String foundText : alreadyFound) {
+            found.add(map.get(foundText));
+        }
+
+        /*
+        List<String> alreadyFound = new ArrayList<String>();
+        for (AutoCompletion auto : list) {
+        String foundText = auto.match(text);
+        if (foundText.length() > 0) {
+        if (!alreadyFound.contains(foundText)) {
+        AutoCompletion foundAuto = auto.makeClone();
+        foundAuto.setFindText(foundText);
+        found.add(foundAuto);
+        alreadyFound.add(foundText);
+        }
+        }
+        }
+         */
 
         return found;
     }
@@ -943,10 +1092,17 @@ public abstract class BaseDrawer implements Drawer {
         return size;
     }
 
+    /**
+     *
+     * @return true - if editor is showing auto-completion selection box right now
+     */
     public boolean isAutoCompletion() {
         return isAutoCompletion;
     }
 
+    /**
+     * Show auto-completion selection box
+     */
     public void showAutoCompletion() {
         if (!isAutoCompletion) {
             if (findAutoCompletions() > 0) {
@@ -957,6 +1113,9 @@ public abstract class BaseDrawer implements Drawer {
         }
     }
 
+    /**
+     * Hide auto-completion selection box
+     */
     public void hideAutoCompletion() {
         if (isAutoCompletion) {
             isAutoCompletion = false;
@@ -964,6 +1123,14 @@ public abstract class BaseDrawer implements Drawer {
         }
     }
 
+    /**
+     * Build text part replacement command
+     * @param currentItem item to change
+     * @param text text to replace with
+     * @param pos position in original text to start replacement from
+     * @param size size of a chunk of original text to be replaced
+     * @return Command object that have been built
+     */
     protected Command buildReplace(FormulaItem currentItem, final String text, int pos, final int size) {
         if (currentItem instanceof SimpleElement) {
             final SimpleElement item = (SimpleElement) currentItem;
@@ -1015,10 +1182,13 @@ public abstract class BaseDrawer implements Drawer {
         }
     }
 
+    /**
+     * Use currently selected item from auto-completion selection box
+     */
     public void selectAutoCompletion() {
         selecting = false;
         canMakeSelection = false;
-        
+
         if (!isAutoCompletion) {
             return;
         }
@@ -1081,6 +1251,9 @@ public abstract class BaseDrawer implements Drawer {
         redraw();
     }
 
+    /**
+     * Move auto-completion selection cursor up
+     */
     public void moveAutoCompletionUp() {
         if (autoCompletionPos > 0) {
             autoCompletionPos--;
@@ -1088,6 +1261,9 @@ public abstract class BaseDrawer implements Drawer {
         }
     }
 
+    /**
+     * Move auto-completion selection cursor down
+     */
     public void moveAutoCompletionDown() {
         if (autoCompletionPos < autoFound.size()) {
             autoCompletionPos++;

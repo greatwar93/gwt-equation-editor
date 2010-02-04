@@ -140,7 +140,6 @@ public final class SurfaceDrawer extends BaseDrawer {
     public int getSmallerSize(int size) {
         return size * 3 / 4;
     }
-
     protected int autoCompletionY = 0;
 
     public void drawAutoCompletion() {
@@ -185,7 +184,7 @@ public final class SurfaceDrawer extends BaseDrawer {
                 if (i == autoCompletionPos) {
                     item.setHighlight(255, 255, 0);
                     fillRect(x, y, x + maxWidth, y + Math.max(metrics.getHeight(), metrics2.getHeight()) + 2, 255, 255, 0);
-                }else{
+                } else {
                     item.setHighlight(255, 255, 255);
                     fillRect(x, y, x + maxWidth, y + Math.max(metrics.getHeight(), metrics2.getHeight()) + 2, 255, 255, 255);
                 }
@@ -202,7 +201,7 @@ public final class SurfaceDrawer extends BaseDrawer {
 
                 if (i == autoCompletionPos) {
                     fillRect(x, y, x + maxWidth, y + metrics.getHeight() + 2, 255, 255, 0);
-                }else{
+                } else {
                     fillRect(x, y, x + maxWidth, y + metrics.getHeight() + 2, 255, 255, 255);
                 }
 
@@ -217,8 +216,8 @@ public final class SurfaceDrawer extends BaseDrawer {
         autoCompletionY = y;
         drawRect(x, y1, x + maxWidth, y);
     }
-
     protected int redrawing = 0;
+
     public void redraw() {
         redrawing++;
         preRedraw();
@@ -239,6 +238,8 @@ public final class SurfaceDrawer extends BaseDrawer {
 
         if (isAutoCompletion) {
             drawAutoCompletion();
+        } else {
+            autoCompletionY = 0;
         }
 
         Date till = new Date();
