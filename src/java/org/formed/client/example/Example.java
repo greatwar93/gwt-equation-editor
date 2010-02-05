@@ -45,6 +45,8 @@ import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RootPanel;
 import gwt.g2d.client.graphics.Surface;
+import java.util.ArrayList;
+import java.util.List;
 import net.kornr.abstractcanvas.client.gwt.CanvasPanelExt;
 import org.formed.client.formula.impl.SimpleUndoer;
 
@@ -76,6 +78,35 @@ public class Example {
 //        formula.add(new OperatorElement("+"));
         formula.add(new FunctionElement("sin", new Formula().add(new SimpleElement("α")), new Formula().add(new SimpleElement("e", new Formula().add(new SimpleElement("x"))))));
 
+        List<AutoCompletion> autoSimple = new ArrayList<AutoCompletion>();
+        autoSimple.add(new AutoCompletion("α", "alfa", "α", new SimpleElement("α"), false));
+        autoSimple.add(new AutoCompletion("α", "alpha", "α", new SimpleElement("α"), false));
+        autoSimple.add(new AutoCompletion("α", "альфа", "α", new SimpleElement("α"), false));
+        autoSimple.add(new AutoCompletion("β", "beta", "β", new SimpleElement("β"), false));
+        autoSimple.add(new AutoCompletion("β", "бета", "β", new SimpleElement("β"), false));
+        autoSimple.add(new AutoCompletion("γ", "gamma", "γ", new SimpleElement("γ"), false));
+        autoSimple.add(new AutoCompletion("γ", "гамма", "γ", new SimpleElement("γ"), false));
+        autoSimple.add(new AutoCompletion("δ", "delta", "δ", new SimpleElement("δ"), false));
+        autoSimple.add(new AutoCompletion("δ", "дельта", "δ", new SimpleElement("δ"), false));
+        autoSimple.add(new AutoCompletion("π", "pi", "π", new SimpleElement("π"), false));
+        autoSimple.add(new AutoCompletion("π", "пи", "π", new SimpleElement("π"), false));
+        autoSimple.add(new AutoCompletion("∞", "infinity", "∞", new SimpleElement("∞"), false));
+        autoSimple.add(new AutoCompletion("∞", "бесконечность", "∞", new SimpleElement("∞"), false));
+
+        List<AutoCompletion> autoFunction = new ArrayList<AutoCompletion>();
+        autoFunction.add(new AutoCompletion("arcsin", "arcsin", "arcsin", new FunctionElement("arcsin"), false));
+        autoFunction.add(new AutoCompletion("sin", "sin", "sin", new FunctionElement("sin"), false));
+        autoFunction.add(new AutoCompletion("cos", "cos", "cos", new FunctionElement("sin"), false));
+
+        List<AutoCompletion> autoNew = new ArrayList<AutoCompletion>();
+        autoNew.add(new AutoCompletion("root", "root", "root", new RootElement(new Formula(true)), true));
+        autoNew.add(new AutoCompletion("arcsin", "arcsin", "arcsin", new FunctionElement("arcsin"), true));
+        autoNew.add(new AutoCompletion("sin", "sin", "sin", new FunctionElement("sin"), true));
+        autoNew.add(new AutoCompletion("cos", "cos", "cos", new FunctionElement("sin"), true));
+        autoNew.add(new AutoCompletion("≤", "lessorequal", "≤", new OperatorElement("≤"), true));
+        autoNew.add(new AutoCompletion("≤", "меньшеилиравно", "≤", new OperatorElement("≤"), true));
+        autoNew.add(new AutoCompletion("≥", "greaterorequal", "≥", new OperatorElement("≥"), true));
+        autoNew.add(new AutoCompletion("≥", "большеилиравно", "≥", new OperatorElement("≥"), true));
 
         //Use SimpleUndoer as an Undoer
         final SimpleUndoer undoer = new SimpleUndoer();
@@ -89,6 +120,10 @@ public class Example {
         final Surface surface = new Surface(WIDTH, HEIGHT);
         final SurfaceDrawer drawer = new SurfaceDrawer(surface, undoer, formula);
 
+        drawer.populateAutoNew(autoNew);
+        drawer.populateAutoSimple(autoSimple);
+        drawer.populateAutoFunction(autoFunction);
+
         //        RootPanel.get().add(canvas1, 10, 10);
         RootPanel.get().add(surface, 10, 10);
         /*FocusPanel panel = new FocusPanel();
@@ -97,7 +132,8 @@ public class Example {
 
 
         //Debugging keylogger screen
-        final HTML keys = new HTML();
+        final HTML keys = new HTML("", true);
+        keys.setWidth("500px");
         RootPanel.get().add(keys, 10, HEIGHT * 3 + 10);
 
 
@@ -188,25 +224,31 @@ public class Example {
                 if (event.isLeftArrow()) {
                     if (event.isShiftKeyDown()) {
                         //Shift-Left arrow - move selecting cursor left
+                        keys.setHTML(keys.getHTML() + " Shift-Left");
                         drawer.selectLeft();
                     } else {
                         //Left arrow - move cursor left
+                        keys.setHTML(keys.getHTML() + " Left");
                         drawer.moveCursorLeft();
                     }
                 } else if (event.isRightArrow()) {
                     if (event.isShiftKeyDown()) {
                         //Shift-Rigth arrow - move selecting cursor right
+                        keys.setHTML(keys.getHTML() + " Shift-Right");
                         drawer.selectRight();
                     } else {
                         //Rigth arrow - move cursor right
+                        keys.setHTML(keys.getHTML() + " Right");
                         drawer.moveCursorRight();
                     }
                 } else if (event.isUpArrow()) {
                     if (event.isShiftKeyDown()) {
                         //Shift-Up arrow - move selecting cursor up
+                        keys.setHTML(keys.getHTML() + " Shift-Up");
                         drawer.selectUp();
                     } else {
                         //Up arrow
+                        keys.setHTML(keys.getHTML() + " Up");
                         if (drawer.isAutoCompletion()) {
                             //move cursor up
                             drawer.moveAutoCompletionUp();
@@ -218,9 +260,11 @@ public class Example {
                 } else if (event.isDownArrow()) {
                     if (event.isShiftKeyDown()) {
                         //Shift-Down arrow - move selecting cursor down
+                        keys.setHTML(keys.getHTML() + " Shift-Down");
                         drawer.selectDown();
                     } else {
                         //Down arrow
+                        keys.setHTML(keys.getHTML() + " Down");
                         if (drawer.isAutoCompletion()) {
                             //move cursor down
                             drawer.moveAutoCompletionDown();
@@ -232,63 +276,78 @@ public class Example {
 
                 } else if (keycode == KeyCodes.KEY_ENTER) {
                     //Enter - auto-complete
+                    keys.setHTML(keys.getHTML() + " Enter");
                     if (drawer.isAutoCompletion()) {
                         drawer.selectAutoCompletion();
                     }
                 } else if (keycode == KeyCodes.KEY_ESCAPE) {
                     //Esc - hide auto-complete
+                    keys.setHTML(keys.getHTML() + " Esc");
                     if (drawer.isAutoCompletion()) {
                         drawer.hideAutoCompletion();
                     }
                 } else if (keycode == 32) {
                     if (event.isControlKeyDown()) {
                         //Ctrl-Space - show auto-complete
+                        keys.setHTML(keys.getHTML() + " Ctrl-Space");
                         drawer.showAutoCompletion();
                     } else {
                         //Space - move cursor right
+                        keys.setHTML(keys.getHTML() + " Space");
                         drawer.moveCursorRight();
                     }
 
                 } else if (keycode == KeyCodes.KEY_DELETE) {
                     if (event.isShiftKeyDown()) {
                         //Shift-Del - cut selected
+                        keys.setHTML(keys.getHTML() + " Shift-Del");
                         drawer.cut();
                     } else {
                         //Del - delete to the right from cursor
+                        keys.setHTML(keys.getHTML() + " Del");
                         drawer.deleteRight();
                     }
                 } else if (keycode == KeyCodes.KEY_BACKSPACE) {
                     if (event.isControlKeyDown()) {
                         //Ctrl-Backspace - undo
+                        keys.setHTML(keys.getHTML() + " Ctrl-Backspace");
                         undoer.undo();
                         drawer.redraw();
                     } else {
                         //Backspace - delete from the left from cursor
+                        keys.setHTML(keys.getHTML() + " Backspace");
                         drawer.deleteLeft();
                     }
 
                 } else if (event.isControlKeyDown() && keycode == 88) {
                     //Ctrl-X - cut selected
+                    keys.setHTML(keys.getHTML() + " Ctrl-X");
                     drawer.cut();
                 } else if (event.isShiftKeyDown() && keycode == 45) {
                     //Shift-Ins - paste
+                    keys.setHTML(keys.getHTML() + " Shift-Ins");
                     drawer.paste();
                 } else if (event.isControlKeyDown() && keycode == 86) {
                     //Ctrl-V - paste
+                    keys.setHTML(keys.getHTML() + " Ctrl-V");
                     drawer.paste();
                 } else if (event.isControlKeyDown() && keycode == 45) {
-                    //Ctrl-C - copy selected
+                    //Ctrl-Ins - copy selected
+                    keys.setHTML(keys.getHTML() + " Ctrl-Ins");
                     drawer.copy();
                 } else if (event.isControlKeyDown() && keycode == 67) {
-                    //Ctrl-Ins - copy selected
+                    //Ctrl-C - copy selected
+                    keys.setHTML(keys.getHTML() + " Ctrl-C");
                     drawer.copy();
 
                 } else if (event.isControlKeyDown() && keycode == 90) {
                     //Ctrl-Z - undo
+                    keys.setHTML(keys.getHTML() + " Ctrl-Z");
                     undoer.undo();
                     drawer.redraw();
                 } else if (event.isControlKeyDown() && keycode == 89) {
                     //Ctrl-Y - redo
+                    keys.setHTML(keys.getHTML() + " Ctrl-Y");
                     undoer.redo();
                     drawer.redraw();
 
@@ -314,8 +373,10 @@ public class Example {
                 if (!arrow) { //Insert entered char
                     if (event.getCharCode() == '^') {
                         //^ - move cursor to power
+                        keys.setHTML(keys.getHTML() + " '^'");
                         drawer.moveCursorToPower();
                     } else {
+                    keys.setHTML(keys.getHTML() + " '"+event.getCharCode()+"'");
                         drawer.insert(event.getCharCode());
                     }
                 } else { //skip event

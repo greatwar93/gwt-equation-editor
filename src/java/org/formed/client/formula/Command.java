@@ -16,10 +16,13 @@ limitations under the License.
 package org.formed.client.formula;
 
 /**
- *
+ * Interface used in a "Command" pattern
  * @author Bulat Sirazetdinov
  */
 public interface Command {
+    /**
+     * Command object that is used to specify that ther's no command (instead of null)
+     */
     public static final Command ZERO_COMMAND = new Command() {
 
         public Cursor execute() {
@@ -30,6 +33,14 @@ public interface Command {
         }
     };
 
+    /**
+     * Execute command
+     * @return Cursor object that points to the position where cursor should move to after command execution
+     */
     public Cursor execute();
+
+    /**
+     * Undo command
+     */
     public void undo();
 }

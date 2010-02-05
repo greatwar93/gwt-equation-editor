@@ -121,6 +121,6 @@ public final class Cursor {
     }
 
     public void reMeasure(Drawer drawer){
-        item.reMeasureCursor(drawer, this);
+        item.measureCursor(drawer, this);
     }
 }

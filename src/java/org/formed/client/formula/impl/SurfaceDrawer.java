@@ -24,6 +24,7 @@ import gwt.g2d.client.graphics.shapes.ShapeBuilder;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import org.formed.client.formula.AutoCompletion;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.Metrics;

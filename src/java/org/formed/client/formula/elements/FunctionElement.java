@@ -234,7 +234,7 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
-    public void reMeasureCursor(Drawer drawer, Cursor cursor) {
+    public void measureCursor(Drawer drawer, Cursor cursor) {
         if (cursor.getPosition() == -1) {
             Metrics metrics = measure(drawer, storedSize);
             cursor.setX(storedX + metrics.getWidth());
@@ -242,7 +242,7 @@ public final class FunctionElement extends PoweredElement {
             cursor.setHeightUp(metrics.getHeightUp());
             cursor.setHeightDown(metrics.getHeightDown());
         } else {
-            super.reMeasureCursor(drawer, cursor);
+            super.measureCursor(drawer, cursor);
         }
     }
 

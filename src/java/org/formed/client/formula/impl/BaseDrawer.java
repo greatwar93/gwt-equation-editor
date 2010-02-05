@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import org.formed.client.formula.AutoCompletion;
 import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Drawer;
@@ -67,6 +68,14 @@ public abstract class BaseDrawer implements Drawer {
     protected Formula selectedParent = null;
     protected int selectedPosFrom = 0;
     protected int selectedPosTo = 0;
+    //Autocompletion handling
+    protected boolean isAutoCompletion = false;
+    protected int autoCompletionPos = 0;
+    protected final List<AutoCompletion> autoFound = new ArrayList<AutoCompletion>();
+    protected final List<AutoCompletion> autoNew = new ArrayList<AutoCompletion>();
+    protected final List<AutoCompletion> autoSimple = new ArrayList<AutoCompletion>();
+    protected final List<AutoCompletion> autoFunction = new ArrayList<AutoCompletion>();
+    protected final List<AutoCompletion> autoOperator = new ArrayList<AutoCompletion>();
 
     public BaseDrawer(Formula formula) {
         this.formula = formula;
@@ -75,7 +84,6 @@ public abstract class BaseDrawer implements Drawer {
         populateFixer();
 
         formula.invalidateMetrics();
-        populateAuto();
     }
 
     public BaseDrawer(Formula formula, Undoer undoer) {
@@ -85,43 +93,38 @@ public abstract class BaseDrawer implements Drawer {
         populateFixer();
 
         formula.invalidateMetrics();
-        populateAuto();
     }
 
-    private void populateAuto() {
-        autoSimple.add(new AutoCompletion("α", "alfa", "α", new SimpleElement("α"), false));
-        autoSimple.add(new AutoCompletion("α", "alpha", "α", new SimpleElement("α"), false));
-        autoSimple.add(new AutoCompletion("α", "альфа", "α", new SimpleElement("α"), false));
+    /**
+     * Add AutoCompletion objects to be used to create new elements
+     * @param list
+     */
+    public void populateAutoNew(List<AutoCompletion> list){
+        autoNew.addAll(list);
+    }
 
-        autoSimple.add(new AutoCompletion("β", "beta", "β", new SimpleElement("β"), false));
-        autoSimple.add(new AutoCompletion("β", "бета", "β", new SimpleElement("β"), false));
+    /**
+     * Add AutoCompletion objects to be used to edit SimpleElements
+     * @param list A list of objects to be added
+     */
+    public void populateAutoSimple(List<AutoCompletion> list){
+        autoSimple.addAll(list);
+    }
 
-        autoSimple.add(new AutoCompletion("γ", "gamma", "γ", new SimpleElement("γ"), false));
-        autoSimple.add(new AutoCompletion("γ", "гамма", "γ", new SimpleElement("γ"), false));
+    /**
+     * Add AutoCompletion objects to be used to edit FunctionElements
+     * @param list A list of objects to be added
+     */
+    public void populateAutoFunction(List<AutoCompletion> list){
+        autoFunction.addAll(list);
+    }
 
-        autoSimple.add(new AutoCompletion("δ", "delta", "δ", new SimpleElement("δ"), false));
-        autoSimple.add(new AutoCompletion("δ", "дельта", "δ", new SimpleElement("δ"), false));
-
-        autoSimple.add(new AutoCompletion("π", "pi", "π", new SimpleElement("π"), false));
-        autoSimple.add(new AutoCompletion("π", "пи", "π", new SimpleElement("π"), false));
-
-        autoSimple.add(new AutoCompletion("∞", "infinity", "∞", new SimpleElement("∞"), false));
-        autoSimple.add(new AutoCompletion("∞", "бесконечность", "∞", new SimpleElement("∞"), false));
-
-        autoFunction.add(new AutoCompletion("arcsin", "arcsin", "arcsin", new FunctionElement("arcsin"), false));
-        autoFunction.add(new AutoCompletion("sin", "sin", "sin", new FunctionElement("sin"), false));
-        autoFunction.add(new AutoCompletion("cos", "cos", "cos", new FunctionElement("sin"), false));
-
-        autoNew.add(new AutoCompletion("root", "root", "root", new RootElement(new Formula(true)), true));
-        autoNew.add(new AutoCompletion("arcsin", "arcsin", "arcsin", new FunctionElement("arcsin"), true));
-        autoNew.add(new AutoCompletion("sin", "sin", "sin", new FunctionElement("sin"), true));
-        autoNew.add(new AutoCompletion("cos", "cos", "cos", new FunctionElement("sin"), true));
-
-        autoNew.add(new AutoCompletion("≤", "lessorequal", "≤", new OperatorElement("≤"), true));
-        autoNew.add(new AutoCompletion("≤", "меньшеилиравно", "≤", new OperatorElement("≤"), true));
-
-        autoNew.add(new AutoCompletion("≥", "greaterorequal", "≥", new OperatorElement("≥"), true));
-        autoNew.add(new AutoCompletion("≥", "большеилиравно", "≥", new OperatorElement("≥"), true));
+    /**
+     * Add AutoCompletion objects to be used to edit OperatorElements
+     * @param list A list of objects to be added
+     */
+    public void populateAutoOperator(List<AutoCompletion> list){
+        autoOperator.addAll(list);
     }
 
     public void addDrawnItem(FormulaItem item, Rectangle rect) {
@@ -895,71 +898,6 @@ public abstract class BaseDrawer implements Drawer {
 
         return minRectItem;
     }
-
-    protected final class AutoCompletion {
-
-        private final String showText;
-        private String findText;
-        private final String replaceWithText;
-        private final FormulaItem newItem;
-        private final boolean forNew;
-
-        public AutoCompletion(String showText, String findText, String replaceWithText, FormulaItem newItem, boolean forNew) {
-            this.showText = showText;
-            this.findText = findText;
-            this.replaceWithText = replaceWithText;
-            this.newItem = newItem;
-            this.forNew = forNew;
-        }
-
-        public boolean isForNew() {
-            return forNew;
-        }
-
-        public String getFindText() {
-            return findText;
-        }
-
-        public void setFindText(String findText) {
-            this.findText = findText;
-        }
-
-        public FormulaItem getNewItem() {
-            return newItem;
-        }
-
-        public String getReplaceWithText() {
-            return replaceWithText;
-        }
-
-        public String getShowText() {
-            return showText;
-        }
-
-        public AutoCompletion makeClone() {
-            return new AutoCompletion(showText, findText, replaceWithText, newItem, forNew);
-        }
-
-        public String match(String text) {
-            int size = Math.min(findText.length(), text.length());
-            int iText = text.length() - size;
-            for (int i = size; i > 0; i--) {
-                String find = findText.substring(0, i);
-                if (find.equals(text.substring(iText))) {
-                    return find;
-                }
-                iText++;
-            }
-            return "";
-        }
-    }
-    protected boolean isAutoCompletion = false;
-    protected int autoCompletionPos = 0;
-    protected final List<AutoCompletion> autoFound = new ArrayList<AutoCompletion>();
-    protected final List<AutoCompletion> autoNew = new ArrayList<AutoCompletion>();
-    protected final List<AutoCompletion> autoSimple = new ArrayList<AutoCompletion>();
-    protected final List<AutoCompletion> autoFunction = new ArrayList<AutoCompletion>();
-    protected final List<AutoCompletion> autoOperator = new ArrayList<AutoCompletion>();
 
     protected List<AutoCompletion> findAuto(String text, List<AutoCompletion> list) {
         List<AutoCompletion> found = new ArrayList<AutoCompletion>();

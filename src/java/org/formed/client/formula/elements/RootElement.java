@@ -177,7 +177,7 @@ public final class RootElement extends BaseElement {
     }
 
     @Override
-    public void reMeasureCursor(Drawer drawer, Cursor cursor) {
+    public void measureCursor(Drawer drawer, Cursor cursor) {
         Metrics metrics = measure(drawer, storedSize);
         if (cursor.getPosition() == 0) {
             cursor.setCursor(new Cursor(this, 0, storedX, storedY, metrics.getHeightUp(), metrics.getHeightDown()));

@@ -223,7 +223,7 @@ public abstract class BaseElement implements FormulaItem {
         return parent.getDown(this);
     }
 
-    public void reMeasureCursor(Drawer drawer, Cursor cursor) {
+    public void measureCursor(Drawer drawer, Cursor cursor) {
 //        cursor.setCursor(getCursor(drawer, cursor.getPosition()));
 
         Metrics newMetrics = drawer.textMetrics(getPart(cursor.getPosition()), storedSize);
