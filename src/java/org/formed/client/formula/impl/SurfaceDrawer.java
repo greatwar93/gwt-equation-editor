@@ -235,7 +235,7 @@ public final class SurfaceDrawer extends BaseDrawer {
         Date from = new Date();
 
         formula.invalidateMetrics();
-        drawerMetrics = formula.drawAligned(this, 10, 10, 20, Align.TOP);
+        drawerMetrics = formula.drawAligned(this, 10, 20, 20, Align.TOP);
 
         if (isAutoCompletion) {
             drawAutoCompletion();
@@ -244,9 +244,9 @@ public final class SurfaceDrawer extends BaseDrawer {
         }
 
         Date till = new Date();
-        drawText((till.getTime() - from.getTime()) + "ms " + countLine + " " + countText + " " + countMeasure, 20, 0, 10);
+        drawText("Rendering time: " + (till.getTime() - from.getTime()) + "ms " + countLine + " " + countText + " " + countMeasure, 20, 0, 10);
 
-        surface.strokeRectangle(9, 9, 2 + drawerMetrics.getWidth(), 2 + drawerMetrics.getHeight());
+        surface.strokeRectangle(9, 19, 2 + drawerMetrics.getWidth(), 2 + drawerMetrics.getHeight());
 
         postRedraw();
 

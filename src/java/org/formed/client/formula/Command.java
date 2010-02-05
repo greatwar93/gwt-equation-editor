@@ -17,6 +17,7 @@ package org.formed.client.formula;
 
 /**
  * Interface used in a "Command" pattern
+ * @see Undoer
  * @author Bulat Sirazetdinov
  */
 public interface Command {

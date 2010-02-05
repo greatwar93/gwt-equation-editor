@@ -44,6 +44,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import gwt.g2d.client.graphics.Surface;
 import java.util.ArrayList;
 import java.util.List;
@@ -111,7 +112,6 @@ public class Example {
         //Use SimpleUndoer as an Undoer
         final SimpleUndoer undoer = new SimpleUndoer();
 
-
         //Create Surface and Drawer
         final int WIDTH = 630;
         final int HEIGHT = 150;
@@ -130,12 +130,62 @@ public class Example {
         panel.setSize(Integer.toString(WIDTH), Integer.toString(HEIGHT));
         RootPanel.get().add(panel, 10, 10);*/
 
+        VerticalPanel panel = new VerticalPanel();
+        RootPanel.get().add(panel, 10, 410);
 
         //Debugging keylogger screen
+        panel.add(new HTML("Key log:"));
         final HTML keys = new HTML("", true);
         keys.setWidth("500px");
-        RootPanel.get().add(keys, 10, HEIGHT * 3 + 10);
+        panel.add(keys);
 
+        //Keyboard short-cuts
+        panel.add(new HTML("."));
+        panel.add(new HTML("Cursor movement:"));
+        panel.add(new HTML(". . . Left arrow - move cursor left"));
+        panel.add(new HTML(". . . Right arrow - move cursor right"));
+        panel.add(new HTML(". . . Up arrow - move cursor up (or raise element in a power if appropriate)"));
+        panel.add(new HTML(". . . Down arrow - move cursor down"));
+        panel.add(new HTML("."));
+        panel.add(new HTML(". . . Space - move cursor left"));
+        panel.add(new HTML(". . . '^' - raise element in a power if appropriate"));
+        panel.add(new HTML("or use your mouse"));
+        panel.add(new HTML("."));
+        panel.add(new HTML("Selection:"));
+        panel.add(new HTML(". . . Shift-Left - select left"));
+        panel.add(new HTML(". . . Shift-Right - select right"));
+        panel.add(new HTML(". . . Shift-Up - select up"));
+        panel.add(new HTML(". . . Shift-Down - select down"));
+        panel.add(new HTML("or use your mouse"));
+        panel.add(new HTML("."));
+        panel.add(new HTML(". . . Del - delete to the right from cursor (or delete selected elements if any)"));
+        panel.add(new HTML(". . . Backspace - delete to the left from cursor (or delete selected elements if any)"));
+        panel.add(new HTML("."));
+        panel.add(new HTML("Copy and paste:"));
+        panel.add(new HTML(". . . Ctrl-X - cut"));
+        panel.add(new HTML(". . . Ctrl-C - copy"));
+        panel.add(new HTML(". . . Ctrl-V - paste"));
+        panel.add(new HTML("."));
+        panel.add(new HTML(". . . Shift-Del - cut"));
+        panel.add(new HTML(". . . Ctrl-Ins - copy"));
+        panel.add(new HTML(". . . Shift-Ins - paste"));
+        panel.add(new HTML("."));
+        panel.add(new HTML("Undo/Redo:"));
+        panel.add(new HTML(". . . Ctrl-Z - undo"));
+        panel.add(new HTML(". . . Ctrl-Y - redo"));
+        panel.add(new HTML(". . . Ctrl-Backspace - undo"));
+        panel.add(new HTML("."));
+        panel.add(new HTML("Auto-completion:"));
+        panel.add(new HTML(". . . Ctrl-Space - show auto-completion drop-down box"));
+        panel.add(new HTML(". . . Esc - hide auto-completion drop-down box"));
+        panel.add(new HTML(". . . Up arrow - move auto-completion selection cursor up"));
+        panel.add(new HTML(". . . Down arrow - move auto-completion selection cursor down"));
+        panel.add(new HTML(". . . Enter - apply selected auto-completion"));
+        panel.add(new HTML("."));
+        panel.add(new HTML("Auto-complete:"));
+        panel.add(new HTML("alpha, alfa, beta, gamma, delta, pi, infinity"));
+        panel.add(new HTML("sin, cos, arcsin, root"));
+        panel.add(new HTML("lessorequal, greaterorequal"));
 
         //Editor undo and redo buttons
         final Button undoButton = new Button("Undo");
@@ -167,8 +217,8 @@ public class Example {
             }
         });
 
-        RootPanel.get().add(undoButton, 10, HEIGHT + 20);
-        RootPanel.get().add(redoButton, undoButton.getOffsetWidth() + 20, HEIGHT + 20);
+        RootPanel.get().add(undoButton, 10, HEIGHT + 70);
+        RootPanel.get().add(redoButton, undoButton.getOffsetWidth() + 20, HEIGHT + 70);
 
 
         //Editor cut, copy and paste buttons
@@ -209,9 +259,9 @@ public class Example {
             }
         });
 
-        RootPanel.get().add(cutButton, redoButton.getAbsoluteLeft() + redoButton.getOffsetWidth() + 30, HEIGHT + 20);
-        RootPanel.get().add(copyButton, cutButton.getAbsoluteLeft() + cutButton.getOffsetWidth() + 10, HEIGHT + 20);
-        RootPanel.get().add(pasteButton, copyButton.getAbsoluteLeft() + copyButton.getOffsetWidth() + 10, HEIGHT + 20);
+        RootPanel.get().add(cutButton, redoButton.getAbsoluteLeft() + redoButton.getOffsetWidth() + 30, HEIGHT + 70);
+        RootPanel.get().add(copyButton, cutButton.getAbsoluteLeft() + cutButton.getOffsetWidth() + 10, HEIGHT + 70);
+        RootPanel.get().add(pasteButton, copyButton.getAbsoluteLeft() + copyButton.getOffsetWidth() + 10, HEIGHT + 70);
 
 
         //Editor keyboard handlers
@@ -376,7 +426,7 @@ public class Example {
                         keys.setHTML(keys.getHTML() + " '^'");
                         drawer.moveCursorToPower();
                     } else {
-                    keys.setHTML(keys.getHTML() + " '"+event.getCharCode()+"'");
+                        keys.setHTML(keys.getHTML() + " '" + event.getCharCode() + "'");
                         drawer.insert(event.getCharCode());
                     }
                 } else { //skip event
@@ -637,27 +687,27 @@ public class Example {
         degreeButton.setWidth(BUTTON_WIDTH + "px");
         infinityButton.setWidth(BUTTON_WIDTH + "px");
 
-        RootPanel.get().add(sinButton, 10 + (10 + BUTTON_WIDTH) * 0, HEIGHT + 50);
-        RootPanel.get().add(cosButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 50);
-        RootPanel.get().add(tgButton, 10 + (10 + BUTTON_WIDTH) * 2, HEIGHT + 50);
-        RootPanel.get().add(ctgButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 50);
-        RootPanel.get().add(rootButton, 10 + (10 + BUTTON_WIDTH) * 4, HEIGHT + 50);
+        RootPanel.get().add(sinButton, 10 + (10 + BUTTON_WIDTH) * 0, HEIGHT + 100);
+        RootPanel.get().add(cosButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 100);
+        RootPanel.get().add(tgButton, 10 + (10 + BUTTON_WIDTH) * 2, HEIGHT + 100);
+        RootPanel.get().add(ctgButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 100);
+        RootPanel.get().add(rootButton, 10 + (10 + BUTTON_WIDTH) * 4, HEIGHT + 100);
 
-        RootPanel.get().add(arcsinButton, 10 + (10 + BUTTON_WIDTH) * 0, HEIGHT + 80);
-        RootPanel.get().add(arccosButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 80);
-        RootPanel.get().add(arctgButton, 10 + (10 + BUTTON_WIDTH) * 2, HEIGHT + 80);
-        RootPanel.get().add(arcctgButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 80);
+        RootPanel.get().add(arcsinButton, 10 + (10 + BUTTON_WIDTH) * 0, HEIGHT + 130);
+        RootPanel.get().add(arccosButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 130);
+        RootPanel.get().add(arctgButton, 10 + (10 + BUTTON_WIDTH) * 2, HEIGHT + 130);
+        RootPanel.get().add(arcctgButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 130);
 
-        RootPanel.get().add(divideButton, 10 + (10 + BUTTON_WIDTH) * 0, HEIGHT + 110);
-        RootPanel.get().add(plusMinusButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 110);
-        RootPanel.get().add(lessOrEqualButton, 10 + (10 + BUTTON_WIDTH) * 2, HEIGHT + 110);
-        RootPanel.get().add(greaterOrEqualButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 110);
+        RootPanel.get().add(divideButton, 10 + (10 + BUTTON_WIDTH) * 0, HEIGHT + 160);
+        RootPanel.get().add(plusMinusButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 160);
+        RootPanel.get().add(lessOrEqualButton, 10 + (10 + BUTTON_WIDTH) * 2, HEIGHT + 160);
+        RootPanel.get().add(greaterOrEqualButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 160);
 
-        RootPanel.get().add(alphaButton, 10 + (10 + BUTTON_WIDTH) * 0, HEIGHT + 140);
-        RootPanel.get().add(piButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 140);
-        RootPanel.get().add(angleButton, 10 + (10 + BUTTON_WIDTH) * 2, HEIGHT + 140);
-        RootPanel.get().add(degreeButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 140);
-        RootPanel.get().add(infinityButton, 10 + (10 + BUTTON_WIDTH) * 4, HEIGHT + 140);
+        RootPanel.get().add(alphaButton, 10 + (10 + BUTTON_WIDTH) * 0, HEIGHT + 190);
+        RootPanel.get().add(piButton, 10 + (10 + BUTTON_WIDTH) * 1, HEIGHT + 190);
+        RootPanel.get().add(angleButton, 10 + (10 + BUTTON_WIDTH) * 2, HEIGHT + 190);
+        RootPanel.get().add(degreeButton, 10 + (10 + BUTTON_WIDTH) * 3, HEIGHT + 190);
+        RootPanel.get().add(infinityButton, 10 + (10 + BUTTON_WIDTH) * 4, HEIGHT + 190);
         //Special buttons inserted
 
 

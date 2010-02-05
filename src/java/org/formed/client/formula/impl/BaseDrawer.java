@@ -99,7 +99,7 @@ public abstract class BaseDrawer implements Drawer {
      * Add AutoCompletion objects to be used to create new elements
      * @param list
      */
-    public void populateAutoNew(List<AutoCompletion> list){
+    public void populateAutoNew(List<AutoCompletion> list) {
         autoNew.addAll(list);
     }
 
@@ -107,7 +107,7 @@ public abstract class BaseDrawer implements Drawer {
      * Add AutoCompletion objects to be used to edit SimpleElements
      * @param list A list of objects to be added
      */
-    public void populateAutoSimple(List<AutoCompletion> list){
+    public void populateAutoSimple(List<AutoCompletion> list) {
         autoSimple.addAll(list);
     }
 
@@ -115,7 +115,7 @@ public abstract class BaseDrawer implements Drawer {
      * Add AutoCompletion objects to be used to edit FunctionElements
      * @param list A list of objects to be added
      */
-    public void populateAutoFunction(List<AutoCompletion> list){
+    public void populateAutoFunction(List<AutoCompletion> list) {
         autoFunction.addAll(list);
     }
 
@@ -123,7 +123,7 @@ public abstract class BaseDrawer implements Drawer {
      * Add AutoCompletion objects to be used to edit OperatorElements
      * @param list A list of objects to be added
      */
-    public void populateAutoOperator(List<AutoCompletion> list){
+    public void populateAutoOperator(List<AutoCompletion> list) {
         autoOperator.addAll(list);
     }
 
@@ -1189,17 +1189,21 @@ public abstract class BaseDrawer implements Drawer {
     public void moveAutoCompletionUp() {
         if (autoCompletionPos > 0) {
             autoCompletionPos--;
-            redraw();
+        } else {
+            autoCompletionPos = autoFound.size();
         }
+        redraw();
     }
 
     /**
      * Move auto-completion selection cursor down
      */
     public void moveAutoCompletionDown() {
-        if (autoCompletionPos < autoFound.size()) {
+        if (autoCompletionPos < autoFound.size()-1) {
             autoCompletionPos++;
-            redraw();
+        } else {
+            autoCompletionPos = 0;
         }
+        redraw();
     }
 }

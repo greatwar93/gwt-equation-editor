@@ -16,11 +16,15 @@ limitations under the License.
 package org.formed.client.formula;
 
 /**
- *
+ * Interface used by objects implementing undo/redo functionality
+ * @see Command
  * @author Bulat Sirazetdinov
  */
 public interface Undoer {
 
+    /**
+     * Undoer object used instead of null
+     */
     public static final Undoer ZERO_UNDOER = new Undoer() {
 
         public void add(Command command) {
@@ -50,19 +54,46 @@ public interface Undoer {
         }
     };
 
+    /**
+     * Add new command into undo queue
+     * @param command command to add into undo queue
+     */
     public void add(Command command);
 
+    /**
+     * Clear undo and redo queues
+     */
     public void clear();
 
+    /**
+     * Clear undo queue
+     */
     public void clearUndos();
 
+    /**
+     * Clear redo queue
+     */
     public void clearRedos();
 
+    /**
+     * Return how many commands are available to undo
+     * @return count of executed commands in undo queue
+     */
     public int getUndoCount();
 
+    /**
+     * Return how many commands are available to redo
+     * @return count of undone commands in redo queue
+     */
     public int getRedoCount();
 
+    /**
+     * Undo last executed command (last in the undo queue, and add it to redo queue)
+     */
     public void undo();
 
+    /**
+     * Redo last undone command (last in the redo queue, and add it to undo queue)
+     */
     public void redo();
 }
