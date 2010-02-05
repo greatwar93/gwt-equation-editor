@@ -99,6 +99,20 @@ public interface FormulaItem {
     boolean isYouOrInsideYou(FormulaItem item);
 
     /**
+     * Check whether specified position is a first position int he item
+     * @param position position to check
+     * @return true if specified position is a first position int he item, false otherwise
+     */
+    boolean isFirstPosition(int position);
+
+    /**
+     * Check whether specified position is a last position int he item
+     * @param position position to check
+     * @return true if specified position is a last position int he item, false otherwise
+     */
+    boolean isLastPosition(int position);
+
+    /**
      * Draw this item on a specified Drawer object in a specified position of a specified size
      * @param drawer Drawer object to use to draw
      * @param x x coordinate of items baseline beginning

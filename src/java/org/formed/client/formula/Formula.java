@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.formed.client.formula.elements.FunctionElement;
 import org.formed.client.formula.elements.LeftCloser;
 import org.formed.client.formula.elements.PlaceElement;
 import org.formed.client.formula.elements.RightCloser;
@@ -447,6 +446,14 @@ public class Formula {
     //Is specified item first in formula
     public boolean isFirst(FormulaItem item) {
         return (items.indexOf(item) == 0);
+    }
+
+    //Is specified item last in formula
+    public boolean isLast(FormulaItem item) {
+        if (items.indexOf(item) < 0) {
+            return false;
+        }
+        return (items.indexOf(item) == items.size() - 1);
     }
 
     //Get position when come from child-item

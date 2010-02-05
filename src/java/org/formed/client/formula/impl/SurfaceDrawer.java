@@ -150,7 +150,7 @@ public final class SurfaceDrawer extends BaseDrawer {
             return;
         }
 
-        cursor.reMeasure(this);
+        cursor.measure(this);
         int x = cursor.getX();
         int y1 = cursor.getY() + cursor.getHeightDown();
         int y = y1;

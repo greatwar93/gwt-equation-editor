@@ -38,7 +38,6 @@ import org.formed.client.formula.elements.LeftCloser;
 import org.formed.client.formula.elements.OperatorElement;
 import org.formed.client.formula.elements.PoweredElement;
 import org.formed.client.formula.elements.RightCloser;
-import org.formed.client.formula.elements.RootElement;
 import org.formed.client.formula.elements.SimpleElement;
 
 /**
@@ -56,9 +55,9 @@ public abstract class BaseDrawer implements Drawer {
     protected final Map<Formula, Rectangle> formulas = new HashMap<Formula, Rectangle>();
     protected SimpleCursorFixer fixer = new SimpleCursorFixer();
     //Cursors
-    protected Cursor cursor = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
-    protected Cursor cursorFrom = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
-    protected Cursor cursorHighlight = new Cursor(new SimpleElement(""), 0, 0, 0, 0, 0);
+    protected Cursor cursor = new Cursor(new SimpleElement(""), 0);
+    protected Cursor cursorFrom = new Cursor(new SimpleElement(""), 0);
+    protected Cursor cursorHighlight = new Cursor(new SimpleElement(""), 0);
     protected FormulaItem highlighted1 = null;
     protected FormulaItem highlighted2 = null;
     //Selection handling
@@ -164,10 +163,10 @@ public abstract class BaseDrawer implements Drawer {
 
     protected void postRedraw() {
         if (cursor != null) {
-            cursor.reMeasure(this);
+            cursor.measure(this);
         }
         if (cursorHighlight != null) {
-            cursorHighlight.reMeasure(this);
+            cursorHighlight.measure(this);
         }
         redrawCursor();
     }
@@ -225,45 +224,55 @@ public abstract class BaseDrawer implements Drawer {
         return true;
     }
 
-    public boolean moveCursorUp() {
+    protected void selectionExpired() {
         selecting = false;
         canMakeSelection = false;
-        //return setCursor(cursor.getItem().getUp(cursor.getPosition()));
+    }
+
+    public boolean moveCursorUp() {
+        selectionExpired();
         cursor.moveUp();
         redraw();
         return true;
     }
 
     public boolean moveCursorDown() {
-        selecting = false;
-        canMakeSelection = false;
-        //return setCursor(cursor.getItem().getDown(cursor.getPosition()));
+        selectionExpired();
         cursor.moveDown();
         redraw();
         return true;
     }
 
     public boolean moveCursorLeft() {
-        selecting = false;
-        canMakeSelection = false;
-        //return setCursor(cursor.getItem().getLeft(cursor.getPosition()));
+        selectionExpired();
         cursor.moveLeft();
         redraw();
         return true;
     }
 
     public boolean moveCursorRight() {
-        selecting = false;
-        canMakeSelection = false;
-        //return setCursor(cursor.getItem().getRight(cursor.getPosition()));
+        selectionExpired();
         cursor.moveRight();
         redraw();
         return true;
     }
 
+    public boolean moveCursorFirst() {
+        selectionExpired();
+        cursor.moveFirst();
+        redraw();
+        return true;
+    }
+
+    public boolean moveCursorLast() {
+        selectionExpired();
+        cursor.moveLast();
+        redraw();
+        return true;
+    }
+
     public boolean moveCursorToPower() {
-        selecting = false;
-        canMakeSelection = false;
+        selectionExpired();
         if (cursor.getItem() instanceof PoweredElement) {
             return moveCursorUp();
         }
@@ -450,8 +459,7 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void insert(char c) {
-        selecting = false;
-        canMakeSelection = false;
+        selectionExpired();
 
         if (c == '+') {
             insertElement(new OperatorElement("+"));
@@ -478,8 +486,7 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void deleteLeft() {
-        selecting = false;
-        canMakeSelection = false;
+        selectionExpired();
         final Command command1 = buildDeleteSelection();
         setCursor(command1.execute());
 
@@ -505,8 +512,7 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void deleteRight() {
-        selecting = false;
-        canMakeSelection = false;
+        selectionExpired();
         final Command command1 = buildDeleteSelection();
         setCursor(command1.execute());
 
@@ -615,8 +621,7 @@ public abstract class BaseDrawer implements Drawer {
     protected final List<FormulaItem> copiedItems = new ArrayList<FormulaItem>();
 
     public void cut() {
-        selecting = false;
-        canMakeSelection = false;
+        selectionExpired();
         copy();
         Command command = buildDeleteSelection();
         setCursor(command.execute());
@@ -625,8 +630,7 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void copy() {
-        selecting = false;
-        canMakeSelection = false;
+        selectionExpired();
         copiedItems.clear();
         for (int pos = selectedPosFrom; pos <= selectedPosTo; pos++) {
             FormulaItem item = selectedParent.getItem(pos).makeClone();
@@ -636,8 +640,7 @@ public abstract class BaseDrawer implements Drawer {
     }
 
     public void paste() {
-        selecting = false;
-        canMakeSelection = false;
+        selectionExpired();
 
         final List<Command> commands = new ArrayList<Command>(); //Lisy of commands
 
@@ -688,6 +691,17 @@ public abstract class BaseDrawer implements Drawer {
 
         redraw();
 //        drawText("" + copiedItems.size(), 20, 10, 40);
+    }
+
+    public void selectAll() {
+        if (!selecting) {
+            selecting = true;
+            canMakeSelection = true;
+        }
+        cursorFrom = formula.getFirst();
+        cursor.setCursor(formula.getLast());
+        populateFixer();
+        redraw();
     }
 
     public FormulaItem findItemAt(int x, int y) {
@@ -1118,8 +1132,7 @@ public abstract class BaseDrawer implements Drawer {
      * Use currently selected item from auto-completion selection box
      */
     public void selectAutoCompletion() {
-        selecting = false;
-        canMakeSelection = false;
+        selectionExpired();
 
         if (!isAutoCompletion) {
             return;
@@ -1199,7 +1212,7 @@ public abstract class BaseDrawer implements Drawer {
      * Move auto-completion selection cursor down
      */
     public void moveAutoCompletionDown() {
-        if (autoCompletionPos < autoFound.size()-1) {
+        if (autoCompletionPos < autoFound.size() - 1) {
             autoCompletionPos++;
         } else {
             autoCompletionPos = 0;

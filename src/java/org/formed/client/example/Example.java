@@ -62,7 +62,7 @@ public class Example {
     public void draw() {
 
         //Create and fill a formula
-        final Formula formula = new Formula();
+        final Formula formula = new Formula(true);
         formula.add(new SimpleElement("S"));
         formula.add(new OperatorElement("="));
         formula.add(new SimpleElement("a", new Formula().add(new SimpleElement("2"))));
@@ -323,6 +323,12 @@ public class Example {
                             drawer.moveCursorDown();
                         }
                     }
+                } else if (keycode == 36) {
+                    //Home
+                    drawer.moveCursorFirst();
+                } else if (keycode == 35) {
+                    //End
+                    drawer.moveCursorLast();
 
                 } else if (keycode == KeyCodes.KEY_ENTER) {
                     //Enter - auto-complete
@@ -369,6 +375,10 @@ public class Example {
                         drawer.deleteLeft();
                     }
 
+                } else if (event.isControlKeyDown() && keycode == 65) {
+                    //Ctrl-A - select all
+                    keys.setHTML(keys.getHTML() + " Ctrl-A");
+                    drawer.selectAll();
                 } else if (event.isControlKeyDown() && keycode == 88) {
                     //Ctrl-X - cut selected
                     keys.setHTML(keys.getHTML() + " Ctrl-X");

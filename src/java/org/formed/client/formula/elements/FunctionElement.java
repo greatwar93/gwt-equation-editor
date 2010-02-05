@@ -104,6 +104,11 @@ public final class FunctionElement extends PoweredElement {
     }
 
     @Override
+    public boolean isLastPosition(int position) {
+        return position == -1;
+    }
+
+    @Override
     public Metrics draw(Drawer drawer, int x, int y, int size) {
         Metrics metrics = measure(drawer, size);
 
@@ -111,7 +116,7 @@ public final class FunctionElement extends PoweredElement {
             drawer.fillRect(x, y - metrics.getHeightUp(), x + metrics.getWidth(), y + metrics.getHeightDown(), highlightR, highlightG, highlightB);
         }
 
-        metrics = super.draw(drawer, x+2, y, size);
+        metrics = super.draw(drawer, x + 2, y, size);
         metrics.setWidth(metrics.getWidth() + 4);
 
         if (formula != null) {
@@ -298,7 +303,9 @@ public final class FunctionElement extends PoweredElement {
                     parent_backup.insertAt(pos, THIS);
                 }
             };
-        }else return super.buildDeleteLeft(cursor, fixer);
+        } else {
+            return super.buildDeleteLeft(cursor, fixer);
+        }
     }
 
     @Override
@@ -311,9 +318,9 @@ public final class FunctionElement extends PoweredElement {
             return HowToInsert.RIGHT;
         }
 
-        if(item instanceof RootElement || item instanceof FunctionElement){
+        if (item instanceof RootElement || item instanceof FunctionElement) {
             return cursor.getPosition() == -1 ? HowToInsert.RIGHT : HowToInsert.LEFT;
-        }else if (!(item instanceof SimpleElement)) {
+        } else if (!(item instanceof SimpleElement)) {
             return cursor.getPosition() == 0 ? HowToInsert.LEFT : HowToInsert.RIGHT;
         }
 

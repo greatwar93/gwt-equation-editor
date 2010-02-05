@@ -101,7 +101,7 @@ public final class RootElement extends BaseElement {
         }
         return false;
     }
-    
+
     @Override
     public Metrics draw(Drawer drawer, int x, int y, int size) {
         storedSize = size;
@@ -194,6 +194,11 @@ public final class RootElement extends BaseElement {
         } else {
             return new Cursor(this, 1, storedX + metrics.getWidth(), storedY, metrics.getHeightUp(), metrics.getHeightDown());
         }
+    }
+
+    @Override
+    public boolean isLastPosition(int position) {
+        return position == 1;
     }
 
     @Override

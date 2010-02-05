@@ -94,6 +94,14 @@ public abstract class BaseElement implements FormulaItem {
         return this == item;
     }
 
+    public boolean isFirstPosition(int position) {
+        return position == 0;
+    }
+
+    public boolean isLastPosition(int position) {
+        return position == val.length();
+    }
+
     public void setStrokeThrough(boolean strokeThrough) {
         this.strokeThrough = strokeThrough;
     }
