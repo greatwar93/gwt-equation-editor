@@ -246,11 +246,11 @@ public abstract class BaseElement implements FormulaItem {
     }
 
     public Cursor getMovementFirst() {
-        if (getLength() > 0 && parent != null) {
+/*        if (getLength() > 0 && parent != null) {
             if (!parent.isFirst(this)) {
                 return getCursor(1);
             }
-        }
+        }*/
         return getCursor(0);
     }
 

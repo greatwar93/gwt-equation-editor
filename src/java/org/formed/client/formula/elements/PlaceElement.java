@@ -19,6 +19,7 @@ package org.formed.client.formula.elements;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.drawer.Metrics;
+import org.formed.client.formula.editor.Cursor;
 
 /**
  *
@@ -95,6 +96,22 @@ public final class PlaceElement extends BaseElement {
         }
         return metrics;
     }
+
+    @Override
+    public Cursor getMovementFirst() {
+        return getCursor(0);
+    }
+
+    @Override
+    public Cursor getLast() {
+        return getCursor(0);
+    }
+
+    @Override
+    public boolean isLastPosition(int position) {
+        return position == 0;
+    }
+    
     /*
     @Override
     public void reMeasureCursor(Drawer drawer, Cursor cursor) {
@@ -103,5 +120,6 @@ public final class PlaceElement extends BaseElement {
     cursor.setHeightDown(metrics.getHeightDown());
     }
      */
+
 
 }

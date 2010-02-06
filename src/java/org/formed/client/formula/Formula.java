@@ -503,11 +503,17 @@ public class Formula {
 
     //Is specified item first in formula
     public boolean isFirst(FormulaItem item) {
+        if (items.isEmpty() && item == place) {
+            return true;
+        }
         return (items.indexOf(item) == 0);
     }
 
     //Is specified item last in formula
     public boolean isLast(FormulaItem item) {
+        if (items.isEmpty() && item == place) {
+            return true;
+        }
         if (items.indexOf(item) < 0) {
             return false;
         }
@@ -571,10 +577,16 @@ public class Formula {
     }
 
     public FormulaItem getItem(int position) {
+        if (items.isEmpty() && position == 0) {
+            return place;
+        }
         return (position < 0 || position >= items.size()) ? null : items.get(position);
     }
 
     public int getItemPosition(FormulaItem item) {
+        if (item == place) {
+            return 0;
+        }
         return items.indexOf(item);
     }
 

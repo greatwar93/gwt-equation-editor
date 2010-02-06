@@ -136,6 +136,8 @@ public class SimpleEditor implements Editor {
     protected void selectionExpired() {
         selecting = false;
         canMakeSelection = false;
+        unmarkSelected();
+        selected = false;
     }
 
     public boolean moveCursorUp() {
@@ -236,8 +238,10 @@ public class SimpleEditor implements Editor {
         Command commandDelSel = Command.ZERO_COMMAND;
         if (selected) {
             commandDelSel = buildDeleteSelection();
+            selectionExpired();
             setCursor(commandDelSel.execute());
         }
+        selectionExpired();
 
         if (newItem == null || cursor == null) {
             return;
@@ -368,8 +372,6 @@ public class SimpleEditor implements Editor {
     }
 
     public void insert(char c) {
-        selectionExpired();
-
         if (c == '+') {
             insertElement(new OperatorElement("+"));
         } else if (c == '-') {
@@ -395,53 +397,33 @@ public class SimpleEditor implements Editor {
     }
 
     public void deleteLeft() {
-        selectionExpired();
-        final Command command1 = buildDeleteSelection();
-        setCursor(command1.execute());
-
-        final Command command2 = cursor.getItem().buildDeleteLeft(cursor, fixer);
-        setCursor(command2.execute());
-
-        Command command = new Command() {
-
-            public Cursor execute() {
-                command1.execute();
-                return command2.execute();
-            }
-
-            public void undo() {
-                command2.undo();
-                command1.undo();
-            }
-        };
-
-        undoer.add(command);
+        if (selected) {
+            Command command = buildDeleteSelection();
+            selectionExpired();
+            setCursor(command.execute());
+            undoer.add(command);
+        } else {
+            selectionExpired();
+            Command command = cursor.getItem().buildDeleteLeft(cursor, fixer);
+            setCursor(command.execute());
+            undoer.add(command);
+        }
 
         redraw();
     }
 
     public void deleteRight() {
-        selectionExpired();
-        final Command command1 = buildDeleteSelection();
-        setCursor(command1.execute());
-
-        final Command command2 = cursor.getItem().buildDeleteRight(cursor, fixer);
-        setCursor(command2.execute());
-
-        Command command = new Command() {
-
-            public Cursor execute() {
-                command1.execute();
-                return command2.execute();
-            }
-
-            public void undo() {
-                command2.undo();
-                command1.undo();
-            }
-        };
-
-        undoer.add(command);
+        if (selected) {
+            Command command = buildDeleteSelection();
+            selectionExpired();
+            setCursor(command.execute());
+            undoer.add(command);
+        } else {
+            selectionExpired();
+            Command command = cursor.getItem().buildDeleteRight(cursor, fixer);
+            setCursor(command.execute());
+            undoer.add(command);
+        }
 
         redraw();
     }
@@ -474,20 +456,30 @@ public class SimpleEditor implements Editor {
         return Command.ZERO_COMMAND;
     }
 
+    protected void unmarkSelected() {
+        if (!selected) {
+            return;
+        }
+
+        for (int pos = selectedPosTo; pos >= selectedPosFrom; pos--) {
+            selectedParent.getItem(pos).highlightOff();
+        }
+
+        selected = false;
+    }
+
     protected Command buildDeleteSelection() {
         if (!selected) {
             return Command.ZERO_COMMAND;
         }
-        selected = false;
 
         final Formula parent_backup = selectedParent;
         final int deletedFrom = selectedPosFrom;
         final List<FormulaItem> deletedItems = new ArrayList<FormulaItem>();
 
+        unmarkSelected();
         for (int pos = selectedPosTo; pos >= selectedPosFrom; pos--) {
-            FormulaItem item = selectedParent.getItem(pos);
-            item.highlightOff();
-            deletedItems.add(item);
+            deletedItems.add(selectedParent.getItem(pos));
         }
 
         return new Command() {
@@ -529,16 +521,15 @@ public class SimpleEditor implements Editor {
     }
 
     public void cut() {
-        selectionExpired();
         copy();
         Command command = buildDeleteSelection();
+        selectionExpired();
         setCursor(command.execute());
         undoer.add(command);
         redraw();
     }
 
     public void copy() {
-        selectionExpired();
         List<FormulaItem> copiedItems = new ArrayList<FormulaItem>();
         for (int pos = selectedPosFrom; pos <= selectedPosTo; pos++) {
             FormulaItem item = selectedParent.getItem(pos).makeClone();
@@ -549,17 +540,17 @@ public class SimpleEditor implements Editor {
     }
 
     public void paste() {
-        selectionExpired();
-
         final List<Command> commands = new ArrayList<Command>(); //Lisy of commands
 
         if (selected) {
             Command command = buildDeleteSelection();
+            selectionExpired();
             if (command != Command.ZERO_COMMAND) {
                 setCursor(command.execute());
                 commands.add(command);
             }
         }
+        selectionExpired();
 
         //Make list of insertion commands
         List<FormulaItem> copiedItems = clipboard.paste();
@@ -615,11 +606,12 @@ public class SimpleEditor implements Editor {
     }
 
     protected boolean markSelection(Cursor from, Cursor to) {
-        if (selected) {
+        unmarkSelected();
+/*        if (selected) {
             for (int pos = selectedPosFrom; pos <= selectedPosTo; pos++) {
                 selectedParent.getItem(pos).highlightOff();
             }
-        }
+        }*/
         selected = false;
 
         if (!canMakeSelection) {
@@ -1082,7 +1074,7 @@ public class SimpleEditor implements Editor {
         if (autoCompletionPos > 0) {
             autoCompletionPos--;
         } else {
-            autoCompletionPos = autoFound.size();
+            autoCompletionPos = autoFound.size() - 1;
         }
         redraw();
     }
@@ -1233,7 +1225,7 @@ public class SimpleEditor implements Editor {
             i++;
         }
 
-        return new Rectangle(x, y, maxWidth, y - y1);
+        return new Rectangle(x, y1, maxWidth, y - y1);
     }
 
     public void addFormula(Formula formula, Drawer drawer) {
