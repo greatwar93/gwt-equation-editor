@@ -607,11 +607,6 @@ public class SimpleEditor implements Editor {
 
     protected boolean markSelection(Cursor from, Cursor to) {
         unmarkSelected();
-        /*        if (selected) {
-        for (int pos = selectedPosFrom; pos <= selectedPosTo; pos++) {
-        selectedParent.getItem(pos).highlightOff();
-        }
-        }*/
         selected = false;
 
         if (!canMakeSelection) {
@@ -686,11 +681,39 @@ public class SimpleEditor implements Editor {
             itemPosTo = pos;
         }
 
+        //Check initial positions of cursors to exclude elements
+        //that are only touched by selection - not between cursors
+        FormulaItem newItemFrom = parent.getItem(itemPosFrom);
+        FormulaItem newItemTo = parent.getItem(itemPosTo);
+        if(newItemFrom == itemFrom && newItemFrom == itemTo){
+        }else if(newItemFrom == itemFrom){
+            if(itemFrom.isLastPosition(posFrom)){
+                itemPosFrom++;
+            }
+        }else if(newItemFrom == itemTo){
+            if(itemTo.isLastPosition(posTo)){
+                itemPosFrom++;
+            }
+        }
+
+        if(newItemTo == itemFrom && newItemTo == itemTo){
+        }else if(newItemTo == itemFrom){
+            if(itemFrom.isFirstPosition(posFrom)){
+                itemPosTo--;
+            }
+        }else if(newItemTo == itemTo){
+            if(itemTo.isFirstPosition(posTo)){
+                itemPosTo--;
+            }
+        }
+
+        //Store selection
         selected = true;
         selectedParent = parent;
         selectedPosFrom = itemPosFrom;
         selectedPosTo = itemPosTo;
 
+        //Highlight selection
         for (int pos = itemPosFrom; pos <= itemPosTo; pos++) {
             parent.getItem(pos).setHighlight(255, 255, 0);
         }
@@ -741,9 +764,6 @@ public class SimpleEditor implements Editor {
 
         if (minRectItem != null) {
             cursor = minRectItem.getCursor(drawer, x, y);
-            //canMakeSelection = markSelection(cursorFrom, cursor);
-        } else {
-            canMakeSelection = false;
         }
 
         selecting = false;

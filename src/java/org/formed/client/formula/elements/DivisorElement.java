@@ -192,6 +192,11 @@ public final class DivisorElement extends BaseElement {
     }
 
     @Override
+    public boolean isLastPosition(int position) {
+        return position == 1;
+    }
+
+    @Override
     public Cursor getMovementFirst() {
         return getCursor(0);
     }

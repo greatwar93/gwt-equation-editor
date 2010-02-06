@@ -93,7 +93,7 @@ public abstract class BaseElement implements FormulaItem {
     public boolean isYouOrInsideYou(FormulaItem item) {
         return this == item;
     }
-
+    
     public boolean isFirstPosition(int position) {
         return position == 0;
     }
