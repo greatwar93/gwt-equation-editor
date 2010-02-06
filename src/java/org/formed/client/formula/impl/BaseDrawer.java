@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import org.formed.client.formula.AutoCompletion;
+import org.formed.client.formula.Clipboard;
 import org.formed.client.formula.Command;
 import org.formed.client.formula.Cursor;
 import org.formed.client.formula.Drawer;
@@ -47,7 +48,7 @@ import org.formed.client.formula.elements.SimpleElement;
 public abstract class BaseDrawer implements Drawer {
 
     protected final Formula formula;
-    protected final Undoer undoer;
+    protected Undoer undoer = Undoer.ZERO_UNDOER;
     protected final Drawer THIS_DRAWER = this;
     protected Metrics drawerMetrics = new Metrics(0, 0, 0);
     protected int debugTexts = 0;
@@ -67,6 +68,7 @@ public abstract class BaseDrawer implements Drawer {
     protected Formula selectedParent = null;
     protected int selectedPosFrom = 0;
     protected int selectedPosTo = 0;
+    protected Clipboard clipboard = Clipboard.ZERO_CLIPBOARD;
     //Autocompletion handling
     protected boolean isAutoCompletion = false;
     protected int autoCompletionPos = 0;
@@ -78,7 +80,6 @@ public abstract class BaseDrawer implements Drawer {
 
     public BaseDrawer(Formula formula) {
         this.formula = formula;
-        this.undoer = Undoer.ZERO_UNDOER;
 
         populateFixer();
 
@@ -88,6 +89,25 @@ public abstract class BaseDrawer implements Drawer {
     public BaseDrawer(Formula formula, Undoer undoer) {
         this.formula = formula;
         this.undoer = undoer;
+
+        populateFixer();
+
+        formula.invalidateMetrics();
+    }
+
+    public BaseDrawer(Formula formula, Clipboard clipboard) {
+        this.formula = formula;
+        this.clipboard = clipboard;
+
+        populateFixer();
+
+        formula.invalidateMetrics();
+    }
+
+    public BaseDrawer(Formula formula, Undoer undoer, Clipboard clipboard) {
+        this.formula = formula;
+        this.undoer = undoer;
+        this.clipboard = clipboard;
 
         populateFixer();
 
@@ -618,7 +638,6 @@ public abstract class BaseDrawer implements Drawer {
             }
         };
     }
-    protected final List<FormulaItem> copiedItems = new ArrayList<FormulaItem>();
 
     public void cut() {
         selectionExpired();
@@ -631,12 +650,13 @@ public abstract class BaseDrawer implements Drawer {
 
     public void copy() {
         selectionExpired();
-        copiedItems.clear();
+        List<FormulaItem> copiedItems = new ArrayList<FormulaItem>();
         for (int pos = selectedPosFrom; pos <= selectedPosTo; pos++) {
             FormulaItem item = selectedParent.getItem(pos).makeClone();
             item.setParent(null);
             copiedItems.add(item);
         }
+        clipboard.copy(copiedItems);
     }
 
     public void paste() {
@@ -653,6 +673,7 @@ public abstract class BaseDrawer implements Drawer {
         }
 
         //Make list of insertion commands
+        List<FormulaItem> copiedItems = clipboard.paste();
         for (FormulaItem item : copiedItems) {
             FormulaItem newItem = item.makeClone();
             Command command = buildLightInsertElement(cursor, newItem);

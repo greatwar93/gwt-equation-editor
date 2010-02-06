@@ -79,10 +79,11 @@ public final class FunctionElement extends PoweredElement {
 
     public void setFormula(Formula formula) {
         if (formula == null) {
-            this.formula = new Formula(true);
+            this.formula = new Formula(true, true);
         } else {
             this.formula = formula;
             formula.setShowPlace(true);
+            formula.setAutoBrackets(true);
         }
         formula.setParent(this);
     }

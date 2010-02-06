@@ -34,6 +34,7 @@ public class Formula {
 
     public static final Formula ZERO_FORMULA = new Formula();
     private final PlaceElement place = new PlaceElement();
+    private boolean autoBrackets = false;
     private final List<FormulaItem> items = new ArrayList<FormulaItem>();
     private FormulaItem parent = null;
     private boolean metricsValid = false;
@@ -50,6 +51,16 @@ public class Formula {
         place.setParent(this);
     }
 
+    public Formula(boolean showPlace, boolean autoBrackets) {
+        place.setShow(showPlace);
+        place.setParent(this);
+        setAutoBrackets(autoBrackets);
+    }
+
+    /**
+     * Create formula clone
+     * @return a newly created formula clone
+     */
     public Formula makeClone() {
         Formula clone = new Formula();
         clone.setParent(parent);
@@ -60,14 +71,45 @@ public class Formula {
         return clone;
     }
 
+    /**
+     * Set whether to show placeholder for empty formula or not
+     * @param showPlace true - show placeholder for empty formula, false - do not show placeholder for empty formula
+     */
     public void setShowPlace(boolean showPlace) {
         place.setShow(showPlace);
     }
 
+    /**
+     * Set whether to enclose formula into brackets automatically when it became complex or not.
+     * Used for formulas inside functions.
+     * @param autoBrackets true - enclose into brackets automatically, false - do not
+     */
+    public void setAutoBrackets(boolean autoBrackets){
+        this.autoBrackets = autoBrackets;
+    }
+
+    /**
+     * Returns whether to enclose formula into brackets automatically when it became complex or not.
+     * Used for formulas inside functions.
+     * @return true - enclose into brackets automatically, false - do not
+     */
+    private boolean isAutoBrackets(){
+        return false;
+        //return autoBrackets;
+    }
+
+    /**
+     * Returns parent element
+     * @return parent element, null if no parent
+     */
     public FormulaItem getParent() {
         return parent;
     }
 
+    /**
+     * Set parent element
+     * @param parent element to be set as a parent for this formula
+     */
     public void setParent(FormulaItem parent) {
         this.parent = parent;
     }
@@ -104,6 +146,15 @@ public class Formula {
         }*/
     }
 
+    /**
+     * 
+     * @param drawer
+     * @param x
+     * @param y
+     * @param size
+     * @param align
+     * @return
+     */
     public Metrics drawAligned(Drawer drawer, int x, int y, int size, Drawer.Align align) {
         storedSize = size;
         switch (align) {
@@ -122,11 +173,6 @@ public class Formula {
 
     public boolean isEmpty() {
         return items.isEmpty();
-    }
-
-    private boolean isInFunction() {
-        return false;
-        //return parent == null ? false : parent instanceof FunctionElement;
     }
 
     private boolean hasFirstLeftCloser() {
@@ -149,16 +195,20 @@ public class Formula {
         return false;
     }
 
+    /**
+     * Checks whether specified FormulaItem is inside this formula or any of it's children
+     * @param insideItem FormulaItem to check
+     * @return true if specified FormulaItem is inside this formula or any of it's children, false otherwise
+     */
     public boolean isInsideYou(FormulaItem insideItem) {
-        /*        for (FormulaItem item : items) {
-        if (item.isYouOrInsideYou(insideItem)) {
-        return true;
-        }
-        }*/
-
         return insideItem == place ? true : posInsideYou(insideItem) >= 0;
     }
 
+    /**
+     * Returns position of a specified FormulaItem in this formula
+     * @param insideItem FormulaItem to get position of
+     * @return position of a specified FormulaItem in this formula, -1 otherwise
+     */
     public int posInsideYou(FormulaItem insideItem) {
         if (insideItem == place) {
             return 0;
@@ -221,7 +271,7 @@ public class Formula {
 
     private void addClosersIfNeededOnInsert(FormulaItem item) {
         int position = items.indexOf(item);
-        if (isInFunction() && items.size() > 1) {
+        if (isAutoBrackets() && items.size() > 1) {
             //RootPanel.get().add(new HTML(position+":"+(items.size()-1)+" "+(item instanceof LeftCloser)+":"+hasLastRightCloser()+" "+(item instanceof RightCloser)+":"+hasFirstLeftCloser()), 10, 300 + i * 30);
             //i++;
             if (position == 0 && item instanceof LeftCloser && !hasLastRightCloser()) {
@@ -237,7 +287,7 @@ public class Formula {
 
     private void addClosersIfNeededOnReplace(FormulaItem newItem, FormulaItem oldItem) {
         int position = items.indexOf(newItem);
-        if (isInFunction() && items.size() > 1) {
+        if (isAutoBrackets() && items.size() > 1) {
 
             if (oldItem instanceof LeftCloser && newItem instanceof LeftCloser) {
                 return;
@@ -258,7 +308,7 @@ public class Formula {
     }
 
     private boolean checkClosersOnRemove(int index) {
-        if (isInFunction() && items.size() > 3) {
+        if (isAutoBrackets() && items.size() > 3) {
             if (index == 0 && items.get(index) instanceof LeftCloser) {
                 return false;
             }

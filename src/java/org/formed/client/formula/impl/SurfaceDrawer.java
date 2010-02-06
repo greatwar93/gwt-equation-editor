@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import org.formed.client.formula.AutoCompletion;
+import org.formed.client.formula.Clipboard;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.Metrics;
@@ -50,9 +51,19 @@ public final class SurfaceDrawer extends BaseDrawer {
         this.surface = surface;
     }
 
-    public SurfaceDrawer(Surface surface, Undoer undoer, Formula formula) {
+    public SurfaceDrawer(Surface surface, Formula formula, Undoer undoer) {
         super(formula, undoer);
 
+        this.surface = surface;
+    }
+
+    public SurfaceDrawer(Surface surface, Formula formula, Undoer undoer, Clipboard clipboard) {
+        super(formula, undoer, clipboard);
+        this.surface = surface;
+    }
+
+    public SurfaceDrawer(Surface surface, Formula formula, Clipboard clipboard) {
+        super(formula, clipboard);
         this.surface = surface;
     }
 

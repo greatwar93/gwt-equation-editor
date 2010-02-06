@@ -49,6 +49,7 @@ import gwt.g2d.client.graphics.Surface;
 import java.util.ArrayList;
 import java.util.List;
 import net.kornr.abstractcanvas.client.gwt.CanvasPanelExt;
+import org.formed.client.formula.impl.SimpleClipboard;
 import org.formed.client.formula.impl.SimpleUndoer;
 
 /**
@@ -118,7 +119,7 @@ public class Example {
 //        final CanvasPanelExt canvas1 = new CanvasPanelExt(WIDTH, HEIGHT);
 //        canvas1.setCoordSize(WIDTH, HEIGHT);
         final Surface surface = new Surface(WIDTH, HEIGHT);
-        final SurfaceDrawer drawer = new SurfaceDrawer(surface, undoer, formula);
+        final SurfaceDrawer drawer = new SurfaceDrawer(surface, formula, undoer, new SimpleClipboard());
 
         drawer.populateAutoNew(autoNew);
         drawer.populateAutoSimple(autoSimple);
@@ -138,54 +139,6 @@ public class Example {
         final HTML keys = new HTML("", true);
         keys.setWidth("500px");
         panel.add(keys);
-
-        //Keyboard short-cuts
-        panel.add(new HTML("."));
-        panel.add(new HTML("Cursor movement:"));
-        panel.add(new HTML(". . . Left arrow - move cursor left"));
-        panel.add(new HTML(". . . Right arrow - move cursor right"));
-        panel.add(new HTML(". . . Up arrow - move cursor up (or raise element in a power if appropriate)"));
-        panel.add(new HTML(". . . Down arrow - move cursor down"));
-        panel.add(new HTML("."));
-        panel.add(new HTML(". . . Space - move cursor left"));
-        panel.add(new HTML(". . . '^' - raise element in a power if appropriate"));
-        panel.add(new HTML("or use your mouse"));
-        panel.add(new HTML("."));
-        panel.add(new HTML("Selection:"));
-        panel.add(new HTML(". . . Shift-Left - select left"));
-        panel.add(new HTML(". . . Shift-Right - select right"));
-        panel.add(new HTML(". . . Shift-Up - select up"));
-        panel.add(new HTML(". . . Shift-Down - select down"));
-        panel.add(new HTML("or use your mouse"));
-        panel.add(new HTML("."));
-        panel.add(new HTML(". . . Del - delete to the right from cursor (or delete selected elements if any)"));
-        panel.add(new HTML(". . . Backspace - delete to the left from cursor (or delete selected elements if any)"));
-        panel.add(new HTML("."));
-        panel.add(new HTML("Copy and paste:"));
-        panel.add(new HTML(". . . Ctrl-X - cut"));
-        panel.add(new HTML(". . . Ctrl-C - copy"));
-        panel.add(new HTML(". . . Ctrl-V - paste"));
-        panel.add(new HTML("."));
-        panel.add(new HTML(". . . Shift-Del - cut"));
-        panel.add(new HTML(". . . Ctrl-Ins - copy"));
-        panel.add(new HTML(". . . Shift-Ins - paste"));
-        panel.add(new HTML("."));
-        panel.add(new HTML("Undo/Redo:"));
-        panel.add(new HTML(". . . Ctrl-Z - undo"));
-        panel.add(new HTML(". . . Ctrl-Y - redo"));
-        panel.add(new HTML(". . . Ctrl-Backspace - undo"));
-        panel.add(new HTML("."));
-        panel.add(new HTML("Auto-completion:"));
-        panel.add(new HTML(". . . Ctrl-Space - show auto-completion drop-down box"));
-        panel.add(new HTML(". . . Esc - hide auto-completion drop-down box"));
-        panel.add(new HTML(". . . Up arrow - move auto-completion selection cursor up"));
-        panel.add(new HTML(". . . Down arrow - move auto-completion selection cursor down"));
-        panel.add(new HTML(". . . Enter - apply selected auto-completion"));
-        panel.add(new HTML("."));
-        panel.add(new HTML("Auto-complete:"));
-        panel.add(new HTML("alpha, alfa, beta, gamma, delta, pi, infinity"));
-        panel.add(new HTML("sin, cos, arcsin, root"));
-        panel.add(new HTML("lessorequal, greaterorequal"));
 
         //Editor undo and redo buttons
         final Button undoButton = new Button("Undo");
