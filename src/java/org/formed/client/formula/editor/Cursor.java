@@ -14,7 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.formed.client.formula;
+package org.formed.client.formula.editor;
+
+import org.formed.client.formula.*;
 
 /**
  * Object used as a cursor. It points to a specific position in a specific element.

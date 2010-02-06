@@ -17,7 +17,7 @@ package org.formed.client.formula.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.formed.client.formula.Clipboard;
+import org.formed.client.formula.editor.Clipboard;
 import org.formed.client.formula.FormulaItem;
 
 /**

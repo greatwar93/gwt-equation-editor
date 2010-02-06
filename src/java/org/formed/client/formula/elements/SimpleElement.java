@@ -16,9 +16,9 @@ limitations under the License.
  */
 package org.formed.client.formula.elements;
 
-import org.formed.client.formula.Command;
-import org.formed.client.formula.Cursor;
-import org.formed.client.formula.CursorFixer;
+import org.formed.client.formula.editor.Command;
+import org.formed.client.formula.editor.Cursor;
+import org.formed.client.formula.editor.CursorFixer;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.FormulaItem.HowToInsert;

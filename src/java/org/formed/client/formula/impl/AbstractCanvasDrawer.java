@@ -25,13 +25,14 @@ import net.kornr.abstractcanvas.client.ICanvasExt;
 import net.kornr.abstractcanvas.client.TextMetrics;
 import net.kornr.abstractcanvas.client.gwt.CanvasPanelExt;
 import org.formed.client.formula.Formula;
-import org.formed.client.formula.Metrics;
+import org.formed.client.formula.drawer.Metrics;
 
 /**
  *
  * @author Bulat Sirazetdinov
  */
-public final class AbstractCanvasDrawer extends BaseDrawer {
+public final class AbstractCanvasDrawer {
+    /*extends BaseDrawer {
 
     private final CanvasPanelExt canvas;
 
@@ -152,5 +153,5 @@ public final class AbstractCanvasDrawer extends BaseDrawer {
         canvas.moveTo(cursor.getX(), cursor.getY() - cursor.getHeightUp());
         canvas.lineTo(cursor.getX(), cursor.getY() + cursor.getHeightDown());
         canvas.stroke();
-    }
+    }*/
 }

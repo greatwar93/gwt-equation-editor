@@ -16,13 +16,13 @@ limitations under the License.
  */
 package org.formed.client.formula.elements;
 
-import org.formed.client.formula.Command;
-import org.formed.client.formula.Cursor;
-import org.formed.client.formula.CursorFixer;
+import org.formed.client.formula.editor.Command;
+import org.formed.client.formula.editor.Cursor;
+import org.formed.client.formula.editor.CursorFixer;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
-import org.formed.client.formula.Metrics;
+import org.formed.client.formula.drawer.Metrics;
 
 /**
  *
@@ -122,7 +122,7 @@ public abstract class BaseElement implements FormulaItem {
         storedX = x;
         storedY = y;
 
-        Metrics metrics = drawer.textMetrics(val, size);
+        Metrics metrics = drawer.measureText(val, size);
 
         if (highlighted) {
             drawer.fillRect(x, y - metrics.getHeightUp(), x + metrics.getWidth(), y + metrics.getHeightDown(), highlightR, highlightG, highlightB);
@@ -142,7 +142,7 @@ public abstract class BaseElement implements FormulaItem {
     public Metrics measure(Drawer drawer, int size) {
         storedSize = size;
 
-        return drawer.textMetrics(val, size);
+        return drawer.measureText(val, size);
     }
 
     protected int getLength() {
@@ -161,11 +161,11 @@ public abstract class BaseElement implements FormulaItem {
         int dx = x - storedX;
 
         int width = 0;
-//        Metrics metrics = drawer.textMetrics(val.substring(0, 1), storedSize);
-        Metrics metrics = drawer.textMetrics(getPart(1), storedSize);
+//        Metrics metrics = drawer.measureText(val.substring(0, 1), storedSize);
+        Metrics metrics = drawer.measureText(getPart(1), storedSize);
         for (int i = 1; i <= getLength(); i++) {
-            Metrics newMetrics = drawer.textMetrics(getPart(i), storedSize);
-//            Metrics newMetrics = drawer.textMetrics(val.substring(0, i), storedSize);
+            Metrics newMetrics = drawer.measureText(getPart(i), storedSize);
+//            Metrics newMetrics = drawer.measureText(val.substring(0, i), storedSize);
             int newWidth = newMetrics.getWidth();
 
             if (newWidth > dx) {
@@ -180,7 +180,7 @@ public abstract class BaseElement implements FormulaItem {
             metrics = newMetrics;
         }
 
-        Metrics zeroMetrics = drawer.textMetrics("0", storedSize);
+        Metrics zeroMetrics = drawer.measureText("0", storedSize);
         return new Cursor(this, 0, storedX + width, storedY, zeroMetrics.getHeightUp(), zeroMetrics.getHeightDown());
     }
 
@@ -234,7 +234,7 @@ public abstract class BaseElement implements FormulaItem {
     public void measureCursor(Drawer drawer, Cursor cursor) {
 //        cursor.setCursor(getCursor(drawer, cursor.getPosition()));
 
-        Metrics newMetrics = drawer.textMetrics(getPart(cursor.getPosition()), storedSize);
+        Metrics newMetrics = drawer.measureText(getPart(cursor.getPosition()), storedSize);
         cursor.setX(storedX + newMetrics.getWidth());
         cursor.setY(storedY);
         cursor.setHeightUp(newMetrics.getHeightUp());

@@ -16,6 +16,9 @@ limitations under the License.
  */
 package org.formed.client.formula;
 
+import org.formed.client.formula.drawer.Metrics;
+import org.formed.client.formula.drawer.Rectangle;
+import org.formed.client.formula.editor.Cursor;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RootPanel;
 import java.util.ArrayList;
@@ -84,7 +87,7 @@ public class Formula {
      * Used for formulas inside functions.
      * @param autoBrackets true - enclose into brackets automatically, false - do not
      */
-    public void setAutoBrackets(boolean autoBrackets){
+    public void setAutoBrackets(boolean autoBrackets) {
         this.autoBrackets = autoBrackets;
     }
 
@@ -93,7 +96,7 @@ public class Formula {
      * Used for formulas inside functions.
      * @return true - enclose into brackets automatically, false - do not
      */
-    private boolean isAutoBrackets(){
+    private boolean isAutoBrackets() {
         return false;
         //return autoBrackets;
     }
@@ -169,6 +172,11 @@ public class Formula {
             default:
                 return draw(drawer, x, y, size);
         }
+    }
+
+    public Metrics measureAligned(Drawer drawer, int x, int y, int size, Drawer.Align align) {
+        storedSize = size;
+        return calculateMetrics(drawer, size);
     }
 
     public boolean isEmpty() {

@@ -15,10 +15,10 @@ limitations under the License.
 */
 package org.formed.client.formula.elements;
 
-import org.formed.client.formula.Cursor;
+import org.formed.client.formula.editor.Cursor;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.Drawer;
-import org.formed.client.formula.Metrics;
+import org.formed.client.formula.drawer.Metrics;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

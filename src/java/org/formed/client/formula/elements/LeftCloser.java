@@ -16,7 +16,7 @@ limitations under the License.
 */
 package org.formed.client.formula.elements;
 
-import org.formed.client.formula.Cursor;
+import org.formed.client.formula.editor.Cursor;
 import org.formed.client.formula.FormulaItem;
 
 /**

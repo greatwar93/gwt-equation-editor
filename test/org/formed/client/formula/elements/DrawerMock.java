@@ -18,8 +18,8 @@ package org.formed.client.formula.elements;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.FormulaItem;
-import org.formed.client.formula.Metrics;
-import org.formed.client.formula.Rectangle;
+import org.formed.client.formula.drawer.Metrics;
+import org.formed.client.formula.drawer.Rectangle;
 
 /**
  *
@@ -39,7 +39,7 @@ public class DrawerMock implements Drawer {
     public void addDrawnFormula(Formula formula, int x, int y, Metrics metrics) {
     }
 
-    public Metrics textMetrics(String text, int size) {
+    public Metrics measureText(String text, int size) {
         return new Metrics(text.length() * 10, 7, 7);
     }
 

@@ -16,14 +16,14 @@ limitations under the License.
  */
 package org.formed.client.formula.elements;
 
-import org.formed.client.formula.Command;
-import org.formed.client.formula.Cursor;
-import org.formed.client.formula.CursorFixer;
+import org.formed.client.formula.editor.Command;
+import org.formed.client.formula.editor.Cursor;
+import org.formed.client.formula.editor.CursorFixer;
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.FormulaItem.HowToInsert;
-import org.formed.client.formula.Metrics;
+import org.formed.client.formula.drawer.Metrics;
 
 /**
  *
@@ -121,7 +121,7 @@ public final class DivisorElement extends BaseElement {
 
         int width = Math.max(metrics.getWidth(), metrics2.getWidth());
         if (width == 0) {
-            width = drawer.textMetrics("0", size).getWidth();
+            width = drawer.measureText("0", size).getWidth();
         }
 
 //        formula1.drawAligned(drawer, x + width / 2 - metrics.getWidth() / 2, y, size, FormulaDrawer.Align.BOTTOM);
@@ -152,7 +152,7 @@ public final class DivisorElement extends BaseElement {
 
         int width = Math.max(metrics.getWidth(), metrics2.getWidth());
         if (width == 0) {
-            width = drawer.textMetrics("0", size).getWidth();
+            width = drawer.measureText("0", size).getWidth();
         }
 
         metrics.setWidth(width);

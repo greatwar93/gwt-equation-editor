@@ -16,6 +16,9 @@ limitations under the License.
  */
 package org.formed.client.formula;
 
+import org.formed.client.formula.drawer.Metrics;
+import org.formed.client.formula.drawer.Rectangle;
+
 /**
  * Interface for objects used to draw formulas/items
  * @author Bulat Sirazetdinov
@@ -65,6 +68,8 @@ public interface Drawer {
      */
     void addDrawnFormula(Formula formula, int x, int y, Metrics metrics);
 
+    FormulaItem findItemAt(int x, int y);
+
     /**
      * Calculate size of a text one step smaller
      * @param size size used to draw the item
@@ -78,7 +83,7 @@ public interface Drawer {
      * @param size size of a font used to draw text
      * @return calculated metrics
      */
-    Metrics textMetrics(String text, int size);
+    Metrics measureText(String text, int size);
 
     int sizeForHeight(String text, int height);
 
@@ -114,5 +119,20 @@ public interface Drawer {
      */
     void fillRect(int x1, int y1, int x2, int y2, int r, int g, int b);
 
-    void drawDebugText(String text);
+    /**
+     * Draw rectangle
+     * @param x1 x coordinate of a top-left corner
+     * @param y1 y coordinate of a top-left corner
+     * @param x2 x coordinate of a bottom-right corner
+     * @param y2 y coordinate of a bottom-right corner
+     */
+    void drawRect(int x1, int y1, int x2, int y2);
+
+    Metrics measure(Formula formula);
+    Metrics redraw(Formula formula);
+
+    int getWidth();
+    int getHeight();
+    boolean setWidth(int width);
+    boolean setHeight(int height);
 }

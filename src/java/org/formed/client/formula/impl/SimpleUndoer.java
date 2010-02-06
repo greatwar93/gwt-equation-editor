@@ -17,9 +17,9 @@ package org.formed.client.formula.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.formed.client.formula.Command;
-import org.formed.client.formula.CursorFixer;
-import org.formed.client.formula.Undoer;
+import org.formed.client.formula.editor.Command;
+import org.formed.client.formula.editor.CursorFixer;
+import org.formed.client.formula.editor.Undoer;
 
 /**
  *

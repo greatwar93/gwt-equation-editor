@@ -18,7 +18,7 @@ package org.formed.client.formula.elements;
 
 import org.formed.client.formula.Drawer;
 import org.formed.client.formula.FormulaItem;
-import org.formed.client.formula.Metrics;
+import org.formed.client.formula.drawer.Metrics;
 
 /**
  *
@@ -56,7 +56,7 @@ public final class PlaceElement extends BaseElement {
         storedX = x;
         storedY = y;
 
-        Metrics metrics = drawer.textMetrics(".", size);
+        Metrics metrics = drawer.measureText(".", size);
         drawer.addDrawnItem(this, x, y, metrics);
 
         if (show) {
@@ -75,7 +75,7 @@ public final class PlaceElement extends BaseElement {
             return new Metrics(0, 0, 0);
         }
 
-        /*        Metrics metrics = drawer.textMetrics(".", size);
+        /*        Metrics metrics = drawer.measureText(".", size);
 
         drawer.addDrawnItem(this, x, y, metrics);
 
@@ -88,7 +88,7 @@ public final class PlaceElement extends BaseElement {
         storedSize = size;
 //        return new Metrics(0, 0, 0);
 
-        Metrics metrics = drawer.textMetrics(".", size);
+        Metrics metrics = drawer.measureText(".", size);
         if (!show) {
             metrics.setWidth(0);
             metrics.setHeightUp(0);
@@ -98,7 +98,7 @@ public final class PlaceElement extends BaseElement {
     /*
     @Override
     public void reMeasureCursor(Drawer drawer, Cursor cursor) {
-    Metrics metrics = drawer.textMetrics(".", storedSize);
+    Metrics metrics = drawer.measureText(".", storedSize);
     cursor.setHeightUp(0);
     cursor.setHeightDown(metrics.getHeightDown());
     }

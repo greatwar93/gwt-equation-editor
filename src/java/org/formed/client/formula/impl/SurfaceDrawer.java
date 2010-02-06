@@ -24,16 +24,11 @@ import gwt.g2d.client.graphics.shapes.ShapeBuilder;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import org.formed.client.formula.AutoCompletion;
-import org.formed.client.formula.Clipboard;
 import org.formed.client.formula.Formula;
-import org.formed.client.formula.FormulaItem;
-import org.formed.client.formula.Metrics;
-import org.formed.client.formula.Rectangle;
-import org.formed.client.formula.Undoer;
+import org.formed.client.formula.drawer.Metrics;
 
 /**
- *
+ * This class is platform dependent
  * @author Bulat Sirazetdinov
  */
 public final class SurfaceDrawer extends BaseDrawer {
@@ -45,25 +40,7 @@ public final class SurfaceDrawer extends BaseDrawer {
     private int countText = 0;
     private int countMeasure = 0;
 
-    public SurfaceDrawer(Surface surface, Formula formula) {
-        super(formula);
-
-        this.surface = surface;
-    }
-
-    public SurfaceDrawer(Surface surface, Formula formula, Undoer undoer) {
-        super(formula, undoer);
-
-        this.surface = surface;
-    }
-
-    public SurfaceDrawer(Surface surface, Formula formula, Undoer undoer, Clipboard clipboard) {
-        super(formula, undoer, clipboard);
-        this.surface = surface;
-    }
-
-    public SurfaceDrawer(Surface surface, Formula formula, Clipboard clipboard) {
-        super(formula, clipboard);
+    public SurfaceDrawer(Surface surface) {
         this.surface = surface;
     }
 
@@ -104,12 +81,13 @@ public final class SurfaceDrawer extends BaseDrawer {
         }
     }
 
-    public Metrics textMetrics(String text, int size) {
+    //Some lines in this method are platform dependent
+    public Metrics measureText(String text, int size) {
         countMeasure++;
         Double cached = cachedMetrics.get(new SizedText(text, size));
         if (cached == null) {
             //We should measure text-height also
-            cached = surface.setFont(size + "px serif").measureText(text);
+            cached = surface.setFont(size + "px serif").measureText(text); //only this line is platform dependent
             cachedMetrics.put(new SizedText(text, size), cached);
         }
 
@@ -118,6 +96,7 @@ public final class SurfaceDrawer extends BaseDrawer {
 //                return new Metrics(10, 10, 10);
     }
 
+    //This method is platform dependent
     public void drawText(String text, int size, int x, int y) {
         countText++;
         if (size != lastFontSize) {
@@ -127,11 +106,13 @@ public final class SurfaceDrawer extends BaseDrawer {
         surface.fillText(text, x, y);
     }
 
+    //This method is platform dependent
     public void drawLine(int x1, int y1, int x2, int y2) {
         countLine++;
         surface.strokeShape(new ShapeBuilder().drawLineSegment(x1, y1, x2, y2).build());
     }
 
+    //This method is platform dependent
     public void drawDottedLine(int x1, int y1, int x2, int y2) {
         countLine++;
         surface.setStrokeStyle(new Color(220, 220, 220));
@@ -139,156 +120,86 @@ public final class SurfaceDrawer extends BaseDrawer {
         surface.setStrokeStyle(new Color(0, 0, 0));
     }
 
+    //This method is platform dependent
     public void fillRect(int x1, int y1, int x2, int y2, int r, int g, int b) {
         surface.setFillStyle(new Color(r, g, b));
         surface.fillShape(new ShapeBuilder().moveTo(x1, y1).drawLineTo(x2, y1).drawLineTo(x2, y2).drawLineTo(x1, y2).drawLineTo(x1, y1).build());
         surface.setFillStyle(new Color(0, 0, 0));
     }
 
-    private void drawRect(int x1, int y1, int x2, int y2) {
+    //This method is platform dependent
+    public void drawRect(int x1, int y1, int x2, int y2) {
         surface.strokeShape(new ShapeBuilder().moveTo(x1, y1).drawLineTo(x2, y1).drawLineTo(x2, y2).drawLineTo(x1, y2).drawLineTo(x1, y1).build());
     }
 
+    //This method might be platform dependent
     public int getSmallerSize(int size) {
         return size * 3 / 4;
     }
-    protected int autoCompletionY = 0;
 
-    public void drawAutoCompletion() {
-        autoCompletionY = 0;
-        int size = autoFound.size();
-        if (size <= 0) {
-            return;
-        }
-
-        cursor.measure(this);
-        int x = cursor.getX();
-        int y1 = cursor.getY() + cursor.getHeightDown();
-        int y = y1;
-
-        int i = 0;
-
-        //find width
-        int maxWidth = 0;
-        for (AutoCompletion auto : autoFound) {
-            if (auto.isForNew()) {
-                FormulaItem item = auto.getNewItem();
-                String text = auto.getFindText() + " → ";
-                Metrics metrics = textMetrics(text, 20);
-                Metrics metrics2 = item.measure(this, 20);
-                maxWidth = Math.max(maxWidth, metrics.getWidth() + metrics2.getWidth());
-            } else {
-                String text = auto.getFindText() + " → " + auto.getShowText();
-                Metrics metrics = textMetrics(text, 20);
-                maxWidth = Math.max(maxWidth, metrics.getWidth());
-            }
-        }
-
-        //draw
-        for (AutoCompletion auto : autoFound) {
-            if (auto.isForNew()) {
-                FormulaItem item = auto.getNewItem();
-
-                String text = auto.getFindText() + " → ";
-                Metrics metrics = textMetrics(text, 20);
-                Metrics metrics2 = item.measure(this, 20);
-
-                if (i == autoCompletionPos) {
-                    item.setHighlight(255, 255, 0);
-                    fillRect(x, y, x + maxWidth, y + Math.max(metrics.getHeight(), metrics2.getHeight()) + 2, 255, 255, 0);
-                } else {
-                    item.setHighlight(255, 255, 255);
-                    fillRect(x, y, x + maxWidth, y + Math.max(metrics.getHeight(), metrics2.getHeight()) + 2, 255, 255, 255);
-                }
-
-                y += Math.max(metrics.getHeightUp(), metrics2.getHeightUp()) + 1;
-                drawText(text, 20, x, y);
-                item.draw(this, x + metrics.getWidth(), y, 20);
-                item.highlightOff();
-                y += Math.max(metrics.getHeightDown(), metrics2.getHeightDown()) + 1;
-
-            } else {
-                String text = auto.getFindText() + " → " + auto.getShowText();
-                Metrics metrics = textMetrics(text, 20);
-
-                if (i == autoCompletionPos) {
-                    fillRect(x, y, x + maxWidth, y + metrics.getHeight() + 2, 255, 255, 0);
-                } else {
-                    fillRect(x, y, x + maxWidth, y + metrics.getHeight() + 2, 255, 255, 255);
-                }
-
-                y += metrics.getHeightUp() + 1;
-                drawText(text, 20, x, y);
-                y += metrics.getHeightDown() + 1;
-            }
-
-            i++;
-        }
-
-        autoCompletionY = y;
-        drawRect(x, y1, x + maxWidth, y);
-    }
-    protected int redrawing = 0;
-
-    public void redraw() {
-        redrawing++;
-        preRedraw();
-
-        countLine = 0;
-        countText = 0;
-        countMeasure = 0;
+    //This method is platform dependent
+    private void initSurface(){
         surface.clear();
         surface.setTextAlign(TextAlign.LEFT).setTextBaseline(TextBaseline.MIDDLE);
 
         //surface.setFont(20 + "px serif");
         lastFontSize = 0;
+    }
+
+    public int getHeight() {
+        return surface.getHeight();
+    }
+
+    public int getWidth() {
+        return surface.getWidth();
+    }
+
+    public boolean setHeight(int height) {
+        surface.setHeight(height);
+        return true;
+    }
+
+    public boolean setWidth(int width) {
+        surface.setWidth(width);
+        return true;
+    }
+
+    public Metrics redraw(Formula formula) {
+        preRedraw();
+
+        countLine = 0;
+        countText = 0;
+        countMeasure = 0;
+
+        initSurface();
 
         Date from = new Date();
 
         formula.invalidateMetrics();
-        drawerMetrics = formula.drawAligned(this, 10, 20, 20, Align.TOP);
-
-        if (isAutoCompletion) {
-            drawAutoCompletion();
-        } else {
-            autoCompletionY = 0;
-        }
+        Metrics drawerMetrics = formula.drawAligned(this, 10, 20, 20, Align.TOP);
 
         Date till = new Date();
         drawText("Rendering time: " + (till.getTime() - from.getTime()) + "ms " + countLine + " " + countText + " " + countMeasure, 20, 0, 10);
 
-        surface.strokeRectangle(9, 19, 2 + drawerMetrics.getWidth(), 2 + drawerMetrics.getHeight());
+        drawRect(9, 19, 11 + drawerMetrics.getWidth(), 21 + drawerMetrics.getHeight());
+        
+        postRedraw(drawerMetrics);
 
-        postRedraw();
-
-        if (redrawing <= 1) {
-            Rectangle rect = findMaxRect();
-            int width = rect.getX() + rect.getWidth() + 5;
-            int height = Math.max(rect.getY() + rect.getHeight() + 5, autoCompletionY + 5);
-            if (width > surface.getWidth() || height > surface.getHeight()) {
-                surface.setWidth(width);
-                surface.setHeight(height);
-                redraw();
-            } else {
-                surface.setWidth(width);
-                surface.setHeight(height);
-                redraw();
-            }
-        }
-
-        redrawing--;
+        return drawerMetrics;
     }
 
-    @Override
-    public void redrawCursor() {
-        if (cursorHighlight != null) {
-            surface.setStrokeStyle(new Color(220, 220, 220));
-            surface.strokeShape(new ShapeBuilder().drawLineSegment(cursorHighlight.getX(), cursorHighlight.getY() - cursorHighlight.getHeightUp(), cursorHighlight.getX(), cursorHighlight.getY() + cursorHighlight.getHeightDown()).build());
-            surface.setStrokeStyle(new Color(0, 0, 0));
-        }
+    public Metrics measure(Formula formula) {
+        preMeasure();
 
-        if (cursor != null) {
-            surface.strokeShape(new ShapeBuilder().drawLineSegment(cursor.getX(), cursor.getY() - cursor.getHeightUp(), cursor.getX(), cursor.getY() + cursor.getHeightDown()).build());
-        }
+        countLine = 0;
+        countText = 0;
+        countMeasure = 0;
+
+        formula.invalidateMetrics();
+        Metrics measuredMetrics = formula.measureAligned(this, 10, 20, 20, Align.TOP);
+
+        postMeasure(measuredMetrics);
+
+        return measuredMetrics;
     }
 }
