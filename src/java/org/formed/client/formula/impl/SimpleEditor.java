@@ -607,10 +607,10 @@ public class SimpleEditor implements Editor {
 
     protected boolean markSelection(Cursor from, Cursor to) {
         unmarkSelected();
-/*        if (selected) {
-            for (int pos = selectedPosFrom; pos <= selectedPosTo; pos++) {
-                selectedParent.getItem(pos).highlightOff();
-            }
+        /*        if (selected) {
+        for (int pos = selectedPosFrom; pos <= selectedPosTo; pos++) {
+        selectedParent.getItem(pos).highlightOff();
+        }
         }*/
         selected = false;
 
@@ -699,6 +699,17 @@ public class SimpleEditor implements Editor {
     }
 
     public void mouseDownAt(int x, int y) {
+        if (isAutoCompletion) {
+            int position = drawer.findAutoCompletionAt(x, y);
+            if (position >= 0) { //Select auto-completion position
+                autoCompletionPos = position;
+                redraw();
+                return;
+            }else{
+                hideAutoCompletion();
+            }
+        }
+
         FormulaItem minRectItem = drawer.findItemAt(x, y);
 
         if (minRectItem != null) {
@@ -713,6 +724,19 @@ public class SimpleEditor implements Editor {
     }
 
     public void mouseUpAt(int x, int y) {
+        if (isAutoCompletion) {
+            int position = drawer.findAutoCompletionAt(x, y);
+            if (position >= 0) { //Auto-complete
+                autoCompletionPos = position;
+                selectAutoCompletion();
+                redraw();
+                return;
+            }else{
+                hideAutoCompletion();
+            }
+        }
+
+        //Place cursor
         FormulaItem minRectItem = drawer.findItemAt(x, y);
 
         if (minRectItem != null) {
@@ -729,6 +753,15 @@ public class SimpleEditor implements Editor {
     }
 
     public void mouseMoveAt(int x, int y) {
+        if (isAutoCompletion) {
+            int position = drawer.findAutoCompletionAt(x, y);
+            if (position >= 0) { //Select auto-completion position
+                autoCompletionPos = position;
+                redraw();
+                return;
+            }
+        }
+
         if (selecting) {
             FormulaItem minRectItem = drawer.findItemAt(x, y);
 
@@ -1015,6 +1048,16 @@ public class SimpleEditor implements Editor {
             return;
         }
 
+        selectAutoCompletion(auto);
+    }
+
+    public void selectAutoCompletion(AutoCompletion auto) {
+        selectionExpired();
+
+        if (auto == null) {
+            return;
+        }
+
         Cursor curs = getAutoCompletionCursor();
         if (curs == null) {
             return;
@@ -1140,6 +1183,7 @@ public class SimpleEditor implements Editor {
                     item.setHighlight(255, 255, 255);
                     drawer.fillRect(x, y, x + maxWidth, y + Math.max(metrics.getHeight(), metrics2.getHeight()) + 2, 255, 255, 255);
                 }
+                drawer.addDrawnAutoCompletion(i, new Rectangle(x, y, maxWidth, Math.max(metrics.getHeight(), metrics2.getHeight()) + 2));
 
                 y += Math.max(metrics.getHeightUp(), metrics2.getHeightUp()) + 1;
                 drawer.drawText(text, 20, x, y);
@@ -1156,6 +1200,7 @@ public class SimpleEditor implements Editor {
                 } else {
                     drawer.fillRect(x, y, x + maxWidth, y + metrics.getHeight() + 2, 255, 255, 255);
                 }
+                drawer.addDrawnAutoCompletion(i, new Rectangle(x, y, maxWidth, metrics.getHeight() + 2));
 
                 y += metrics.getHeightUp() + 1;
                 drawer.drawText(text, 20, x, y);

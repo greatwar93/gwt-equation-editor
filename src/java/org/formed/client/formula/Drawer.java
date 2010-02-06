@@ -18,6 +18,7 @@ package org.formed.client.formula;
 
 import org.formed.client.formula.drawer.Metrics;
 import org.formed.client.formula.drawer.Rectangle;
+import org.formed.client.formula.editor.AutoCompletion;
 
 /**
  * Interface for objects used to draw formulas/items
@@ -69,6 +70,12 @@ public interface Drawer {
     void addDrawnFormula(Formula formula, int x, int y, Metrics metrics);
 
     FormulaItem findItemAt(int x, int y);
+
+    void addDrawnAutoCompletion(int autoCompletionPosition, Rectangle rect);
+
+    void addDrawnAutoCompletion(int autoCompletionPosition, int x, int y, Metrics metrics);
+
+    int findAutoCompletionAt(int x, int y);
 
     /**
      * Calculate size of a text one step smaller
@@ -129,10 +136,14 @@ public interface Drawer {
     void drawRect(int x1, int y1, int x2, int y2);
 
     Metrics measure(Formula formula);
+
     Metrics redraw(Formula formula);
 
     int getWidth();
+
     int getHeight();
+
     boolean setWidth(int width);
+
     boolean setHeight(int height);
 }

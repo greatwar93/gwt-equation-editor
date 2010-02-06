@@ -24,6 +24,7 @@ import org.formed.client.formula.Formula;
 import org.formed.client.formula.FormulaItem;
 import org.formed.client.formula.drawer.Metrics;
 import org.formed.client.formula.drawer.Rectangle;
+import org.formed.client.formula.editor.AutoCompletion;
 
 /**
  *
@@ -35,6 +36,7 @@ public abstract class BaseDrawer implements Drawer {
     protected int debugTexts = 0;
     protected final Map<FormulaItem, Rectangle> items = new HashMap<FormulaItem, Rectangle>();
     protected final Map<Formula, Rectangle> formulas = new HashMap<Formula, Rectangle>();
+    protected final Map<Integer, Rectangle> autoCompletions = new HashMap<Integer, Rectangle>();
 
     public BaseDrawer() {
     }
@@ -75,6 +77,24 @@ public abstract class BaseDrawer implements Drawer {
         return minRectItem;
     }
 
+    public void addDrawnAutoCompletion(int autoCompletionPosition, Rectangle rect) {
+        autoCompletions.put(autoCompletionPosition, rect);
+    }
+
+    public void addDrawnAutoCompletion(int autoCompletionPosition, int x, int y, Metrics metrics) {
+        addDrawnAutoCompletion(autoCompletionPosition, new Rectangle(x, y - metrics.getHeightUp(), metrics.getWidth(), metrics.getHeight()));
+    }
+
+    public int findAutoCompletionAt(int x, int y) {
+        for (int item : autoCompletions.keySet()) {
+            if(autoCompletions.get(item).isInside(x, y)) {
+                return item;
+            }
+        }
+
+        return -1;
+    }
+
     public int sizeForHeight(String text, int height) {
         int sizeFrom = 1;
         int sizeTo = 4000;
@@ -103,6 +123,7 @@ public abstract class BaseDrawer implements Drawer {
     protected void preMeasure() {
         items.clear();
         formulas.clear();
+        autoCompletions.clear();
     }
 
     protected void postMeasure(Metrics measuredMetrics) {
@@ -111,6 +132,7 @@ public abstract class BaseDrawer implements Drawer {
     protected void preRedraw() {
         items.clear();
         formulas.clear();
+        autoCompletions.clear();
     }
 
     protected void postRedraw(Metrics drawnMetrics) {
