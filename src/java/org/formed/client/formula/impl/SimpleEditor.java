@@ -1273,46 +1273,20 @@ public class SimpleEditor implements Editor {
         return new Rectangle(x, y1, maxWidth, y - y1);
     }
 
-    public void addFormula(Formula formula, Drawer drawer) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public Metrics redraw(Drawer drawer) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public Metrics redraw(Formula formula) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public void redrawCursor() {
         if (cursorHighlight != null) {
+            cursorHighlight.measure(drawer);
             drawer.drawDottedLine(cursorHighlight.getX(), cursorHighlight.getY() - cursorHighlight.getHeightUp(), cursorHighlight.getX(), cursorHighlight.getY() + cursorHighlight.getHeightDown());
         }
 
         if (cursor != null) {
+            cursor.measure(drawer);
             drawer.drawLine(cursor.getX(), cursor.getY() - cursor.getHeightUp(), cursor.getX(), cursor.getY() + cursor.getHeightDown());
         }
     }
 
-    public void preRedraw() {
-        markSelection(cursorFrom, cursor);
-        if (isAutoCompletion) {
-            findAutoCompletions();
-        }
-    }
-
-    public void postRedraw() {
-        if (cursor != null) {
-            cursor.measure(drawer);
-        }
-        if (cursorHighlight != null) {
-            cursorHighlight.measure(drawer);
-        }
-        redrawCursor();
-    }
-
     public Metrics redraw() {
+        //Measure formula and resize Drawer
         Metrics metrics = drawer.measure(formula);
         Rectangle rect = measureAutoCompletion();
         int width = Math.max(10 + metrics.getWidth(), rect.getX() + rect.getWidth()) + 5;
@@ -1327,12 +1301,20 @@ public class SimpleEditor implements Editor {
             drawer.setHeight(height);
         }
 
-        preRedraw();
+        //PreRedraw
+        markSelection(cursorFrom, cursor);
+        if (isAutoCompletion) {
+            findAutoCompletions();
+        }
 
+        //Redraw
         drawer.redraw(formula);
+
+        //PostRedraw
+        redrawCursor();
+
         drawAutoCompletion();
 
-        postRedraw();
         return metrics;
     }
 }
